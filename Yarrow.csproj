@@ -1,0 +1,117 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net7.0-android33.0</TargetFrameworks>
+		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
+		<!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
+		<OutputType>Exe</OutputType>
+		<RootNamespace>Yarrow</RootNamespace>
+		<UseMaui>true</UseMaui>
+		<SingleProject>true</SingleProject>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<!-- Display name -->
+		<ApplicationTitle>Yarrow</ApplicationTitle>
+
+		<!-- App Identifier -->
+		<ApplicationId>com.companyname.yarrow</ApplicationId>
+		<ApplicationIdGuid>35703e6d-52fa-4934-a60d-3f92c48cce02</ApplicationIdGuid>
+
+		<!-- Versions -->
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationVersion>1</ApplicationVersion>
+
+		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion> -->
+		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion> -->
+		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">23.0</SupportedOSPlatformVersion>
+		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion> -->
+		<!-- <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion> -->
+		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion> -->
+	</PropertyGroup>
+
+	<ItemGroup>
+		<!-- App Icon -->
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+
+		<!-- Splash Screen -->
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+
+		<!-- Images -->
+		<MauiImage Include="Resources\Images\*" />
+		<MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
+
+		<!-- Custom Fonts -->
+		<MauiFont Include="Resources\Fonts\*" />
+
+		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
+		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiCss Remove="resources\raw\style.css" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="resources\raw\default.html" />
+		<None Remove="Resources\Raw\template.html" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Maui" Version="5.0.0" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
+		<PackageReference Include="LiteDB" Version="5.0.16" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
+		<PackageReference Include="MimeTypes" Version="2.4.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Opal" Version="1.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<MauiAsset Update="Resources\Raw\template.html">
+			<LogicalName>%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+		</MauiAsset>
+	</ItemGroup>
+
+	<ItemGroup>
+		<!-- https://lospec.com/palette-list/morning-sky -->
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_fill_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_fill_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_line_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_line_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Home\home_fill_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Home\home_fill_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Home\home_line_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Home\home_line_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Bookmarks\bookmarks_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Bookmarks\bookmarks_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Expand\expand_more_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Expand\expand_more_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Expand\expand_less_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\Expand\expand_less_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\History\history_dark.svg" TintColor="#0b1321" />
+		<MauiImage Include="Resources\Images\History\history_light.svg" TintColor="#ffebbc" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Compile Update="BookmarksPage.xaml.cs">
+	    <DependentUpon>BookmarksPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="HistoryPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="IdentityPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="SettingsPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	</ItemGroup>
+
+	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadUnhandledDeviceExceptionYarrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>
+
+</Project>

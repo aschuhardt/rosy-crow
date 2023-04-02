@@ -77,21 +77,21 @@
 	<ItemGroup>
 		<!-- https://lospec.com/palette-list/morning-sky -->
 		<MauiImage Include="Resources\Images\Bookmark\bookmark_fill_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\Bookmark\bookmark_fill_light.svg" TintColor="#ffebbc" />
-		<MauiImage Include="Resources\Images\Bookmark\bookmark_line_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_fill_light.svg" TintColor="#c0d1de" />
+		<MauiImage Include="Resources\Images\Bookmark\bookmark_line_light.svg" TintColor="#c0d1de" />
 		<MauiImage Include="Resources\Images\Bookmark\bookmark_line_dark.svg" TintColor="#0b1321" />
 		<MauiImage Include="Resources\Images\Home\home_fill_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\Home\home_fill_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Home\home_fill_light.svg" TintColor="#c0d1de" />
 		<MauiImage Include="Resources\Images\Home\home_line_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\Home\home_line_light.svg" TintColor="#ffebbc" />
-		<MauiImage Include="Resources\Images\Bookmarks\bookmarks_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Home\home_line_light.svg" TintColor="#c0d1de" />
+		<MauiImage Include="Resources\Images\Bookmarks\bookmarks_light.svg" TintColor="#c0d1de" />
 		<MauiImage Include="Resources\Images\Bookmarks\bookmarks_dark.svg" TintColor="#0b1321" />
 		<MauiImage Include="Resources\Images\Expand\expand_more_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\Expand\expand_more_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Expand\expand_more_light.svg" TintColor="#c0d1de" />
 		<MauiImage Include="Resources\Images\Expand\expand_less_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\Expand\expand_less_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\Expand\expand_less_light.svg" TintColor="#c0d1de" />
 		<MauiImage Include="Resources\Images\History\history_dark.svg" TintColor="#0b1321" />
-		<MauiImage Include="Resources\Images\History\history_light.svg" TintColor="#ffebbc" />
+		<MauiImage Include="Resources\Images\History\history_light.svg" TintColor="#c0d1de" />
 	</ItemGroup>
 
 	<ItemGroup>

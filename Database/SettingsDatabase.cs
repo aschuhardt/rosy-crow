@@ -32,7 +32,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public string LastVisitedUrl
     {
-        get => _lastVisitedUrl;
+        get => _lastVisitedUrl ?? GetStringValue();
         set
         {
             if (SetField(ref _lastVisitedUrl, value))

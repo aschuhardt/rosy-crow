@@ -31,6 +31,7 @@ public static class MauiProgram
             .AddTransient<IOpalClient, OpalClient>()
             .AddTransient<MainPage>()
             .AddTransient<BookmarksPage>()
+            .AddTransient<IdentityPage>()
             .AddTransient<HistoryPage>();
 
 #if DEBUG

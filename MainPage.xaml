@@ -69,16 +69,16 @@
                 <Grid x:Name="ExpandableMenu" Grid.Row="1" HeightRequest="0"
                       RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                       IsClippedToBounds="True">
-                    <Button Text="Bookmarks" HorizontalOptions="Fill"
+                    <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"
                             IsEnabled="{Binding IsMenuExpanded}" Grid.Row="0" />
-                    <Button Text="History" HorizontalOptions="Fill"
+                    <Button Text="History" HorizontalOptions="Fill" Command="{Binding OpenHistory}"
                             IsEnabled="{Binding IsMenuExpanded}" Grid.Row="1" />
-                    <Button Text="Identity" HorizontalOptions="Fill"
+                    <Button Text="Identity" HorizontalOptions="Fill" Command="{Binding OpenIdentity}"
                             IsEnabled="{Binding IsMenuExpanded}" Grid.Row="2" />
                     <Button Text="Print" HorizontalOptions="Fill"
                             IsEnabled="{Binding CanPrint}" Grid.Row="3"
                             Command="{Binding Print}" />
-                    <Button Text="Settings" HorizontalOptions="Fill"
+                    <Button Text="Settings" HorizontalOptions="Fill" Command="{Binding OpenSettings}"
                             IsEnabled="{Binding IsMenuExpanded}" Grid.Row="4" />
                 </Grid>
             </Grid>

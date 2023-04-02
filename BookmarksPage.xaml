@@ -3,7 +3,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:yarrow="clr-namespace:Yarrow"
              x:DataType="yarrow:BookmarksPage"
-             x:Class="Yarrow.BookmarksPage">
+             x:Class="Yarrow.BookmarksPage"
+             Title="Bookmarks">
     <ContentPage.Content>
         <Label Text="Bookmarks will go here."></Label>
     </ContentPage.Content>

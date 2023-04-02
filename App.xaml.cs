@@ -6,6 +6,6 @@ public partial class App : Application
 	{
 		InitializeComponent();
 
-        MainPage = MauiProgram.Services.GetRequiredService<MainPage>();
+        MainPage = new NavigationPage(MauiProgram.Services.GetRequiredService<MainPage>());
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Web;
 using System.Windows.Input;
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
 using Microsoft.Maui.Handlers;
@@ -19,13 +18,10 @@ using Yarrow.Platforms.Android;
 
 namespace Yarrow;
 
-[QueryProperty(nameof(Location), "url")]
 public partial class MainPage : ContentPage
 {
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly IOpalClient _geminiClient;
-    private readonly IDictionary<string, Animation> _menuHideAnimations;
-    private readonly IDictionary<string, Animation> _menuShowAnimations;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
 
@@ -34,7 +30,6 @@ public partial class MainPage : ContentPage
     private ICommand _expandMenu;
     private ICommand _hideMenu;
     private string _htmlTemplate;
-
     private string _input;
     private bool _isMenuExpanded;
     private bool _isNavBarVisible;
@@ -42,6 +37,8 @@ public partial class MainPage : ContentPage
     private ICommand _loadEnteredUrl;
     private ICommand _loadHomeUrl;
     private Uri _location;
+    private Animation _menuHideAnimation;
+    private Animation _menuShowAnimation;
     private ICommand _openBookmarks;
     private ICommand _openHistory;
     private ICommand _openIdentity;
@@ -57,17 +54,13 @@ public partial class MainPage : ContentPage
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, IOpalClient geminiClient)
     {
+        InitializeComponent();
+
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
         _geminiClient = geminiClient;
-        InitializeComponent();
-        // _geminiClient = new OpalClient();
         _recentHistory = new Stack<Uri>();
-        _menuHideAnimations = new Dictionary<string, Animation>();
-        _menuShowAnimations = new Dictionary<string, Animation>();
         _isNavBarVisible = true;
-        //    _settingsDatabase = MauiProgram.Services.GetRequiredService<ISettingsDatabase>();
-        //    _browsingDatabase = MauiProgram.Services.GetRequiredService<IBrowsingDatabase>();
 
         BindingContext = this;
         Refresh = new Command(async _ => await LoadPage());
@@ -345,9 +338,10 @@ public partial class MainPage : ContentPage
 
     private void PerformMenuAnimations()
     {
-        var animations = IsMenuExpanded ? _menuShowAnimations : _menuHideAnimations;
-        foreach (var (name, animation) in animations)
-            animation.Commit(this, name);
+        if (IsMenuExpanded)
+            _menuShowAnimation.Commit(this, "ShowMenu");
+        else
+            _menuHideAnimation.Commit(this, "HideAnimation");
     }
 
     protected override bool OnBackButtonPressed()
@@ -378,7 +372,7 @@ public partial class MainPage : ContentPage
     private void TryLoadHomeUrl()
     {
         if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
-            ShowToast("No home URL has been set. Long-press the Home button to set one.", ToastDuration.Long);
+            this.ShowToast("No home URL has been set. Long-press the Home button to set one.", ToastDuration.Long);
         else
             Location = _settingsDatabase.HomeUrl.ToGeminiUri();
     }
@@ -392,7 +386,7 @@ public partial class MainPage : ContentPage
 
         OnPropertyChanged(nameof(Location)); // force buttons to update
 
-        ShowToast("Home set", ToastDuration.Short);
+        this.ShowToast("Home set", ToastDuration.Short);
     }
 
     private void TryToggleBookmarked()
@@ -406,7 +400,7 @@ public partial class MainPage : ContentPage
 
             OnPropertyChanged(nameof(Location)); // force buttons to update
 
-            ShowToast("Bookmark removed", ToastDuration.Short);
+            this.ShowToast("Bookmark removed", ToastDuration.Short);
         }
         else
         {
@@ -414,7 +408,7 @@ public partial class MainPage : ContentPage
 
             OnPropertyChanged(nameof(Location)); // force buttons to update
 
-            ShowToast("Bookmark added", ToastDuration.Short);
+            this.ShowToast("Bookmark added", ToastDuration.Short);
         }
     }
 
@@ -556,7 +550,7 @@ public partial class MainPage : ContentPage
                 }
                 case SuccessfulResponse success:
                 {
-                    if (_recentHistory.TryPeek(out var prev) && !prev.Equals(response.Uri))
+                    if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(response.Uri))
                         _recentHistory.Push(response.Uri);
 
                     _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
@@ -612,18 +606,13 @@ public partial class MainPage : ContentPage
 
     private async void PageWebView_OnNavigating(object sender, WebNavigatingEventArgs e)
     {
-        var uri = e.Url.ToGeminiUri();
+        var uri = e.Url.ToUri();
         if (!uri.IsAbsoluteUri || uri.Scheme == "gemini")
             Location = uri;
         else
             await Launcher.Default.OpenAsync(uri);
 
         e.Cancel = true;
-    }
-
-    private void ShowToast(string message, ToastDuration duration)
-    {
-        Dispatcher.Dispatch(async () => { await Toast.Make(message, duration).Show(); });
     }
 
     private double GetExpandedMenuHeight()
@@ -633,10 +622,9 @@ public partial class MainPage : ContentPage
 
     private void AddMenuAnimations()
     {
-        _menuShowAnimations.Add("ExpandMenu",
-            new Animation(v => ExpandableMenu.HeightRequest = v, 0, GetExpandedMenuHeight(), Easing.CubicOut));
-        _menuHideAnimations.Add("ShrinkMenu",
-            new Animation(v => ExpandableMenu.HeightRequest = v, GetExpandedMenuHeight(), 0));
+        _menuShowAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, 0, GetExpandedMenuHeight(),
+            Easing.CubicOut);
+        _menuHideAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, GetExpandedMenuHeight(), 0);
     }
 
     private async void MainPage_OnLoaded(object sender, EventArgs e)

@@ -293,7 +293,7 @@ public partial class BrowserView : ContentView
 
     public async Task LoadPage()
     {
-        if (Location == null)
+        if (Location == null || string.IsNullOrEmpty(_htmlTemplate))
             return;
 
         var finished = false;
@@ -384,6 +384,8 @@ public partial class BrowserView : ContentView
         var document = new HtmlDocument();
         document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
 
+        InjectStylesheet(document.DocumentNode);
+
         var body = document.DocumentNode.ChildNodes.FindFirst("main");
 
         await using (var file = await FileSystem.OpenAppPackageFileAsync("default.html"))
@@ -416,5 +418,10 @@ public partial class BrowserView : ContentView
     private async void BrowserView_OnLoaded(object sender, EventArgs e)
     {
         await LoadPageTemplates();
+
+        if (Location == null)
+            await LoadDefaultPage();
+        else
+            await LoadPage();
     }
 }

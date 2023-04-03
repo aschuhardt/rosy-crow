@@ -331,8 +331,5 @@ public partial class MainPage : ContentPage
     {
         AddMenuAnimations();
         Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
-
-        if (Browser.Location == null)
-            await Browser.LoadDefaultPage();
     }
 }

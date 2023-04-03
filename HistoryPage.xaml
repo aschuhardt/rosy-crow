@@ -1,12 +1,34 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:yarrow="clr-namespace:Yarrow"
+             xmlns:models="clr-namespace:Yarrow.Models"
              x:Class="Yarrow.HistoryPage"
+             x:DataType="yarrow:HistoryPage"
              Title="History">
-    <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout>
+            <Grid ColumnDefinitions="Auto,Auto,*">
+                <Label Text="Save page history" Grid.Column="0" />
+                <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
+                <ImageButton Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" Grid.Column="2" />
+            </Grid>
+            <CollectionView ItemsSource="{Binding Visited}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="models:Visited">
+                        <VerticalStackLayout Padding="4,0,0,2">
+                            <HorizontalStackLayout>
+                                <Label FontSize="18" Text="{Binding Title}" />
+                                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Padding="4,0,0,0"
+                                       VerticalTextAlignment="End" TextColor="{StaticResource Gray300}"
+                                       Text="{Binding Timestamp, StringFormat='{0:S}'}" />
+                            </HorizontalStackLayout>
+                            <Label Text="{Binding Url}" />
+                        </VerticalStackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

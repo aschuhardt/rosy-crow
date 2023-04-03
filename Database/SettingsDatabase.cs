@@ -11,6 +11,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private readonly ILiteCollection<Setting> _settingsStore;
     private string _homeUrl;
     private string _lastVisitedUrl;
+    private bool? _storeVisited;
 
     public SettingsDatabase(ILiteDatabase database)
     {
@@ -38,6 +39,27 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
             if (SetField(ref _lastVisitedUrl, value))
                 SetStringValue(value);
         }
+    }
+
+    public bool SaveVisited
+    {
+        get => _storeVisited ?? GetBoolValue();
+        set
+        {
+            if (SetField(ref _storeVisited, value))
+                SetBoolValue(value);
+        }
+    }
+
+    private void SetBoolValue(bool value, [CallerMemberName] string name = null)
+    {
+        if (name == null)
+            return;
+
+        var entity = _settingsStore.FindOne(s => s.Name.Equals(name)) ?? new Setting { Name = name };
+        entity.BoolValue = value;
+
+        _settingsStore.Upsert(entity);
     }
 
     private void SetStringValue(string value, [CallerMemberName] string name = null)
@@ -76,6 +98,22 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         _settingsStore.Insert(entity);
 
         return entity.StringValue;
+    }
+
+    private bool GetBoolValue(bool defaultValue = default, [CallerMemberName] string name = null)
+    {
+        if (name == null)
+            return default;
+
+        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+
+        if (entity != null)
+            return entity.BoolValue;
+
+        entity = new Setting { Name = name, BoolValue = defaultValue };
+        _settingsStore.Insert(entity);
+
+        return entity.BoolValue;
     }
 
     private int GetIntValue(int defaultValue = default, [CallerMemberName] string name = null)

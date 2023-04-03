@@ -5,6 +5,7 @@
              xmlns:yarrow="clr-namespace:Yarrow"
              xmlns:controls="clr-namespace:Yarrow.Controls"
              xmlns:converters="clr-namespace:Yarrow.Converters"
+             xmlns:views="clr-namespace:Yarrow.Views"
              x:DataType="yarrow:MainPage"
              x:Class="Yarrow.MainPage"
              Loaded="MainPage_OnLoaded"
@@ -15,35 +16,27 @@
         <converters:ExpandButtonImageConverter x:Key="ExpandButtonImageConverter" />
     </ContentPage.Resources>
     <RefreshView
-        IsRefreshing="{Binding IsRefreshing}"
+        IsRefreshing="{Binding IsRefreshing, Source={x:Reference Browser}}"
         Command="{Binding Refresh}">
         <AbsoluteLayout>
-            <WebView
-                x:Name="PageWebView" 
-                Navigating="PageWebView_OnNavigating"
+            <views:BrowserView
+                x:Name="Browser"
                 AbsoluteLayout.LayoutBounds="0,0,1,1"
                 AbsoluteLayout.LayoutFlags="All"
                 HorizontalOptions="Fill"
-                VerticalOptions="Fill">
-                <WebView.Source>
-                    <HtmlWebViewSource Html="{Binding RenderedHtml}" />
-                </WebView.Source>
-            </WebView>
-            <Grid
-                x:Name="NavBar"
-                AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
-                AbsoluteLayout.LayoutFlags="WidthProportional"
-                Padding="0,6"
-                RowDefinitions="Auto,Auto"
-                BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                <Grid.Shadow>
+                VerticalOptions="Fill" />
+            <VerticalStackLayout x:Name="NavBar" Padding="0,6"
+                                 AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
+                                 AbsoluteLayout.LayoutFlags="WidthProportional"
+                                 BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+                <VerticalStackLayout.Shadow>
                     <Shadow Brush="{StaticResource Black}" Radius="4" />
-                </Grid.Shadow>
-                <Grid.GestureRecognizers>
+                </VerticalStackLayout.Shadow>
+                <VerticalStackLayout.GestureRecognizers>
                     <SwipeGestureRecognizer Direction="Down" Command="{Binding ExpandMenu}" />
                     <SwipeGestureRecognizer Direction="Up" Command="{Binding HideMenu}" />
-                </Grid.GestureRecognizers>
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto" Grid.Row="0">
+                </VerticalStackLayout.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                     <ImageButton
                         Grid.Column="0"
                         Scale="0.75"
@@ -54,34 +47,33 @@
                             <RoundRectangle CornerRadius="2.5" />
                         </Border.StrokeShape>
                         <Entry
-                            Text="{Binding EntryUrl}"
+                            Text="{Binding RenderUrl, Source={x:Reference Browser}}"
                             ReturnCommand="{Binding LoadEnteredUrl}"
-                            ReturnCommandParameter="{Binding EntryUrl}"
+                            ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
                             ReturnType="Go" Keyboard="Url" FontSize="12" />
                     </Border>
                     <ImageButton Scale="0.75" Grid.Column="2"
                                  Command="{Binding ToggleBookmarked}"
-                                 Source="{Binding Location, Converter={StaticResource BookmarkButtonImageConverter}}" />
+                                 Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
                     <controls:BiModalButton Scale="0.75" Grid.Column="3"
                                             Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                                            Source="{Binding Location, Converter={StaticResource HomeButtonImageConverter}}" />
+                                            Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
                 </Grid>
-                <Grid x:Name="ExpandableMenu" Grid.Row="1" HeightRequest="0"
-                      RowDefinitions="Auto,Auto,Auto,Auto,Auto"
-                      IsClippedToBounds="True">
+                <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0"
+                                     IsClippedToBounds="True">
                     <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"
-                            IsEnabled="{Binding IsMenuExpanded}" Grid.Row="0" />
+                            IsEnabled="{Binding IsMenuExpanded}" />
                     <Button Text="History" HorizontalOptions="Fill" Command="{Binding OpenHistory}"
-                            IsEnabled="{Binding IsMenuExpanded}" Grid.Row="1" />
+                            IsEnabled="{Binding IsMenuExpanded}" />
                     <Button Text="Identity" HorizontalOptions="Fill" Command="{Binding OpenIdentity}"
-                            IsEnabled="{Binding IsMenuExpanded}" Grid.Row="2" />
+                            IsEnabled="{Binding IsMenuExpanded}" />
                     <Button Text="Print" HorizontalOptions="Fill"
-                            IsEnabled="{Binding CanPrint}" Grid.Row="3"
+                            IsEnabled="{Binding CanPrint}"
                             Command="{Binding Print}" />
                     <Button Text="Settings" HorizontalOptions="Fill" Command="{Binding OpenSettings}"
-                            IsEnabled="{Binding IsMenuExpanded}" Grid.Row="4" />
-                </Grid>
-            </Grid>
+                            IsEnabled="{Binding IsMenuExpanded}" />
+                </VerticalStackLayout>
+            </VerticalStackLayout>
         </AbsoluteLayout>
     </RefreshView>
 </ContentPage>

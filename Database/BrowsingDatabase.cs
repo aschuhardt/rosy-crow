@@ -3,11 +3,11 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LiteDB;
-using Yarrow.Extensions;
-using Yarrow.Interfaces;
-using Yarrow.Models;
+using RosyCrow.Extensions;
+using RosyCrow.Interfaces;
+using RosyCrow.Models;
 
-namespace Yarrow.Database;
+namespace RosyCrow.Database;
 
 internal class BrowsingDatabase : IBrowsingDatabase
 {

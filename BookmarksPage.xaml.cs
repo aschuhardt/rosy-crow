@@ -1,9 +1,9 @@
 ﻿using System.Collections.ObjectModel;
-using Yarrow.Models;
+using RosyCrow.Models;
 
 // ReSharper disable AsyncVoidLambda
 
-namespace Yarrow;
+namespace RosyCrow;
 
 public partial class BookmarksPage : ContentPage
 {

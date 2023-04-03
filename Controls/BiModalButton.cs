@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace Yarrow.Controls;
+namespace RosyCrow.Controls;
 
 /// <summary>
 ///     An image button with two command states; one for a short press, and another for a long press

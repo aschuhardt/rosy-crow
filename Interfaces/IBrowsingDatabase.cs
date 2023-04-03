@@ -1,8 +1,8 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Yarrow.Models;
+using RosyCrow.Models;
 
-namespace Yarrow.Interfaces;
+namespace RosyCrow.Interfaces;
 
 public interface IBrowsingDatabase : INotifyPropertyChanged
 {

@@ -3,7 +3,7 @@ using CommunityToolkit.Maui.Core;
 
 // ReSharper disable AsyncVoidLambda
 
-namespace Yarrow.Extensions;
+namespace RosyCrow.Extensions;
 
 internal static class ContentPageExtensions
 {

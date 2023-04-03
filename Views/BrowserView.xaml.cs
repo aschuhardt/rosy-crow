@@ -6,14 +6,14 @@ using Microsoft.Maui.Handlers;
 using Opal;
 using Opal.Document.Line;
 using Opal.Response;
-using Yarrow.Extensions;
-using Yarrow.Interfaces;
-using Yarrow.Models;
-using Yarrow.Platforms.Android;
+using RosyCrow.Extensions;
+using RosyCrow.Interfaces;
+using RosyCrow.Models;
+using RosyCrow.Platforms.Android;
 
 // ReSharper disable AsyncVoidLambda
 
-namespace Yarrow.Views;
+namespace RosyCrow.Views;
 
 public partial class BrowserView : ContentView
 {

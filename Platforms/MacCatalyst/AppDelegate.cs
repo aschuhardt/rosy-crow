@@ -1,6 +1,6 @@
 ﻿using Foundation;
 
-namespace Yarrow;
+namespace RosyCrow;
 
 [Register("AppDelegate")]
 public class AppDelegate : MauiUIApplicationDelegate

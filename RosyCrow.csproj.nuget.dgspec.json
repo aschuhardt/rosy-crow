@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\aschuhardt\\source\\repos\\Yarrow\\Yarrow.csproj": {}
+    "C:\\Users\\aschuhardt\\source\\repos\\RosyCrow\\RosyCrow.csproj": {}
   },
   "projects": {
-    "C:\\Users\\aschuhardt\\source\\repos\\Yarrow\\Yarrow.csproj": {
+    "C:\\Users\\aschuhardt\\source\\repos\\RosyCrow\\RosyCrow.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\aschuhardt\\source\\repos\\Yarrow\\Yarrow.csproj",
-        "projectName": "Yarrow",
-        "projectPath": "C:\\Users\\aschuhardt\\source\\repos\\Yarrow\\Yarrow.csproj",
+        "projectUniqueName": "C:\\Users\\aschuhardt\\source\\repos\\RosyCrow\\RosyCrow.csproj",
+        "projectName": "RosyCrow",
+        "projectPath": "C:\\Users\\aschuhardt\\source\\repos\\RosyCrow\\RosyCrow.csproj",
         "packagesPath": "C:\\Users\\aschuhardt\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\aschuhardt\\source\\repos\\Yarrow",
+        "outputPath": "C:\\Users\\aschuhardt\\source\\repos\\RosyCrow",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Users\\aschuhardt\\AppData\\Roaming\\Godot\\mono\\GodotNuGetFallbackFolder",

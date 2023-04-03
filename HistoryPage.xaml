@@ -2,10 +2,10 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:yarrow="clr-namespace:Yarrow"
-             xmlns:models="clr-namespace:Yarrow.Models"
-             x:Class="Yarrow.HistoryPage"
-             x:DataType="yarrow:HistoryPage"
+             xmlns:rosy-crow="clr-namespace:RosyCrow"
+             xmlns:models="clr-namespace:RosyCrow.Models"
+             x:Class="RosyCrow.HistoryPage"
+             x:DataType="rosy-crow:HistoryPage"
              Title="History">
     <NavigationPage.TitleView>
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">

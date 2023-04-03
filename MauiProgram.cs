@@ -3,10 +3,10 @@ using CommunityToolkit.Maui;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using Opal;
-using Yarrow.Database;
-using Yarrow.Interfaces;
+using RosyCrow.Database;
+using RosyCrow.Interfaces;
 
-namespace Yarrow;
+namespace RosyCrow;
 
 public static class MauiProgram
 {

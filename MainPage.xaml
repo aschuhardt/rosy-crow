@@ -2,12 +2,12 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:yarrow="clr-namespace:Yarrow"
-             xmlns:controls="clr-namespace:Yarrow.Controls"
-             xmlns:converters="clr-namespace:Yarrow.Converters"
-             xmlns:views="clr-namespace:Yarrow.Views"
-             x:DataType="yarrow:MainPage"
-             x:Class="Yarrow.MainPage"
+             xmlns:rosy-crow="clr-namespace:RosyCrow"
+             xmlns:controls="clr-namespace:RosyCrow.Controls"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
+             xmlns:views="clr-namespace:RosyCrow.Views"
+             x:DataType="rosy-crow:MainPage"
+             x:Class="RosyCrow.MainPage"
              Loaded="MainPage_OnLoaded"
              NavigationPage.HasNavigationBar="False">
     <ContentPage.Resources>

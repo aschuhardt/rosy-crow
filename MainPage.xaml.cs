@@ -1,15 +1,15 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Maui.Handlers;
-using Yarrow.Extensions;
-using Yarrow.Interfaces;
-using Yarrow.Models;
+using RosyCrow.Extensions;
+using RosyCrow.Interfaces;
+using RosyCrow.Models;
 #if ANDROID
 #endif
 
 // ReSharper disable AsyncVoidLambda
 
-namespace Yarrow;
+namespace RosyCrow;
 
 public partial class MainPage : ContentPage
 {
@@ -50,10 +50,10 @@ public partial class MainPage : ContentPage
         LoadHomeUrl = new Command(TryLoadHomeUrl);
         SetHomeUrl = new Command(TrySetHomeUrl);
         ToggleBookmarked = new Command(TryToggleBookmarked);
-        OpenBookmarks = new Command(async () => await Navigation.PushPageAsync<BookmarksPage>());
-        OpenHistory = new Command(async () => await Navigation.PushPageAsync<HistoryPage>());
-        OpenIdentity = new Command(async () => await Navigation.PushPageAsync<IdentityPage>());
-        OpenSettings = new Command(async () => await Navigation.PushPageAsync<SettingsPage>());
+        OpenBookmarks = new Command(OpenMenuItem<BookmarksPage>);
+        OpenHistory = new Command(OpenMenuItem<HistoryPage>);
+        OpenIdentity = new Command(OpenMenuItem<IdentityPage>);
+        OpenSettings = new Command(OpenMenuItem<SettingsPage>);
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware", (handler, _) =>
         {
@@ -260,6 +260,12 @@ public partial class MainPage : ContentPage
         }
 
         return Browser.GoBack();
+    }
+
+    private void OpenMenuItem<T>() where T : ContentPage
+    {
+        _isMenuExpanded = false;
+        _menuHideAnimation.Commit(this, "HideMenu", finished: async (_, _) => await Navigation.PushPageAsync<T>());
     }
 
     private void TryLoadHomeUrl()

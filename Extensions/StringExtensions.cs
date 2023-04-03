@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Yarrow.Extensions;
+namespace RosyCrow.Extensions;
 
 internal static class StringExtensions
 {

@@ -1,7 +1,7 @@
 ﻿using ObjCRuntime;
 using UIKit;
 
-namespace Yarrow;
+namespace RosyCrow;
 
 public class Program
 {

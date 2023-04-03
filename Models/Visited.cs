@@ -1,4 +1,4 @@
-﻿namespace Yarrow.Models;
+﻿namespace RosyCrow.Models;
 
 public class Visited
 {

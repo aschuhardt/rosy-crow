@@ -1,4 +1,4 @@
-﻿namespace Yarrow.Interfaces;
+﻿namespace RosyCrow.Interfaces;
 
 public interface ISettingsDatabase
 {

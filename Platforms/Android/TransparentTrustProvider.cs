@@ -4,7 +4,7 @@ using Java.Security;
 using Java.Security.Cert;
 using Javax.Net.Ssl;
 
-namespace Yarrow.Platforms.Android;
+namespace RosyCrow.Platforms.Android;
 
 internal class TransparentTrustProvider : Provider
 {

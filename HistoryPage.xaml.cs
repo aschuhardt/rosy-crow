@@ -1,11 +1,11 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using Yarrow.Extensions;
-using Yarrow.Interfaces;
-using Yarrow.Models;
+using RosyCrow.Extensions;
+using RosyCrow.Interfaces;
+using RosyCrow.Models;
 
-namespace Yarrow;
+namespace RosyCrow;
 
 public partial class HistoryPage : ContentPage
 {
@@ -17,8 +17,6 @@ public partial class HistoryPage : ContentPage
 
     public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase)
     {
-        InitializeComponent();
-
         BindingContext = this;
 
         _browsingDatabase = browsingDatabase;
@@ -26,6 +24,8 @@ public partial class HistoryPage : ContentPage
 
         Visited = _browsingDatabase.Visited;
         ClearHistory = new Command(async () => await TryClearHistory());
+
+        InitializeComponent();
     }
 
     private async Task TryClearHistory()

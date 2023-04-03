@@ -1,9 +1,9 @@
 ﻿using Android.Content;
 using Android.Print;
-using Yarrow.Interfaces;
+using RosyCrow.Interfaces;
 using WebView = Android.Webkit.WebView;
 
-namespace Yarrow.Platforms.Android;
+namespace RosyCrow.Platforms.Android;
 
 public class AndroidPrintService : IPrintService
 {

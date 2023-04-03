@@ -1,4 +1,4 @@
-﻿namespace Yarrow;
+﻿namespace RosyCrow;
 
 public partial class App : Application
 {

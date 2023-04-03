@@ -1,5 +1,6 @@
 using System.Text;
 using System.Web;
+using System.Windows.Input;
 using HtmlAgilityPack;
 using Microsoft.Maui.Handlers;
 using Opal;
@@ -9,6 +10,8 @@ using Yarrow.Extensions;
 using Yarrow.Interfaces;
 using Yarrow.Models;
 using Yarrow.Platforms.Android;
+
+// ReSharper disable AsyncVoidLambda
 
 namespace Yarrow.Views;
 
@@ -27,6 +30,7 @@ public partial class BrowserView : ContentView
     private string _pageTitle;
 
     private IPrintService _printService;
+    private ICommand _refresh;
     private string _renderedHtml;
     private string _renderUrl;
 
@@ -48,8 +52,26 @@ public partial class BrowserView : ContentView
         _browsingDatabase = browsingDatabase;
         _recentHistory = new Stack<Uri>();
 
+        Refresh = new Command(async () => await LoadPage());
+
+#if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
-            (handler, _) => { _printService = new AndroidPrintService(handler.PlatformView); });
+            (handler, _) => _printService = new AndroidPrintService(handler.PlatformView));
+
+        RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
+            (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
+#endif
+    }
+
+    public ICommand Refresh
+    {
+        get => _refresh;
+        set
+        {
+            if (Equals(value, _refresh)) return;
+            _refresh = value;
+            OnPropertyChanged();
+        }
     }
 
     public string RenderedHtml
@@ -189,10 +211,19 @@ public partial class BrowserView : ContentView
         };
     }
 
+    private void InjectStylesheet(HtmlNode documentNode)
+    {
+        documentNode.ChildNodes.FindFirst("head")
+            .AppendChild(HtmlNode.CreateNode(
+                $"<link rel=\"stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
+    }
+
     private string RenderGemtextAsHtml(GemtextResponse gemtext)
     {
         var document = new HtmlDocument();
         document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
+
+        InjectStylesheet(document.DocumentNode);
 
         var body = document.DocumentNode.ChildNodes.FindFirst("main");
 

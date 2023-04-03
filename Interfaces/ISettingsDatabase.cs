@@ -5,4 +5,5 @@ public interface ISettingsDatabase
     string HomeUrl { get; set; }
     string LastVisitedUrl { get; set; }
     bool SaveVisited { get; set; }
+    string Theme { get; set; }
 }

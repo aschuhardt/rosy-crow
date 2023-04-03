@@ -12,6 +12,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private string _homeUrl;
     private string _lastVisitedUrl;
     private bool? _storeVisited;
+    private string _theme;
 
     public SettingsDatabase(ILiteDatabase database)
     {
@@ -20,6 +21,16 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
+
+    public string Theme
+    {
+        get => _theme ?? GetStringValue("sakura-dark");
+        set
+        {
+            if (SetField(ref _theme, value))
+                SetStringValue(value);
+        }
+    }
 
     public string HomeUrl
     {

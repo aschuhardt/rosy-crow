@@ -1,17 +1,10 @@
-﻿using System.Text;
-using System.Web;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
-using HtmlAgilityPack;
 using Microsoft.Maui.Handlers;
-using Opal;
-using Opal.Document.Line;
-using Opal.Response;
 using Yarrow.Extensions;
 using Yarrow.Interfaces;
 using Yarrow.Models;
 #if ANDROID
-using Yarrow.Platforms.Android;
 #endif
 
 // ReSharper disable AsyncVoidLambda
@@ -23,7 +16,6 @@ public partial class MainPage : ContentPage
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ISettingsDatabase _settingsDatabase;
 
-    private bool _canPrint;
     private ICommand _expandMenu;
     private ICommand _hideMenu;
     private bool _isMenuExpanded;
@@ -37,7 +29,6 @@ public partial class MainPage : ContentPage
     private ICommand _openIdentity;
     private ICommand _openSettings;
     private ICommand _print;
-    private ICommand _refresh;
     private ICommand _setHomeUrl;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
@@ -51,7 +42,6 @@ public partial class MainPage : ContentPage
         _isNavBarVisible = true;
 
         BindingContext = this;
-        Refresh = new Command(async _ => await Browser.LoadPage());
         LoadEnteredUrl = new Command<string>(url => Browser.Location = url.ToGeminiUri());
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
@@ -135,17 +125,6 @@ public partial class MainPage : ContentPage
         }
     }
 
-    public bool CanPrint
-    {
-        get => _canPrint;
-        set
-        {
-            if (value == _canPrint) return;
-            _canPrint = value;
-            OnPropertyChanged();
-        }
-    }
-
     public bool IsMenuExpanded
     {
         get => _isMenuExpanded;
@@ -209,17 +188,6 @@ public partial class MainPage : ContentPage
         {
             if (Equals(value, _loadEnteredUrl)) return;
             _loadEnteredUrl = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ICommand Refresh
-    {
-        get => _refresh;
-        set
-        {
-            if (Equals(value, _refresh)) return;
-            _refresh = value;
             OnPropertyChanged();
         }
     }
@@ -329,7 +297,8 @@ public partial class MainPage : ContentPage
         }
         else
         {
-            _browsingDatabase.Bookmarks.Add(new Bookmark { Title = Browser.PageTitle , Url = Browser.Location.ToString() });
+            _browsingDatabase.Bookmarks.Add(new Bookmark
+                { Title = Browser.PageTitle, Url = Browser.Location.ToString() });
 
             OnPropertyChanged(nameof(Location)); // force buttons to update
 

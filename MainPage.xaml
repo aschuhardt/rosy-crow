@@ -15,65 +15,61 @@
         <converters:HomeButtonImageConverter x:Key="HomeButtonImageConverter" />
         <converters:ExpandButtonImageConverter x:Key="ExpandButtonImageConverter" />
     </ContentPage.Resources>
-    <RefreshView
-        IsRefreshing="{Binding IsRefreshing, Source={x:Reference Browser}}"
-        Command="{Binding Refresh}">
-        <AbsoluteLayout>
-            <views:BrowserView
-                x:Name="Browser"
-                AbsoluteLayout.LayoutBounds="0,0,1,1"
-                AbsoluteLayout.LayoutFlags="All"
-                HorizontalOptions="Fill"
-                VerticalOptions="Fill" />
-            <VerticalStackLayout x:Name="NavBar" Padding="0,6"
-                                 AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
-                                 AbsoluteLayout.LayoutFlags="WidthProportional"
-                                 BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-                <VerticalStackLayout.Shadow>
-                    <Shadow Brush="{StaticResource Black}" Radius="4" />
-                </VerticalStackLayout.Shadow>
-                <VerticalStackLayout.GestureRecognizers>
-                    <SwipeGestureRecognizer Direction="Down" Command="{Binding ExpandMenu}" />
-                    <SwipeGestureRecognizer Direction="Up" Command="{Binding HideMenu}" />
-                </VerticalStackLayout.GestureRecognizers>
-                <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                    <ImageButton
-                        Grid.Column="0"
-                        Scale="0.75"
-                        Command="{Binding ToggleMenuExpanded}"
-                        Source="{Binding IsMenuExpanded, Converter={StaticResource ExpandButtonImageConverter}}" />
-                    <Border Grid.Column="1" StrokeThickness="1" HeightRequest="36">
-                        <Border.StrokeShape>
-                            <RoundRectangle CornerRadius="2.5" />
-                        </Border.StrokeShape>
-                        <Entry
-                            Text="{Binding RenderUrl, Source={x:Reference Browser}}"
-                            ReturnCommand="{Binding LoadEnteredUrl}"
-                            ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
-                            ReturnType="Go" Keyboard="Url" FontSize="12" />
-                    </Border>
-                    <ImageButton Scale="0.75" Grid.Column="2"
-                                 Command="{Binding ToggleBookmarked}"
-                                 Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
-                    <controls:BiModalButton Scale="0.75" Grid.Column="3"
-                                            Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                                            Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
-                </Grid>
-                <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0"
-                                     IsClippedToBounds="True">
-                    <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"
-                            IsEnabled="{Binding IsMenuExpanded}" />
-                    <Button Text="History" HorizontalOptions="Fill" Command="{Binding OpenHistory}"
-                            IsEnabled="{Binding IsMenuExpanded}" />
-                    <Button Text="Identity" HorizontalOptions="Fill" Command="{Binding OpenIdentity}"
-                            IsEnabled="{Binding IsMenuExpanded}" />
-                    <Button Text="Print" HorizontalOptions="Fill"
-                            IsEnabled="{Binding CanPrint}"
-                            Command="{Binding Print}" />
-                    <Button Text="Settings" HorizontalOptions="Fill" Command="{Binding OpenSettings}"
-                            IsEnabled="{Binding IsMenuExpanded}" />
-                </VerticalStackLayout>
+    <AbsoluteLayout>
+        <views:BrowserView
+            x:Name="Browser"
+            AbsoluteLayout.LayoutBounds="0,0,1,1"
+            AbsoluteLayout.LayoutFlags="All"
+            HorizontalOptions="Fill"
+            VerticalOptions="Fill" />
+        <VerticalStackLayout x:Name="NavBar" Padding="0,6"
+                             AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
+                             AbsoluteLayout.LayoutFlags="WidthProportional"
+                             BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <VerticalStackLayout.Shadow>
+                <Shadow Brush="{StaticResource Black}" Radius="4" />
+            </VerticalStackLayout.Shadow>
+            <VerticalStackLayout.GestureRecognizers>
+                <SwipeGestureRecognizer Direction="Down" Command="{Binding ExpandMenu}" />
+                <SwipeGestureRecognizer Direction="Up" Command="{Binding HideMenu}" />
+            </VerticalStackLayout.GestureRecognizers>
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                <ImageButton
+                    Grid.Column="0"
+                    Scale="0.75"
+                    Command="{Binding ToggleMenuExpanded}"
+                    Source="{Binding IsMenuExpanded, Converter={StaticResource ExpandButtonImageConverter}}" />
+                <Border Grid.Column="1" StrokeThickness="1" HeightRequest="36">
+                    <Border.StrokeShape>
+                        <RoundRectangle CornerRadius="2.5" />
+                    </Border.StrokeShape>
+                    <Entry
+                        Text="{Binding RenderUrl, Source={x:Reference Browser}}"
+                        ReturnCommand="{Binding LoadEnteredUrl}"
+                        ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
+                        ReturnType="Go" Keyboard="Url" FontSize="12" />
+                </Border>
+                <ImageButton Scale="0.75" Grid.Column="2"
+                             Command="{Binding ToggleBookmarked}"
+                             Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
+                <controls:BiModalButton Scale="0.75" Grid.Column="3"
+                                        Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
+                                        Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
+            </Grid>
+            <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0"
+                                 IsClippedToBounds="True">
+                <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"
+                        IsEnabled="{Binding IsMenuExpanded}" />
+                <Button Text="History" HorizontalOptions="Fill" Command="{Binding OpenHistory}"
+                        IsEnabled="{Binding IsMenuExpanded}" />
+                <Button Text="Identity" HorizontalOptions="Fill" Command="{Binding OpenIdentity}"
+                        IsEnabled="{Binding IsMenuExpanded}" />
+                <Button Text="Print" HorizontalOptions="Fill"
+                        IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
+                        Command="{Binding Print}" />
+                <Button Text="Settings" HorizontalOptions="Fill" Command="{Binding OpenSettings}"
+                        IsEnabled="{Binding IsMenuExpanded}" />
             </VerticalStackLayout>
-        </AbsoluteLayout>
-    </RefreshView>
+        </VerticalStackLayout>
+    </AbsoluteLayout>
 </ContentPage>

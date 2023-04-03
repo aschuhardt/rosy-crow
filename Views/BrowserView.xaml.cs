@@ -338,13 +338,20 @@ public partial class BrowserView : ContentView
                         _recentHistory.Push(response.Uri);
 
                     _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
-                    _browsingDatabase.Visited.Add(new Visited
-                    {
-                        Url = response.Uri.ToString(), Timestamp = DateTime.Now, Title = _pageTitle ?? "(no title)"
-                    });
 
                     if (success is GemtextResponse gemtext)
+                    {
                         RenderedHtml = RenderGemtextAsHtml(gemtext);
+
+                        if (_settingsDatabase.SaveVisited)
+                        {
+                            _browsingDatabase.Visited.Add(new Visited
+                            {
+                                Url = response.Uri.ToString(), Timestamp = DateTime.Now,
+                                Title = _pageTitle ?? response.Uri.Segments.LastOrDefault() ?? response.Uri.Host
+                            });
+                        }
+                    }
                     else
                     {
                         // not gemtext; save as a file

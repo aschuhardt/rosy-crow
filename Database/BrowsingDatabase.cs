@@ -76,6 +76,13 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public event PropertyChangedEventHandler PropertyChanged;
 
+    public int ClearVisited()
+    {
+        var deleted = _visitedStore.DeleteAll();
+        Visited.Clear();
+        return deleted;
+    }
+
     private void Visited_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         switch (e.Action)
@@ -92,7 +99,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                Visited = new ObservableCollection<Visited>(_visitedStore.FindAll());
+                foreach (var visited in _visitedStore.Query().OrderByDescending(v => v.Timestamp).ToList())
+                    _visited.Add(visited);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -115,7 +123,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.FindAll());
+                foreach (var bookmark in _bookmarksStore.Query().OrderBy(b => b.Title).ToList())
+                    _bookmarks.Add(bookmark);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

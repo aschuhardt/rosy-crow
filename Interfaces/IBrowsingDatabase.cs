@@ -10,4 +10,5 @@ public interface IBrowsingDatabase : INotifyPropertyChanged
     ObservableCollection<Visited> Visited { get; set; }
 
     bool IsBookmark(Uri uri, out Bookmark found);
+    int ClearVisited();
 }

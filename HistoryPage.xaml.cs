@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
+using Yarrow.Extensions;
 using Yarrow.Interfaces;
 using Yarrow.Models;
 
@@ -23,6 +25,20 @@ public partial class HistoryPage : ContentPage
         _settingsDatabase = settingsDatabase;
 
         Visited = _browsingDatabase.Visited;
+        ClearHistory = new Command(async () => await TryClearHistory());
+    }
+
+    private async Task TryClearHistory()
+    {
+        if (!Visited.Any())
+            return;
+
+        if (await DisplayAlert("Clear History", "Are you sure you want to clear your stored history?", "Yes", "No"))
+        {
+            var deleted = _browsingDatabase.ClearVisited();
+            if (deleted > 0)
+                this.ShowToast($"{deleted} visited pages deleted", ToastDuration.Short);
+        }
     }
 
     public ObservableCollection<Visited> Visited
@@ -38,7 +54,7 @@ public partial class HistoryPage : ContentPage
 
     public bool StoreVisited
     {
-        get => _settingsDatabase.SaveVisited;
+        get => _settingsDatabase?.SaveVisited ?? default;
         set
         {
             if (value == _settingsDatabase.SaveVisited)

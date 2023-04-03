@@ -7,24 +7,32 @@
              x:Class="Yarrow.HistoryPage"
              x:DataType="yarrow:HistoryPage"
              Title="History">
+    <NavigationPage.TitleView>
+        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+            <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
+                   Grid.Column="0" />
+            <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0"  Command="{Binding ClearHistory}"
+                         Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
+        </Grid>
+    </NavigationPage.TitleView>
     <ScrollView>
         <VerticalStackLayout>
-            <Grid ColumnDefinitions="Auto,Auto,*">
-                <Label Text="Save page history" Grid.Column="0" />
+            <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,32">
+                <Label VerticalTextAlignment="Center" Text="Save page history:" FontSize="16" Grid.Column="0" />
                 <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
-                <ImageButton Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" Grid.Column="2" />
             </Grid>
             <CollectionView ItemsSource="{Binding Visited}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Visited">
-                        <VerticalStackLayout Padding="4,0,0,2">
-                            <HorizontalStackLayout>
-                                <Label FontSize="18" Text="{Binding Title}" />
-                                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Padding="4,0,0,0"
+                        <VerticalStackLayout Padding="8,0">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label FontSize="18" Text="{Binding Title}" Grid.Column="0" />
+                                <Label HorizontalOptions="End" HorizontalTextAlignment="End"
                                        VerticalTextAlignment="End" TextColor="{StaticResource Gray300}"
-                                       Text="{Binding Timestamp, StringFormat='{0:S}'}" />
-                            </HorizontalStackLayout>
-                            <Label Text="{Binding Url}" />
+                                       Text="{Binding Timestamp, StringFormat='{0:S}'}" Grid.Column="1" />
+                            </Grid>
+                            <Label FontSize="12" Text="{Binding Url}" />
+                            <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}" Margin="32,12"></Rectangle>
                         </VerticalStackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

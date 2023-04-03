@@ -298,7 +298,10 @@ public partial class MainPage : ContentPage
         else
         {
             _browsingDatabase.Bookmarks.Add(new Bookmark
-                { Title = Browser.PageTitle, Url = Browser.Location.ToString() });
+            {
+                Title = Browser.PageTitle ?? Browser.Location.Segments.LastOrDefault() ?? Browser.Location.Host,
+                Url = Browser.Location.ToString()
+            });
 
             OnPropertyChanged(nameof(Location)); // force buttons to update
 

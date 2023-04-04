@@ -45,13 +45,13 @@ jobs:
           dotnet workload install maui --ignore-failed-sources
 
       - name: Restore Dependencies
-        run: dotnet restore src/RosyCrow/RosyCrow.csproj
+        run: dotnet restore RosyCrow.csproj
 
       - name: Build MAUI Android
-        run: dotnet build src/RosyCrow/RosyCrow.csproj -c Release -f net7.0-android --no-restore
+        run: dotnet build RosyCrow.csproj -c Release -f net7.0-android --no-restore
 
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v2.3.1
         with:
           name: android-ci-build
-          path: src/RosyCrow/bin/Release/net6.0-android/*Signed.a*
+          path: RosyCrow/bin/Release/net7.0-android/*Signed.a*

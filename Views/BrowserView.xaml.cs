@@ -26,6 +26,7 @@ public partial class BrowserView : ContentView
     private string _input;
     private bool _isPageLoaded;
     private bool _isRefreshing;
+    private bool _isLoading;
     private Uri _location;
     private string _pageTitle;
 
@@ -293,13 +294,24 @@ public partial class BrowserView : ContentView
 
     public async Task LoadPage()
     {
-        if (Location == null || string.IsNullOrEmpty(_htmlTemplate))
+        if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
+
+        if (Location == null)
+        {
+            await LoadDefaultPage();
+            IsRefreshing = false;
+            _isLoading = false;
+            return;
+        }
 
         var finished = false;
         var remainingAttempts = 5;
 
-        IsRefreshing = true;
+        _isLoading = true;
+
+        if (!IsRefreshing)
+            IsRefreshing = true;
         CanPrint = false;
 
         do
@@ -315,6 +327,7 @@ public partial class BrowserView : ContentView
                 case InputRequiredResponse inputRequired:
                 {
                     Input = await Application.Current.MainPage.DisplayPromptAsync("Input Required", inputRequired.Message);
+                    if (string.IsNullOrEmpty(Input))
                         finished = true; // if no user-input was provided, then we cannot continue
                     break;
                 }
@@ -350,6 +363,9 @@ public partial class BrowserView : ContentView
                                 Title = _pageTitle ?? response.Uri.Segments.LastOrDefault() ?? response.Uri.Host
                             });
                         }
+
+                        // only allow printing if we just loaded a gemtext document
+                        CanPrint = _printService != null;
                     }
                     else
                     {
@@ -373,7 +389,7 @@ public partial class BrowserView : ContentView
         } while (!finished);
 
         IsRefreshing = false;
-        CanPrint = _printService != null;
+        _isLoading = false;
 
         Input = null;
     }

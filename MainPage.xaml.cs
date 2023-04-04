@@ -327,7 +327,7 @@ public partial class MainPage : ContentPage
         _menuHideAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, GetExpandedMenuHeight(), 0);
     }
 
-    private async void MainPage_OnLoaded(object sender, EventArgs e)
+    private void MainPage_OnLoaded(object sender, EventArgs e)
     {
         AddMenuAnimations();
         Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();

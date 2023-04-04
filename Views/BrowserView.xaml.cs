@@ -29,6 +29,7 @@ public partial class BrowserView : ContentView
     private bool _isLoading;
     private Uri _location;
     private string _pageTitle;
+    private ContentPage _parentPage;
 
     private IPrintService _printService;
     private ICommand _refresh;
@@ -326,16 +327,19 @@ public partial class BrowserView : ContentView
             {
                 case InputRequiredResponse inputRequired:
                 {
-                    Input = await Application.Current.MainPage.DisplayPromptAsync("Input Required", inputRequired.Message);
+                    Input = await _parentPage.DisplayPromptAsync("Input Required", inputRequired.Message);
                     if (string.IsNullOrEmpty(Input))
+                    {
+                        _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
                         finished = true; // if no user-input was provided, then we cannot continue
+                    }
                     break;
                 }
                 case ErrorResponse error:
                 {
                     if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
                     {
-                        await Application.Current.MainPage.DisplayAlert("Error", error.Message, "OK");
+                        await _parentPage.DisplayAlert("Error", error.Message, "OK");
                         finished = true;
                     }
                     else
@@ -433,6 +437,8 @@ public partial class BrowserView : ContentView
     private async void BrowserView_OnLoaded(object sender, EventArgs e)
     {
         await LoadPageTemplates();
+
+        _parentPage = this.FindParentPage();
 
         if (Location == null)
             await LoadDefaultPage();

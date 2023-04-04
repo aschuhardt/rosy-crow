@@ -314,8 +314,7 @@ public partial class BrowserView : ContentView
             {
                 case InputRequiredResponse inputRequired:
                 {
-                    Input = await ((ContentPage)Parent).DisplayPromptAsync("Input Required", inputRequired.Message);
-                    if (string.IsNullOrEmpty(Input))
+                    Input = await Application.Current.MainPage.DisplayPromptAsync("Input Required", inputRequired.Message);
                         finished = true; // if no user-input was provided, then we cannot continue
                     break;
                 }
@@ -323,7 +322,7 @@ public partial class BrowserView : ContentView
                 {
                     if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
                     {
-                        await ((ContentPage)Parent).DisplayAlert("Error", error.Message, "OK");
+                        await Application.Current.MainPage.DisplayAlert("Error", error.Message, "OK");
                         finished = true;
                     }
                     else

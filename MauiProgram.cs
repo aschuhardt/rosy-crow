@@ -29,7 +29,7 @@ public static class MauiProgram
             .AddSingleton<ISettingsDatabase, SettingsDatabase>()
             .AddSingleton<IBrowsingDatabase, BrowsingDatabase>()
             .AddTransient<IOpalClient, OpalClient>()
-            .AddTransient<MainPage>()
+            .AddSingleton<MainPage>() // registered as a singleton so that menu pages can obtain a reference to the root page
             .AddTransient<BookmarksPage>()
             .AddTransient<IdentityPage>()
             .AddTransient<HistoryPage>();

@@ -26,12 +26,19 @@
                     <DataTemplate x:DataType="models:Visited">
                         <VerticalStackLayout Padding="8,0">
                             <Grid ColumnDefinitions="*,Auto">
-                                <Label FontSize="18" Text="{Binding Title}" Grid.Column="0" />
-                                <Label HorizontalOptions="End" HorizontalTextAlignment="End"
+                                <Label FontSize="18" Text="{Binding Title}" Grid.Column="0" LineBreakMode="TailTruncation" />
+                                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Margin="4,0,0,0"
                                        VerticalTextAlignment="End" TextColor="{StaticResource Gray300}"
                                        Text="{Binding Timestamp, StringFormat='{0:S}'}" Grid.Column="1" />
                             </Grid>
-                            <Label FontSize="12" Text="{Binding Url}" />
+                            <Grid ColumnDefinitions="*,Auto">
+                                <Label FontSize="12" Text="{Binding Url}" Grid.Column="0" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
+                                <Button
+                                    Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
+                                    Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type rosycrow:HistoryPage}}}"
+                                    CommandParameter="{Binding Url}"
+                                    ImageSource="{AppThemeBinding Light=arrow_right_dark.png, Dark=arrow_right_light.png}" />
+                            </Grid>
                             <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}" Margin="32,12"></Rectangle>
                         </VerticalStackLayout>
                     </DataTemplate>

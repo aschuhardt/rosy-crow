@@ -96,6 +96,8 @@
 		<MauiImage Include="Resources\Images\History\history_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Delete\delete_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Delete\delete_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Arrows\arrow_right_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Arrows\arrow_right_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>

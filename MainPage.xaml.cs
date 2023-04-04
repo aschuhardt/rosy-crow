@@ -32,6 +32,7 @@ public partial class MainPage : ContentPage
     private ICommand _setHomeUrl;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
+    private bool _loadPageOnAppearing;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
     {
@@ -67,6 +68,17 @@ public partial class MainPage : ContentPage
             };
 #endif
         });
+    }
+
+    public bool LoadPageOnAppearing
+    {
+        get => _loadPageOnAppearing;
+        set
+        {
+            if (value == _loadPageOnAppearing) return;
+            _loadPageOnAppearing = value;
+            OnPropertyChanged();
+        }
     }
 
     public ICommand OpenSettings
@@ -331,5 +343,14 @@ public partial class MainPage : ContentPage
     {
         AddMenuAnimations();
         Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+    }
+
+    private async void MainPage_OnAppearing(object sender, EventArgs e)
+    {
+        if (LoadPageOnAppearing)
+        {
+            LoadPageOnAppearing = false;
+            await Browser.LoadPage();
+        }
     }
 }

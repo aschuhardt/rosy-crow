@@ -9,6 +9,7 @@
              x:DataType="rosycrow:MainPage"
              x:Class="RosyCrow.MainPage"
              Loaded="MainPage_OnLoaded"
+             Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False">
     <ContentPage.Resources>
         <converters:BookmarkButtonImageConverter x:Key="BookmarkButtonImageConverter" />
@@ -18,6 +19,7 @@
     <AbsoluteLayout>
         <views:BrowserView
             x:Name="Browser"
+            x:FieldModifier="public"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
             HorizontalOptions="Fill"

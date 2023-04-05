@@ -30,17 +30,31 @@
 
 		<IconLightColor>#c0d1de</IconLightColor>
 		<IconDarkColor>#0b1321</IconDarkColor>
+		<AndroidSigningKeyStore>rosy-crow.keystore</AndroidSigningKeyStore>
+	</PropertyGroup>
+
+	<!-- <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-android33.0|AnyCPU'"> -->
+	<!--   <AndroidKeyStore>True</AndroidKeyStore> -->
+	<!--   <AndroidSigningStorePass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningStorePass> -->
+	<!--   <AndroidSigningKeyAlias>signing-key</AndroidSigningKeyAlias> -->
+	<!--   <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass> -->
+	<!-- </PropertyGroup> -->
+
+	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net7.0-android33.0|AnyCPU'">
+	  <AndroidKeyStore>True</AndroidKeyStore>
+	  <AndroidSigningStorePass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningStorePass>
+	  <AndroidSigningKeyAlias>signing-key</AndroidSigningKeyAlias>
+	  <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass>
 	</PropertyGroup>
 	<ItemGroup>
 		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.75" />
 
 		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" BaseSize="512,512" Color="#191919" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.svg" BaseSize="168,208" />
 
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />
@@ -56,6 +70,7 @@
 	<ItemGroup>
 		<None Remove="resources\raw\default.html" />
 		<None Remove="Resources\Raw\template.html" />
+		<None Remove="rosy-crow.keystore" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -101,19 +116,19 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Compile Update="BookmarksPage.xaml.cs">
+	  <Compile Update="Views\BookmarksPage.xaml.cs">
 	    <DependentUpon>BookmarksPage.xaml</DependentUpon>
 	  </Compile>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="HistoryPage.xaml">
+	  <MauiXaml Update="Views\HistoryPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="IdentityPage.xaml">
+	  <MauiXaml Update="Views\IdentityPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="SettingsPage.xaml">
+	  <MauiXaml Update="Views\SettingsPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\BrowserView.xaml">

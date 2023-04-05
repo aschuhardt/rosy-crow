@@ -28,11 +28,11 @@ public static class MauiProgram
             .AddSingleton<ILiteDatabase>(_ => new LiteDatabase(Path.Combine(FileSystem.AppDataDirectory, "app.db")))
             .AddSingleton<ISettingsDatabase, SettingsDatabase>()
             .AddSingleton<IBrowsingDatabase, BrowsingDatabase>()
-            .AddTransient<IOpalClient, OpalClient>()
-            .AddSingleton<MainPage>() // registered as a singleton so that menu pages can obtain a reference to the root page
-            .AddTransient<BookmarksPage>()
-            .AddTransient<IdentityPage>()
-            .AddTransient<HistoryPage>();
+            .AddSingleton<MainPage>()
+            .AddSingleton<BookmarksPage>()
+            .AddSingleton<IdentityPage>()
+            .AddSingleton<HistoryPage>()
+            .AddTransient<IOpalClient, OpalClient>();
 
 #if DEBUG
         builder.Logging.AddDebug();

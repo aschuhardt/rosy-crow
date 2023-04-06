@@ -49,6 +49,8 @@ jobs:
 
       - name: Build MAUI Android
         run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore
+        env:
+          ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
       
       - name: List Directory
         run: ls -r

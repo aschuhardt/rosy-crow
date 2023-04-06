@@ -51,7 +51,7 @@ jobs:
         run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore
       
       - name: List Directory
-        run: ls --recursive
+        run: ls -r
 
 #       - name: Upload Android Artifact
 #         uses: actions/upload-artifact@v2.3.1

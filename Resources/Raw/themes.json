@@ -1,0 +1,26 @@
+﻿[
+  {
+    "Name": "Dark",
+    "File": "sakura-dark.css"
+  },
+  {
+    "Name": "Dark Solarized",
+    "File": "sakura-dark-solarized.css"
+  },
+  {
+    "Name": "Earthly",
+    "File": "sakura-earthly.css"
+  },
+  {
+    "Name": "Ink",
+    "File": "sakura-ink.css"
+  },
+  {
+    "Name": "Pink",
+    "File": "sakura-pink.css"
+  },
+  {
+    "Name": "Vader",
+    "File": "sakura-vader.css"
+  }
+]

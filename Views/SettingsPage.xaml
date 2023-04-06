@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="RosyCrow.SettingsPage"
-             Title="Settings">
+             xmlns:views="clr-namespace:RosyCrow.Views"
+             x:Class="RosyCrow.Views.SettingsPage"
+             x:DataType="views:SettingsPage"
+             Title="Settings"
+             Loaded="SettingsPage_OnLoaded">
     <VerticalStackLayout>
-        <Label 
-            Text="Welcome to .NET MAUI!"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Theme" Grid.Column="0" />
+            <Picker
+                ItemsSource="{Binding Choices}"
+                ItemDisplayBinding="{Binding Name}"
+                SelectedItem="{Binding SelectedTheme}"/>
+        </Grid>
     </VerticalStackLayout>
 </ContentPage>

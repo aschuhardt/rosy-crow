@@ -49,10 +49,6 @@
 	  <AndroidLinkTool>r8</AndroidLinkTool>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-android33.0|AnyCPU'">
-	  <TrimMode>link</TrimMode>
-	  <AndroidLinkTool>r8</AndroidLinkTool>
-	</PropertyGroup>
 	<ItemGroup>
 		<!-- App Icon -->
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" ForegroundScale="0.75" />

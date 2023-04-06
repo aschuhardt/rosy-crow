@@ -17,6 +17,7 @@ namespace RosyCrow.Views;
 
 public partial class BrowserView : ContentView
 {
+    private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly IOpalClient _geminiClient;
     private readonly Stack<Uri> _recentHistory;
@@ -24,13 +25,12 @@ public partial class BrowserView : ContentView
     private bool _canPrint;
     private string _htmlTemplate;
     private string _input;
+    private bool _isLoading;
     private bool _isPageLoaded;
     private bool _isRefreshing;
-    private bool _isLoading;
     private Uri _location;
     private string _pageTitle;
     private ContentPage _parentPage;
-
     private IPrintService _printService;
     private ICommand _refresh;
     private string _renderedHtml;
@@ -298,9 +298,9 @@ public partial class BrowserView : ContentView
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
 
-        if (Location == null)
+        if (Location == null || Location.Scheme == Constants.InternalScheme)
         {
-            await LoadDefaultPage();
+            await LoadInternalPage(Location?.Host);
             IsRefreshing = false;
             _isLoading = false;
             return;
@@ -313,6 +313,7 @@ public partial class BrowserView : ContentView
 
         if (!IsRefreshing)
             IsRefreshing = true;
+
         CanPrint = false;
 
         do
@@ -333,6 +334,7 @@ public partial class BrowserView : ContentView
                         _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
                         finished = true; // if no user-input was provided, then we cannot continue
                     }
+
                     break;
                 }
                 case ErrorResponse error:
@@ -398,7 +400,7 @@ public partial class BrowserView : ContentView
         Input = null;
     }
 
-    public async Task LoadDefaultPage()
+    private async Task LoadInternalPage(string name = "default")
     {
         var document = new HtmlDocument();
         document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
@@ -407,11 +409,13 @@ public partial class BrowserView : ContentView
 
         var body = document.DocumentNode.ChildNodes.FindFirst("main");
 
-        await using (var file = await FileSystem.OpenAppPackageFileAsync("default.html"))
+        await using (var file = await FileSystem.OpenAppPackageFileAsync($"{name}.html"))
         using (var reader = new StreamReader(file))
         {
             body.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
         }
+
+        RenderUrl = $"{Constants.InternalScheme}://{name}";
 
         RenderedHtml = document.DocumentNode.OuterHtml;
     }
@@ -429,6 +433,9 @@ public partial class BrowserView : ContentView
 
     private async Task LoadPageTemplates()
     {
+        if (!string.IsNullOrEmpty(_htmlTemplate))
+            return;
+
         await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
         using var reader = new StreamReader(template);
         _htmlTemplate = await reader.ReadToEndAsync();
@@ -441,7 +448,7 @@ public partial class BrowserView : ContentView
         _parentPage = this.FindParentPage();
 
         if (Location == null)
-            await LoadDefaultPage();
+            await LoadInternalPage();
         else
             await LoadPage();
     }

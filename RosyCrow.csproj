@@ -71,7 +71,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Resources\Raw\about.html" />
 		<None Remove="resources\raw\default.html" />
+		<None Remove="Resources\Raw\preview.html" />
 		<None Remove="Resources\Raw\template.html" />
 		<None Remove="Resources\Raw\themes.json" />
 		<None Remove="rosy-crow.keystore" />

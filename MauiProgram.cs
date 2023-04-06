@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Opal;
 using RosyCrow.Database;
 using RosyCrow.Interfaces;
+using RosyCrow.Views;
 
 namespace RosyCrow;
 
@@ -31,6 +32,7 @@ public static class MauiProgram
             .AddSingleton<MainPage>()
             .AddSingleton<BookmarksPage>()
             .AddSingleton<IdentityPage>()
+            .AddSingleton<SettingsPage>()
             .AddSingleton<HistoryPage>()
             .AddTransient<IOpalClient, OpalClient>();
 

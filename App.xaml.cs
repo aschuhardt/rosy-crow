@@ -1,4 +1,6 @@
-﻿namespace RosyCrow;
+﻿using RosyCrow.Views;
+
+namespace RosyCrow;
 
 public partial class App : Application
 {

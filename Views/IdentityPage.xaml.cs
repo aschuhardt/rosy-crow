@@ -1,4 +1,4 @@
-namespace RosyCrow;
+namespace RosyCrow.Views;
 
 public partial class IdentityPage : ContentPage
 {

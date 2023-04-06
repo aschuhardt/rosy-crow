@@ -3,7 +3,7 @@ using RosyCrow.Models;
 
 // ReSharper disable AsyncVoidLambda
 
-namespace RosyCrow;
+namespace RosyCrow.Views;
 
 public partial class BookmarksPage : ContentPage
 {

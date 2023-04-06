@@ -4,8 +4,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:rosycrow="clr-namespace:RosyCrow"
              xmlns:models="clr-namespace:RosyCrow.Models"
-             x:Class="RosyCrow.HistoryPage"
-             x:DataType="rosycrow:HistoryPage"
+             xmlns:views="clr-namespace:RosyCrow.Views"
+             x:Class="RosyCrow.Views.HistoryPage"
+             x:DataType="views:HistoryPage"
              Title="History">
     <NavigationPage.TitleView>
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
@@ -35,7 +36,7 @@
                                 <Label FontSize="12" Text="{Binding Url}" Grid.Column="0" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
                                 <Button
                                     Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
-                                    Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type rosycrow:HistoryPage}}}"
+                                    Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:HistoryPage}}}"
                                     CommandParameter="{Binding Url}"
                                     ImageSource="{AppThemeBinding Light=arrow_right_dark.png, Dark=arrow_right_light.png}" />
                             </Grid>

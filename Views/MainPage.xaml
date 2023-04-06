@@ -6,8 +6,8 @@
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:converters="clr-namespace:RosyCrow.Converters"
              xmlns:views="clr-namespace:RosyCrow.Views"
-             x:DataType="rosycrow:MainPage"
-             x:Class="RosyCrow.MainPage"
+             x:DataType="views:MainPage"
+             x:Class="RosyCrow.Views.MainPage"
              Loaded="MainPage_OnLoaded"
              Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False">

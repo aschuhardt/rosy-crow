@@ -55,8 +55,8 @@ jobs:
       - name: List Directory
         run: ls -r
 
-#       - name: Upload Android Artifact
-#         uses: actions/upload-artifact@v2.3.1
-#         with:
-#           name: android-ci-build
-#           path: RosyCrow/bin/Release/net7.0-android33.0/*.a*
+      - name: Upload Android Artifact
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: android-ci-build
+          path: bin\Release\net7.0-android33.0\*Signed.a*

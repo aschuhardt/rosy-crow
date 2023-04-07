@@ -32,8 +32,8 @@
                 <Shadow Brush="{StaticResource Black}" Radius="4" />
             </VerticalStackLayout.Shadow>
             <VerticalStackLayout.GestureRecognizers>
-                <SwipeGestureRecognizer Direction="Down" Command="{Binding ExpandMenu}" />
-                <SwipeGestureRecognizer Direction="Up" Command="{Binding HideMenu}" />
+                <SwipeGestureRecognizer x:Name="SwipeDownRecognizer" Direction="Down" Command="{Binding ExpandMenu}" />
+                <SwipeGestureRecognizer x:Name="SwipeUpRecognizer" Direction="Up" Command="{Binding HideMenu}" />
             </VerticalStackLayout.GestureRecognizers>
             <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                 <ImageButton
@@ -49,12 +49,12 @@
                         Text="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
-                        ReturnType="Go" Keyboard="Url" FontSize="12" />
+                        ReturnType="Go" Keyboard="Url" FontSize="12" x:Name="UrlEntry" />
                 </Border>
-                <ImageButton Scale="0.75" Grid.Column="2"
+                <ImageButton Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                              Command="{Binding ToggleBookmarked}"
                              Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
-                <controls:BiModalButton Scale="0.75" Grid.Column="3"
+                <controls:BiModalButton Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                                         Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
                                         Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
             </Grid>

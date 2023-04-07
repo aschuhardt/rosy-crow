@@ -56,6 +56,16 @@ public partial class MainPage : ContentPage
         OpenIdentity = new Command(OpenMenuItem<IdentityPage>);
         OpenSettings = new Command(OpenMenuItem<SettingsPage>);
 
+        UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
+        UrlEntry.GestureRecognizers.Add(SwipeUpRecognizer);
+        HomeButton.GestureRecognizers.Add(SwipeDownRecognizer);
+        HomeButton.GestureRecognizers.Add(SwipeUpRecognizer);
+        BookmarkButton.GestureRecognizers.Add(SwipeDownRecognizer);
+        BookmarkButton.GestureRecognizers.Add(SwipeUpRecognizer);
+
+        foreach (var button in ExpandableMenu.Children.Cast<Button>())
+            button.GestureRecognizers.Add(SwipeUpRecognizer);
+
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware", (handler, _) =>
         {
 #if ANDROID

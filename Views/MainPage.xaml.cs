@@ -259,7 +259,7 @@ public partial class MainPage : ContentPage
         if (IsMenuExpanded)
             _menuShowAnimation.Commit(this, "ShowMenu");
         else
-            _menuHideAnimation.Commit(this, "HideAnimation");
+            _menuHideAnimation.Commit(this, "HideMenu", length: 150);
     }
 
     protected override bool OnBackButtonPressed()
@@ -277,7 +277,7 @@ public partial class MainPage : ContentPage
     private void OpenMenuItem<T>() where T : ContentPage
     {
         _isMenuExpanded = false;
-        _menuHideAnimation.Commit(this, "HideMenu", finished: async (_, _) => await Navigation.PushPageAsync<T>());
+        _menuHideAnimation.Commit(this, "HideMenu", length: 150, finished: async (_, _) => await Navigation.PushPageAsync<T>());
     }
 
     private void TryLoadHomeUrl()

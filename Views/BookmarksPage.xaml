@@ -30,7 +30,7 @@
                         <Button
                             Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:BookmarksPage}}}"
-                            CommandParameter="{Binding Id}" Margin="8,0,12,0"
+                            CommandParameter="{Binding Id}"
                             ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
                     </Grid>
                     <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"

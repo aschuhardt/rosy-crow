@@ -18,6 +18,8 @@ public partial class BookmarksPage : ContentPage
 
     public BookmarksPage(MainPage mainPage, IBrowsingDatabase browsingDatabase)
     {
+        InitializeComponent();
+
         BindingContext = this;
 
         _mainPage = mainPage;
@@ -30,8 +32,6 @@ public partial class BookmarksPage : ContentPage
             await Navigation.PopAsync(true);
         });
         Delete = new Command(async param => await TryDeleteBookmark((int)param));
-
-        InitializeComponent();
     }
 
     public ObservableCollection<Bookmark> Bookmarks

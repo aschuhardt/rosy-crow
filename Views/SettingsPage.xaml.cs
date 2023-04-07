@@ -16,12 +16,12 @@ public partial class SettingsPage : ContentPage
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
-        InitializeComponent();
+        BindingContext = this;
 
         _settingsDatabase = settingsDatabase;
         _mainPage = mainPage;
 
-        BindingContext = this;
+        InitializeComponent();
     }
 
     public IList<ThemeChoice> Choices

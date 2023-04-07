@@ -7,6 +7,9 @@
              Title="Settings"
              Loaded="SettingsPage_OnLoaded"
              Disappearing="SettingsPage_OnDisappearing">
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
+    </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="Theme" Grid.Column="0" VerticalOptions="Center" />

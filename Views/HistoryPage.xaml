@@ -2,7 +2,6 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:rosycrow="clr-namespace:RosyCrow"
              xmlns:models="clr-namespace:RosyCrow.Models"
              xmlns:views="clr-namespace:RosyCrow.Views"
              x:Class="RosyCrow.Views.HistoryPage"
@@ -12,12 +11,12 @@
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
             <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
                    Grid.Column="0" />
-            <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0"  Command="{Binding ClearHistory}"
+            <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0" Command="{Binding ClearHistory}"
                          Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
         </Grid>
     </NavigationPage.TitleView>
     <ScrollView>
-        <VerticalStackLayout>
+        <VerticalStackLayout Padding="8,0">
             <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,32">
                 <Label VerticalTextAlignment="Center" Text="Save page history:" FontSize="16" Grid.Column="0" />
                 <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
@@ -25,22 +24,20 @@
             <CollectionView ItemsSource="{Binding Visited}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Visited">
-                        <VerticalStackLayout Padding="8,0">
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label FontSize="18" Text="{Binding Title}" Grid.Column="0" LineBreakMode="TailTruncation" />
-                                <Label HorizontalOptions="End" HorizontalTextAlignment="End" Margin="4,0,0,0"
-                                       VerticalTextAlignment="End" TextColor="{StaticResource Gray300}"
-                                       Text="{Binding Timestamp, StringFormat='{0:S}'}" Grid.Column="1" />
-                            </Grid>
-                            <Grid ColumnDefinitions="*,Auto">
-                                <Label FontSize="12" Text="{Binding Url}" Grid.Column="0" VerticalOptions="Center" LineBreakMode="MiddleTruncation" />
-                                <Button
-                                    Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
+                        <VerticalStackLayout Margin="8,0">
+                            <VerticalStackLayout.GestureRecognizers>
+                                <TapGestureRecognizer
                                     Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:HistoryPage}}}"
-                                    CommandParameter="{Binding Url}"
-                                    ImageSource="{AppThemeBinding Light=arrow_right_dark.png, Dark=arrow_right_light.png}" />
-                            </Grid>
-                            <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}" Margin="32,12"></Rectangle>
+                                    CommandParameter="{Binding Url}" />
+                            </VerticalStackLayout.GestureRecognizers>
+                            <Label TextColor="{StaticResource Gray300}"
+                                   Text="{Binding Timestamp, StringFormat='{0:S}'}" InputTransparent="true" />
+                            <Label FontSize="18" Text="{Binding Title}" LineBreakMode="TailTruncation"
+                                   InputTransparent="true" />
+                            <Label FontSize="12" Text="{Binding Url}" LineBreakMode="MiddleTruncation"
+                                   InputTransparent="true" />
+                            <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
+                                       Margin="32,12" />
                         </VerticalStackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>

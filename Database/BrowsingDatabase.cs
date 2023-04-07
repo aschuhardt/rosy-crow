@@ -24,7 +24,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         _visitedStore = database.GetCollection<Visited>();
 
-        Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.FindAll());
+        Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList());
         Visited = new ObservableCollection<Visited>(_visitedStore.FindAll());
     }
 
@@ -123,7 +123,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                foreach (var bookmark in _bookmarksStore.Query().OrderBy(b => b.Title).ToList())
+                foreach (var bookmark in _bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList())
                     _bookmarks.Add(bookmark);
                 break;
             default:

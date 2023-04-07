@@ -371,7 +371,7 @@
     </Style>
 
     <Style TargetType="Page" ApplyToDerivedTypes="True">
-        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Padding" Value="0,8"/>
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Gray900}}" />
     </Style>
 

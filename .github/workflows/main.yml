@@ -55,7 +55,7 @@ jobs:
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v2.3.1
         with:
-          name: android-ci-build
+          name: android-build-${{ vars.GITHUB_RUN_NUMBER }}
           path: bin\Release\net7.0-android33.0\*Signed.a*
 
       - name: Upload Android Release to Play Store
@@ -64,6 +64,6 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: app.rosy-crow
           releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-          track: internal
+          track: alpha
           mappingFile: bin\Release\net7.0-android33.0\mapping.txt
           releaseName: ci-internal-${{ vars.GITHUB_RUN_NUMBER }}

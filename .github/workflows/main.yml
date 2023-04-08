@@ -51,12 +51,19 @@ jobs:
         run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
-      
-      - name: List Directory
-        run: ls -r
 
       - name: Upload Android Artifact
         uses: actions/upload-artifact@v2.3.1
         with:
           name: android-ci-build
           path: bin\Release\net7.0-android33.0\*Signed.a*
+
+      - name: Upload Android Release to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: app.rosy-crow
+          releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
+          track: internal
+          mappingFile: bin\Release\net7.0-android33.0\mapping.txt
+          releaseName: ci-internal-${{ GITHUB_RUN_NUMBER }}

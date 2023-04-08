@@ -1,4 +1,4 @@
-name: CI Build
+name: CI Build and Deploy
 
 on:
   push:
@@ -66,4 +66,4 @@ jobs:
           releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
           track: internal
           mappingFile: bin\Release\net7.0-android33.0\mapping.txt
-          releaseName: ci-internal-${{ GITHUB_RUN_NUMBER }}
+          releaseName: ci-internal-${{ vars.GITHUB_RUN_NUMBER }}

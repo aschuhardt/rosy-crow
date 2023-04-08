@@ -1,6 +1,9 @@
 ﻿using System.Windows.Input;
-using Google.Android.Material.Ripple;
 using Microsoft.Maui.Handlers;
+
+#if ANDROID
+using View = Android.Views.View;
+#endif
 
 namespace RosyCrow.Controls;
 
@@ -27,8 +30,14 @@ public class BiModalImageButton : ImageButton
         });
     }
 
+    public ICommand LongCommand
+    {
+        get => (ICommand)GetValue(LongCommandProperty);
+        set => SetValue(LongCommandProperty, value);
+    }
+
 #if ANDROID
-    private void PlatformView_LongClick(object sender, Android.Views.View.LongClickEventArgs e)
+    private void PlatformView_LongClick(object sender, View.LongClickEventArgs e)
     {
         if (!LongCommand?.CanExecute(null) ?? false)
             return;
@@ -39,10 +48,4 @@ public class BiModalImageButton : ImageButton
         LongCommand?.Execute(null);
     }
 #endif
-
-    public ICommand LongCommand
-    {
-        get => (ICommand)GetValue(LongCommandProperty);
-        set => SetValue(LongCommandProperty, value);
-    }
 }

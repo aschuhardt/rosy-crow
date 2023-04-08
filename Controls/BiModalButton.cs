@@ -1,4 +1,6 @@
 ﻿using System.Windows.Input;
+using Google.Android.Material.Ripple;
+using Microsoft.Maui.Handlers;
 
 namespace RosyCrow.Controls;
 
@@ -7,60 +9,37 @@ namespace RosyCrow.Controls;
 /// </summary>
 public class BiModalButton : ImageButton
 {
-    public static BindableProperty ShortCommandProperty =
-        BindableProperty.Create(nameof(ShortCommand), typeof(ICommand), typeof(BiModalButton));
-
     public static BindableProperty LongCommandProperty =
         BindableProperty.Create(nameof(LongCommand), typeof(ICommand), typeof(BiModalButton));
 
-    public static BindableProperty LongPressDurationProperty =
-        BindableProperty.Create(nameof(LongPressDuration), typeof(int), typeof(BiModalButton), 2000);
-
-    private bool _longPressTimedOut;
-    private Timer _timer;
-
     public BiModalButton()
     {
-        LongPressDuration = 1500;
-        Pressed += OnPressed;
-        Released += OnReleased;
+        ImageButtonHandler.Mapper.AppendToMapping("BiModalButtonHandler", (handler, button) =>
+        {
+            if (button is not BiModalButton)
+                return;
+
+#if ANDROID
+            var view = handler.PlatformView;
+            view.LongClickable = true;
+            view.LongClick += PlatformView_LongClick;
+#endif
+        });
     }
 
-    public ICommand ShortCommand
+#if ANDROID
+    private void PlatformView_LongClick(object sender, Android.Views.View.LongClickEventArgs e)
     {
-        get => (ICommand)GetValue(ShortCommandProperty);
-        set => SetValue(ShortCommandProperty, value);
+        if (!LongCommand?.CanExecute(null) ?? false)
+            return;
+
+        LongCommand?.Execute(null);
     }
+#endif
 
     public ICommand LongCommand
     {
         get => (ICommand)GetValue(LongCommandProperty);
         set => SetValue(LongCommandProperty, value);
-    }
-
-    public int LongPressDuration
-    {
-        get => (int)GetValue(LongPressDurationProperty);
-        set => SetValue(LongPressDurationProperty, value);
-    }
-
-    private void OnReleased(object sender, EventArgs e)
-    {
-        _timer?.Dispose();
-        if (!_longPressTimedOut)
-            ShortCommand?.Execute(CommandParameter);
-    }
-
-    private void OnPressed(object sender, EventArgs e)
-    {
-        _longPressTimedOut = false;
-        _timer = new Timer(OnLongPressTimeout, null, LongPressDuration, Timeout.Infinite);
-    }
-
-    public void OnLongPressTimeout(object state)
-    {
-        _timer?.Dispose();
-        _longPressTimedOut = true;
-        LongCommand?.Execute(CommandParameter);
     }
 }

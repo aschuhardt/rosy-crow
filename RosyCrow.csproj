@@ -19,7 +19,7 @@
 
 		<!-- Versions -->
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>3</ApplicationVersion>
+		<ApplicationVersion>4</ApplicationVersion>
 
 		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">11.0</SupportedOSPlatformVersion> -->
 		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">13.1</SupportedOSPlatformVersion> -->
@@ -74,6 +74,7 @@
 		<None Remove="Resources\Raw\about.html" />
 		<None Remove="resources\raw\default.html" />
 		<None Remove="Resources\Raw\preview.html" />
+		<None Remove="Resources\Raw\rosy-crow-plain.svg" />
 		<None Remove="Resources\Raw\template.html" />
 		<None Remove="Resources\Raw\themes.json" />
 		<None Remove="rosy-crow.keystore" />
@@ -129,6 +130,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Views\AboutPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Views\HistoryPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

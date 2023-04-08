@@ -22,6 +22,7 @@ public partial class MainPage : ContentPage
     private bool _isNavBarVisible;
     private ICommand _loadEnteredUrl;
     private ICommand _loadHomeUrl;
+    private bool _loadPageOnAppearing;
     private Animation _menuHideAnimation;
     private Animation _menuShowAnimation;
     private ICommand _openBookmarks;
@@ -32,7 +33,6 @@ public partial class MainPage : ContentPage
     private ICommand _setHomeUrl;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
-    private bool _loadPageOnAppearing;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
     {
@@ -64,7 +64,10 @@ public partial class MainPage : ContentPage
         BookmarkButton.GestureRecognizers.Add(SwipeUpRecognizer);
 
         foreach (var button in ExpandableMenu.Children.Cast<Button>())
+        {
             button.GestureRecognizers.Add(SwipeUpRecognizer);
+            button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
+        }
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware", (handler, _) =>
         {
@@ -287,7 +290,8 @@ public partial class MainPage : ContentPage
     private void OpenMenuItem<T>() where T : ContentPage
     {
         _isMenuExpanded = false;
-        _menuHideAnimation.Commit(this, "HideMenu", length: 150, finished: async (_, _) => await Navigation.PushPageAsync<T>());
+        _menuHideAnimation.Commit(this, "HideMenu", length: 150,
+            finished: async (_, _) => await Navigation.PushPageAsync<T>());
     }
 
     private void TryLoadHomeUrl()

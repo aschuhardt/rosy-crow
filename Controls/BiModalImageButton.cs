@@ -7,16 +7,16 @@ namespace RosyCrow.Controls;
 /// <summary>
 ///     An image button with two command states; one for a short press, and another for a long press
 /// </summary>
-public class BiModalButton : ImageButton
+public class BiModalImageButton : ImageButton
 {
     public static BindableProperty LongCommandProperty =
-        BindableProperty.Create(nameof(LongCommand), typeof(ICommand), typeof(BiModalButton));
+        BindableProperty.Create(nameof(LongCommand), typeof(ICommand), typeof(BiModalImageButton));
 
-    public BiModalButton()
+    public BiModalImageButton()
     {
         ImageButtonHandler.Mapper.AppendToMapping("BiModalButtonHandler", (handler, button) =>
         {
-            if (button is not BiModalButton)
+            if (button is not BiModalImageButton)
                 return;
 
 #if ANDROID

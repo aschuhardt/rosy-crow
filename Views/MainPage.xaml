@@ -54,7 +54,7 @@
                 <ImageButton Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                              Command="{Binding ToggleBookmarked}"
                              Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
-                <controls:BiModalButton Scale="0.75" Grid.Column="3" x:Name="HomeButton"
+                <controls:BiModalImageButton Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                                         Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
                                         Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
             </Grid>

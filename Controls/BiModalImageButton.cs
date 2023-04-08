@@ -33,6 +33,9 @@ public class BiModalImageButton : ImageButton
         if (!LongCommand?.CanExecute(null) ?? false)
             return;
 
+        e.Handled = true;
+        HapticFeedback.Default.Perform(HapticFeedbackType.LongPress);
+
         LongCommand?.Execute(null);
     }
 #endif

@@ -1,4 +1,6 @@
+using System.Windows.Input;
 using Newtonsoft.Json;
+using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 
@@ -13,12 +15,15 @@ public partial class SettingsPage : ContentPage
 
     private IList<ThemeChoice> _choices;
     private ThemeChoice _selectedTheme;
+    private ICommand _openAbout;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
         InitializeComponent();
 
         BindingContext = this;
+
+        OpenAbout = new Command(async () => await Navigation.PushPageAsync<AboutPage>());
 
         _settingsDatabase = settingsDatabase;
         _mainPage = mainPage;
@@ -44,6 +49,17 @@ public partial class SettingsPage : ContentPage
                 return;
             _selectedTheme = value;
             _settingsDatabase.Theme = value.File;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand OpenAbout
+    {
+        get => _openAbout;
+        set
+        {
+            if (Equals(value, _openAbout)) return;
+            _openAbout = value;
             OnPropertyChanged();
         }
     }

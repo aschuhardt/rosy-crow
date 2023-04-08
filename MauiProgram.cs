@@ -34,6 +34,7 @@ public static class MauiProgram
             .AddSingleton<IdentityPage>()
             .AddSingleton<SettingsPage>()
             .AddSingleton<HistoryPage>()
+            .AddSingleton<AboutPage>()
             .AddTransient<IOpalClient, OpalClient>();
 
 #if DEBUG

@@ -1,15 +1,19 @@
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web;
 using System.Windows.Input;
 using HtmlAgilityPack;
 using Microsoft.Maui.Handlers;
 using Opal;
+using Opal.Authentication.Certificate;
 using Opal.Document.Line;
 using Opal.Response;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
+using RosyCrow.Services.Identity;
+using Xamarin.KotlinX.Coroutines;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -22,6 +26,7 @@ public partial class BrowserView : ContentView
     private readonly IOpalClient _geminiClient;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly IIdentityService _identityService;
     private bool _canPrint;
     private string _htmlTemplate;
     private string _input;
@@ -39,11 +44,12 @@ public partial class BrowserView : ContentView
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
             MauiProgram.Services.GetRequiredService<ISettingsDatabase>(),
-            MauiProgram.Services.GetRequiredService<IBrowsingDatabase>())
+            MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
+            MauiProgram.Services.GetRequiredService<IIdentityService>())
     {
     }
 
-    public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
+    public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, IIdentityService identityService)
     {
         InitializeComponent();
 
@@ -52,17 +58,30 @@ public partial class BrowserView : ContentView
         _geminiClient = geminiClient;
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
+        _identityService = identityService;
         _recentHistory = new Stack<Uri>();
 
         Refresh = new Command(async () => await LoadPage());
 
+        _geminiClient.GetActiveCertificateCallback = GetActiveCertificateCallback;
+
 #if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
             (handler, _) => _printService = new AndroidPrintService(handler.PlatformView));
-
         RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
             (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
 #endif
+    }
+
+    private async Task<IClientCertificate> GetActiveCertificateCallback()
+    {
+        if (_identityService.ShouldReloadActiveCertificate)
+            return new ClientCertificate(await _identityService.LoadActiveCertificate());
+
+        if (_identityService.ActiveCertificate != null)
+            return new ClientCertificate(_identityService.ActiveCertificate);
+
+        return null;
     }
 
     public ICommand Refresh

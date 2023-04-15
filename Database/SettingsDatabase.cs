@@ -23,7 +23,11 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public int? ActiveIdentityId
     {
-        get => _activeIdentityId ?? GetIntValue();
+        get
+        {
+            _activeIdentityId ??= GetIntValue();
+            return _activeIdentityId;
+        }
         set
         {
             if (SetField(ref _activeIdentityId, value))
@@ -35,7 +39,11 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public string Theme
     {
-        get => _theme ?? GetStringValue("sakura-dark");
+        get
+        {
+            _theme ??= GetStringValue("sakura-dark");
+            return _theme;
+        }
         set
         {
             if (SetField(ref _theme, value))
@@ -45,7 +53,11 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public string HomeUrl
     {
-        get => _homeUrl ?? GetStringValue();
+        get
+        {
+            _homeUrl ??= GetStringValue();
+            return _homeUrl;
+        }
         set
         {
             if (SetField(ref _homeUrl, value))
@@ -55,7 +67,11 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public string LastVisitedUrl
     {
-        get => _lastVisitedUrl ?? GetStringValue();
+        get
+        {
+            _lastVisitedUrl ??= GetStringValue();
+            return _lastVisitedUrl;
+        }
         set
         {
             if (SetField(ref _lastVisitedUrl, value))
@@ -65,7 +81,11 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public bool SaveVisited
     {
-        get => _storeVisited ?? GetBoolValue() ?? default;
+        get
+        {
+            _storeVisited ??= GetBoolValue();
+            return _storeVisited.GetValueOrDefault();
+        }
         set
         {
             if (SetField(ref _storeVisited, value))

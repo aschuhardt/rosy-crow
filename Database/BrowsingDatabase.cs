@@ -14,13 +14,15 @@ internal class BrowsingDatabase : IBrowsingDatabase
     private readonly ILiteCollection<Bookmark> _bookmarksStore;
     private readonly ILiteCollection<Identity> _identityStore;
     private readonly ILiteCollection<Visited> _visitedStore;
+    private readonly ISettingsDatabase _settingsDatabase;
 
     private ObservableCollection<Bookmark> _bookmarks;
     private ObservableCollection<Identity> _identities;
     private ObservableCollection<Visited> _visited;
 
-    public BrowsingDatabase(ILiteDatabase database)
+    public BrowsingDatabase(ILiteDatabase database, ISettingsDatabase settingsDatabase)
     {
+        _settingsDatabase = settingsDatabase;
         _bookmarksStore = database.GetCollection<Bookmark>();
         _bookmarksStore.EnsureIndex(b => b.Url);
 
@@ -31,6 +33,10 @@ internal class BrowsingDatabase : IBrowsingDatabase
         Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList());
         Visited = new ObservableCollection<Visited>(_visitedStore.FindAll());
         Identities = new ObservableCollection<Identity>(_identityStore.Query().OrderBy(i => i.Name).ToList());
+
+        var activeIdentityId = _settingsDatabase.ActiveIdentityId ?? -1;
+        foreach (var identity in Identities)
+            identity.IsActive = identity.Id == activeIdentityId;
     }
 
     public ObservableCollection<Identity> Identities
@@ -45,6 +51,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 _identities.CollectionChanged -= Identities_CollectionChanged;
 
             _identities = value;
+            Identities.CollectionChanged += Identities_CollectionChanged;
             OnPropertyChanged();
         }
     }
@@ -120,8 +127,12 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                foreach (var visited in _identityStore.Query().OrderBy(i => i.Name).ToList())
-                    _identities.Add(visited);
+                var activeId = _settingsDatabase.ActiveIdentityId ?? -1;
+                foreach (var identity in _identityStore.Query().OrderBy(i => i.Name).ToList())
+                {
+                    identity.IsActive = identity.Id == activeId;
+                    _identities.Add(identity);
+                }
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

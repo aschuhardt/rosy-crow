@@ -44,7 +44,7 @@
         /// <param name="authRequestConfig"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<FingerprintDecryptionResult> DecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext, CancellationToken cancellationToken = default);
+        Task<FingerprintDecryptionResult> DecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext, byte[] iv, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Gets the available authentication type.

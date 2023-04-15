@@ -9,6 +9,7 @@
         }
 
         public byte[] Ciphertext { get; }
+        public byte[] Iv { get; set; }
         public FingerprintAuthenticationResult AuthenticationResult { get; }
     }
 }

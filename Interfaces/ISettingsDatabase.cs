@@ -6,4 +6,5 @@ public interface ISettingsDatabase
     string LastVisitedUrl { get; set; }
     bool SaveVisited { get; set; }
     string Theme { get; set; }
+    int? ActiveIdentityId { get; set; }
 }

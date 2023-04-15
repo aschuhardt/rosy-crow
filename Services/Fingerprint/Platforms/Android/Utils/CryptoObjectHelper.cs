@@ -2,6 +2,7 @@
 using Android.Security.Keystore;
 using Java.Security;
 using Javax.Crypto;
+using Javax.Crypto.Spec;
 
 namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
 {
@@ -44,24 +45,36 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
             _keystore.Load(null);
         }
 
-        public BiometricPrompt.CryptoObject BuildCryptoObject(CryptographicOperation operation)
+        public BiometricPrompt.CryptoObject BuildCryptoObject(CryptographicOperation operation, byte[] iv = null)
         {
             return operation switch
             {
-                CryptographicOperation.Decrypt => new BiometricPrompt.CryptoObject(CreateCipher(CipherMode.DecryptMode)),
+                CryptographicOperation.Decrypt => new BiometricPrompt.CryptoObject(CreateCipher(CipherMode.DecryptMode, iv)),
                 CryptographicOperation.Encrypt => new BiometricPrompt.CryptoObject(CreateCipher(CipherMode.EncryptMode)),
                 _ => throw new ArgumentOutOfRangeException(nameof(operation), operation, null)
             };
         }
 
-        private Cipher CreateCipher(CipherMode mode, int retries = 3)
+        public bool Delete()
+        {
+            if (!_keystore.IsKeyEntry(KeyName))
+                return false;
+
+            _keystore.DeleteEntry(KeyStoreName);
+            return true;
+        }
+
+        private Cipher CreateCipher(CipherMode mode, byte[] iv = null, int retries = 3)
         {
             var key = GetKey();
             var cipher = Cipher.GetInstance(Transfomration);
 
             try
             {
-                cipher.Init(mode, key);
+                if (mode == CipherMode.DecryptMode && iv != null)
+                    cipher.Init(mode, key, new IvParameterSpec(iv));
+                else
+                    cipher.Init(mode, key);
             }
             catch (KeyPermanentlyInvalidatedException)
             {
@@ -71,7 +84,7 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
                     // Microsoft Docs doesn't overwrite the cipher.
                     // Without the implementation of GetInstance its hard to say if it doesn't need to be overwritten.
                     // So this is a just in case
-                    cipher = CreateCipher(mode, --retries);
+                    cipher = CreateCipher(mode, iv, --retries);
                 }
                 else
                 {

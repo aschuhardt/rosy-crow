@@ -19,7 +19,7 @@
 
             return await NativeEncryptAsync(authRequestConfig, plaintext);
         }
-        public async Task<FingerprintDecryptionResult> DecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext, CancellationToken cancellationToken = default)
+        public async Task<FingerprintDecryptionResult> DecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext, byte[] iv, CancellationToken cancellationToken = default)
         {
             if (authRequestConfig is null)
                 throw new ArgumentNullException(nameof(authRequestConfig));
@@ -34,7 +34,7 @@
                 return new FingerprintDecryptionResult(null, new FingerprintAuthenticationResult { Status = status, ErrorMessage = availability.ToString() });
             }
 
-            return await NativeDecryptAsync(authRequestConfig, ciphertext);
+            return await NativeDecryptAsync(authRequestConfig, ciphertext, iv);
         }
 
         public async Task<bool> IsAvailableAsync(bool allowAlternativeAuthentication = false)
@@ -44,7 +44,7 @@
 
         public abstract Task<FingerprintEncryptionResult> NativeEncryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] plaintext);
 
-        public abstract Task<FingerprintDecryptionResult> NativeDecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext);
+        public abstract Task<FingerprintDecryptionResult> NativeDecryptAsync(AuthenticationRequestConfiguration authRequestConfig, byte[] ciphertext, byte[] iv);
 
         public abstract Task<FingerprintAvailability> GetAvailabilityAsync(bool allowAlternativeAuthentication = false);
 

@@ -20,10 +20,31 @@
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="models:Identity">
                 <VerticalStackLayout Margin="8,0">
-                    <Label FontSize="18" Text="{Binding Name}" LineBreakMode="TailTruncation"
-                           InputTransparent="true" />
-                    <Label FontSize="12" Text="{Binding Hash}" LineBreakMode="MiddleTruncation"
-                           InputTransparent="true" />
+                    <Grid ColumnDefinitions="Auto,*,Auto">
+                        <CheckBox IsChecked="{Binding IsActive}" Grid.Column="0" IsEnabled="False">
+                            <CheckBox.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding ToggleActive, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
+                                    CommandParameter="{Binding Id}" />
+                            </CheckBox.GestureRecognizers>
+                        </CheckBox>
+                        <VerticalStackLayout Grid.Column="1">
+                            <VerticalStackLayout.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding ToggleActive, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
+                                    CommandParameter="{Binding Id}" />
+                            </VerticalStackLayout.GestureRecognizers>
+                            <Label FontSize="18" Text="{Binding Name}" LineBreakMode="TailTruncation"
+                                   InputTransparent="true" />
+                            <Label FontSize="12" Text="{Binding Hash}" LineBreakMode="MiddleTruncation"
+                                   InputTransparent="true" />
+                        </VerticalStackLayout>
+                        <Button
+                            Grid.Column="2" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
+                            Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
+                            CommandParameter="{Binding Id}"                            
+                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
+                    </Grid>
                     <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
                                Margin="32,12" />
                 </VerticalStackLayout>

@@ -9,6 +9,7 @@ namespace RosyCrow.Database;
 internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 {
     private readonly ILiteCollection<Setting> _settingsStore;
+    private int? _activeIdentityId;
     private string _homeUrl;
     private string _lastVisitedUrl;
     private bool? _storeVisited;
@@ -18,6 +19,16 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     {
         _settingsStore = database.GetCollection<Setting>();
         _settingsStore.EnsureIndex(s => s.Name, true);
+    }
+
+    public int? ActiveIdentityId
+    {
+        get => _activeIdentityId ?? GetIntValue();
+        set
+        {
+            if (SetField(ref _activeIdentityId, value))
+                SetIntValue(value);
+        }
     }
 
     public event PropertyChangedEventHandler PropertyChanged;
@@ -54,7 +65,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
     public bool SaveVisited
     {
-        get => _storeVisited ?? GetBoolValue();
+        get => _storeVisited ?? GetBoolValue() ?? default;
         set
         {
             if (SetField(ref _storeVisited, value))
@@ -62,15 +73,21 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         }
     }
 
-    private void SetBoolValue(bool value, [CallerMemberName] string name = null)
+    private void SetBoolValue(bool? value, [CallerMemberName] string name = null)
     {
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name)) ?? new Setting { Name = name };
-        entity.BoolValue = value;
+        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
 
-        _settingsStore.Upsert(entity);
+        if (entity != null && !value.HasValue)
+            _settingsStore.Delete(entity.Id);
+        else if (value.HasValue)
+        {
+            entity ??= new Setting { Name = name };
+            entity.BoolValue = value.Value;
+            _settingsStore.Upsert(entity);
+        }
     }
 
     private void SetStringValue(string value, [CallerMemberName] string name = null)
@@ -78,21 +95,35 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name)) ?? new Setting { Name = name };
-        entity.StringValue = value;
+        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+
+        if (entity != null && string.IsNullOrEmpty(value))
+            _settingsStore.Delete(entity.Id);
+        else if (!string.IsNullOrEmpty(value))
+        {
+            entity ??= new Setting { Name = name };
+            entity.StringValue = value;
+            _settingsStore.Upsert(entity);
+        }
 
         _settingsStore.Upsert(entity);
     }
 
-    private void SetIntValue(int value, [CallerMemberName] string name = null)
+    private void SetIntValue(int? value, [CallerMemberName] string name = null)
     {
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name)) ?? new Setting { Name = name };
-        entity.IntValue = value;
+        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
 
-        _settingsStore.Upsert(entity);
+        if (entity != null && !value.HasValue)
+            _settingsStore.Delete(entity.Id);
+        else if (value.HasValue)
+        {
+            entity ??= new Setting { Name = name };
+            entity.IntValue = value.Value;
+            _settingsStore.Upsert(entity);
+        }
     }
 
     private string GetStringValue(string defaultValue = null, [CallerMemberName] string name = null)
@@ -105,13 +136,16 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (entity != null)
             return entity.StringValue;
 
+        if (string.IsNullOrEmpty(defaultValue))
+            return null;
+
         entity = new Setting { Name = name, StringValue = defaultValue };
         _settingsStore.Insert(entity);
 
         return entity.StringValue;
     }
 
-    private bool GetBoolValue(bool defaultValue = default, [CallerMemberName] string name = null)
+    private bool? GetBoolValue(bool? defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)
             return default;
@@ -121,13 +155,16 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (entity != null)
             return entity.BoolValue;
 
-        entity = new Setting { Name = name, BoolValue = defaultValue };
+        if (!defaultValue.HasValue)
+            return null;
+
+        entity = new Setting { Name = name, BoolValue = defaultValue.Value };
         _settingsStore.Insert(entity);
 
         return entity.BoolValue;
     }
 
-    private int GetIntValue(int defaultValue = default, [CallerMemberName] string name = null)
+    private int? GetIntValue(int? defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)
             return default;
@@ -137,7 +174,10 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (entity != null)
             return entity.IntValue;
 
-        entity = new Setting { Name = name, IntValue = defaultValue };
+        if (!defaultValue.HasValue)
+            return null;
+
+        entity = new Setting { Name = name, IntValue = defaultValue.Value };
         _settingsStore.Insert(entity);
 
         return entity.IntValue;

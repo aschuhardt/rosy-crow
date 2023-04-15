@@ -12,9 +12,11 @@ namespace RosyCrow.Database;
 internal class BrowsingDatabase : IBrowsingDatabase
 {
     private readonly ILiteCollection<Bookmark> _bookmarksStore;
+    private readonly ILiteCollection<Identity> _identityStore;
     private readonly ILiteCollection<Visited> _visitedStore;
 
     private ObservableCollection<Bookmark> _bookmarks;
+    private ObservableCollection<Identity> _identities;
     private ObservableCollection<Visited> _visited;
 
     public BrowsingDatabase(ILiteDatabase database)
@@ -24,8 +26,27 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         _visitedStore = database.GetCollection<Visited>();
 
+        _identityStore = database.GetCollection<Identity>();
+
         Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList());
         Visited = new ObservableCollection<Visited>(_visitedStore.FindAll());
+        Identities = new ObservableCollection<Identity>(_identityStore.Query().OrderBy(i => i.Name).ToList());
+    }
+
+    public ObservableCollection<Identity> Identities
+    {
+        get => _identities;
+        set
+        {
+            if (Equals(value, _identities))
+                return;
+
+            if (_identities != null)
+                _identities.CollectionChanged -= Identities_CollectionChanged;
+
+            _identities = value;
+            OnPropertyChanged();
+        }
     }
 
     public ObservableCollection<Bookmark> Bookmarks
@@ -83,6 +104,30 @@ internal class BrowsingDatabase : IBrowsingDatabase
         return deleted;
     }
 
+    private void Identities_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add when e.NewItems != null:
+                foreach (var entity in e.NewItems.Cast<Identity>())
+                    entity.Id = _identityStore.Insert(entity);
+                break;
+            case NotifyCollectionChangedAction.Remove when e.OldItems != null:
+                foreach (var entity in e.OldItems.Cast<Identity>())
+                    _identityStore.Delete(entity.Id);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+            case NotifyCollectionChangedAction.Move:
+                throw new NotImplementedException();
+            case NotifyCollectionChangedAction.Reset:
+                foreach (var visited in _identityStore.Query().OrderBy(i => i.Name).ToList())
+                    _identities.Add(visited);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
     private void Visited_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
     {
         switch (e.Action)
@@ -92,7 +137,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                     entity.Id = _visitedStore.Insert(entity);
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
-                foreach (var entity in e.NewItems.Cast<Visited>())
+                foreach (var entity in e.OldItems.Cast<Visited>())
                     _visitedStore.Delete(entity.Id);
                 break;
             case NotifyCollectionChangedAction.Replace:

@@ -91,6 +91,8 @@
 		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Opal" Version="1.4.0" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1" />
+		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.12" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -121,6 +123,10 @@
 		<MauiImage Include="Resources\Images\Delete\delete_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Arrows\arrow_right_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Arrows\arrow_right_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Add\add_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Add\add_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Drag\drag_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Drag\drag_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -145,6 +151,10 @@
 	  <MauiXaml Update="Views\BrowserView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Fingerprint\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadUnhandledDeviceExceptionRosyCrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>

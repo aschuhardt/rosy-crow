@@ -211,6 +211,7 @@ public partial class IdentityPage : ContentPage
         Identities = _browsingDatabase.Identities;
         if (_settingsDatabase.ActiveIdentityId.HasValue)
             SetIdentityActiveIndicator(_settingsDatabase.ActiveIdentityId.Value);
-
+        else
+            ClearIdentityActiveIndicator();
     }
 }

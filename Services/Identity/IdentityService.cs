@@ -46,6 +46,12 @@ internal class IdentityService : IIdentityService
         }
 
         ActiveCertificate = await LoadCertificate(identity);
+
+        if (ActiveCertificate == null)
+        {
+            ClearActiveCertificate();
+        }
+
         return ActiveCertificate;
     }
 

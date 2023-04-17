@@ -11,7 +11,6 @@
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
-        <Button Text="About Rosy Crow" Command="{Binding OpenAbout}" />
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="Theme" Grid.Column="0" VerticalOptions="Center" />
             <Picker
@@ -23,5 +22,6 @@
                 SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
         </Grid>
         <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" />
+        <Button Text="About Rosy Crow" Command="{Binding OpenAbout}" />
     </VerticalStackLayout>
 </ContentPage>

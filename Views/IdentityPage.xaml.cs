@@ -154,7 +154,7 @@ public partial class IdentityPage : ContentPage
 
         var key = $"_ident_{KeyReplacePattern.Replace(name, "_").ToLowerInvariant()}_{Guid.NewGuid():N}";
 
-        var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(10), name);
+        var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(30 * 365), name);
 
         var identity = new Identity
         {

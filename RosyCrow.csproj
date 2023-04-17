@@ -91,8 +91,8 @@
 		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 		<PackageReference Include="Opal" Version="1.4.0" />
-		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1" />
-		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.12" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.5.1.1" />
+		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.11" />
 	</ItemGroup>
 
 	<ItemGroup>

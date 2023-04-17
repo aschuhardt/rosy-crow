@@ -58,12 +58,12 @@ jobs:
           name: android-build-${{ env.GITHUB_RUN_NUMBER }}
           path: bin\Release\net7.0-android33.0\*Signed.a*
 
-      - name: Upload Android Release to Play Store
-        uses: r0adkll/upload-google-play@v1.1.1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: app.rosy-crow
-          releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-          track: alpha
-          mappingFile: bin\Release\net7.0-android33.0\mapping.txt
-          releaseName: ci-internal-${{ env.GITHUB_RUN_NUMBER }}
+#       - name: Upload Android Release to Play Store
+#         uses: r0adkll/upload-google-play@v1.1.1
+#         with:
+#           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+#           packageName: app.rosy-crow
+#           releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
+#           track: alpha
+#           mappingFile: bin\Release\net7.0-android33.0\mapping.txt
+#           releaseName: ci-internal-${{ env.GITHUB_RUN_NUMBER }}

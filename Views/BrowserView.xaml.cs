@@ -1,4 +1,3 @@
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Web;
 using System.Windows.Input;
@@ -13,7 +12,6 @@ using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
 using RosyCrow.Services.Identity;
-using Xamarin.KotlinX.Coroutines;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -24,9 +22,9 @@ public partial class BrowserView : ContentView
     private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly IOpalClient _geminiClient;
+    private readonly IIdentityService _identityService;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly IIdentityService _identityService;
     private bool _canPrint;
     private string _htmlTemplate;
     private string _input;
@@ -49,7 +47,8 @@ public partial class BrowserView : ContentView
     {
     }
 
-    public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, IIdentityService identityService)
+    public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase,
+        IIdentityService identityService)
     {
         InitializeComponent();
 
@@ -71,17 +70,6 @@ public partial class BrowserView : ContentView
         RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
             (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
 #endif
-    }
-
-    private async Task<IClientCertificate> GetActiveCertificateCallback()
-    {
-        if (_identityService.ShouldReloadActiveCertificate)
-            return new ClientCertificate(await _identityService.LoadActiveCertificate());
-
-        if (_identityService.ActiveCertificate != null)
-            return new ClientCertificate(_identityService.ActiveCertificate);
-
-        return null;
     }
 
     public ICommand Refresh
@@ -185,6 +173,17 @@ public partial class BrowserView : ContentView
         }
     }
 
+    private async Task<IClientCertificate> GetActiveCertificateCallback()
+    {
+        if (_identityService.ShouldReloadActiveCertificate)
+            return new ClientCertificate(await _identityService.LoadActiveCertificate());
+
+        if (_identityService.ActiveCertificate != null)
+            return new ClientCertificate(_identityService.ActiveCertificate);
+
+        return null;
+    }
+
     public void Print()
     {
         _printService.Print(PageTitle);
@@ -206,6 +205,11 @@ public partial class BrowserView : ContentView
         }
 
         return false;
+    }
+
+    public void SimulateLocationChanged()
+    {
+        OnPropertyChanged(nameof(Location));
     }
 
     private static string GetDefaultFileNameByMimeType(string mimeType)

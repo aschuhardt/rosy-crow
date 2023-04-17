@@ -309,7 +309,7 @@ public partial class MainPage : ContentPage
 
         _settingsDatabase.HomeUrl = Browser.Location.ToString();
 
-        OnPropertyChanged(nameof(Location)); // force buttons to update
+        Browser.SimulateLocationChanged(); // force buttons to update
 
         this.ShowToast("Home set", ToastDuration.Short);
     }
@@ -323,7 +323,7 @@ public partial class MainPage : ContentPage
         {
             _browsingDatabase.Bookmarks.Remove(bookmark);
 
-            OnPropertyChanged(nameof(Location)); // force buttons to update
+            Browser.SimulateLocationChanged(); // force buttons to update
 
             this.ShowToast("Bookmark removed", ToastDuration.Short);
         }
@@ -335,7 +335,7 @@ public partial class MainPage : ContentPage
                 Url = Browser.Location.ToString()
             });
 
-            OnPropertyChanged(nameof(Location)); // force buttons to update
+            Browser.SimulateLocationChanged(); // force buttons to update
 
             this.ShowToast("Bookmark added", ToastDuration.Short);
         }

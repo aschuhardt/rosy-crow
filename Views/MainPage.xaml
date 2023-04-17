@@ -51,12 +51,14 @@
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnType="Go" Keyboard="Url" FontSize="12" x:Name="UrlEntry" />
                 </Border>
-                <ImageButton Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
-                             Command="{Binding ToggleBookmarked}"
-                             Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
-                <controls:BiModalImageButton Scale="0.75" Grid.Column="3" x:Name="HomeButton"
-                                             Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                                             Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
+                <ImageButton
+                    Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
+                    Command="{Binding ToggleBookmarked}"
+                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
+                <controls:BiModalImageButton
+                    Scale="0.75" Grid.Column="3" x:Name="HomeButton"
+                    Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
+                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
             </Grid>
             <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0" IsClippedToBounds="True">
                 <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"

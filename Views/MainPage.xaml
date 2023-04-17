@@ -2,7 +2,6 @@
 
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:rosycrow="clr-namespace:RosyCrow"
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:converters="clr-namespace:RosyCrow.Converters"
              xmlns:views="clr-namespace:RosyCrow.Views"
@@ -24,10 +23,11 @@
             AbsoluteLayout.LayoutFlags="All"
             HorizontalOptions="Fill"
             VerticalOptions="Fill" />
-        <VerticalStackLayout x:Name="NavBar" Padding="0,6"
-                             AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
-                             AbsoluteLayout.LayoutFlags="WidthProportional"
-                             BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+        <VerticalStackLayout
+            x:Name="NavBar" Padding="0,0,0,6"
+            AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
+            AbsoluteLayout.LayoutFlags="WidthProportional"
+            BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
             <VerticalStackLayout.Shadow>
                 <Shadow Brush="{StaticResource Black}" Radius="4" />
             </VerticalStackLayout.Shadow>
@@ -55,11 +55,10 @@
                              Command="{Binding ToggleBookmarked}"
                              Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
                 <controls:BiModalImageButton Scale="0.75" Grid.Column="3" x:Name="HomeButton"
-                                        Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                                        Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
+                                             Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
+                                             Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
             </Grid>
-            <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0"
-                                 IsClippedToBounds="True">
+            <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0" IsClippedToBounds="True">
                 <Button Text="Bookmarks" HorizontalOptions="Fill" Command="{Binding OpenBookmarks}"
                         IsEnabled="{Binding IsMenuExpanded}" />
                 <Button Text="History" HorizontalOptions="Fill" Command="{Binding OpenHistory}"
@@ -72,6 +71,7 @@
                 <Button Text="Settings" HorizontalOptions="Fill" Command="{Binding OpenSettings}"
                         IsEnabled="{Binding IsMenuExpanded}" />
             </VerticalStackLayout>
+            <Image Margin="-20" ScaleY="0.5" Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
         </VerticalStackLayout>
     </AbsoluteLayout>
 </ContentPage>

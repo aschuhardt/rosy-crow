@@ -263,7 +263,7 @@ public partial class MainPage : ContentPage
             if (IsMenuExpanded)
                 IsMenuExpanded = false;
 
-            new Animation(v => NavBar.TranslationY = v, 0, -NavBar.Height).Commit(this, "HideNavBar");
+            new Animation(v => NavBar.TranslationY = v, 0, -NavBar.Height * 1.25).Commit(this, "HideNavBar");
         }
     }
 

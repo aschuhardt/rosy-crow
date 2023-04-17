@@ -4,6 +4,8 @@ namespace RosyCrow;
 
 public partial class App : Application
 {
+    public static string StartupUri;
+
 	public App()
 	{
 		InitializeComponent();

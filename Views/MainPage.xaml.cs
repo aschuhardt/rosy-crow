@@ -361,6 +361,9 @@ public partial class MainPage : ContentPage
 
     private async void MainPage_OnAppearing(object sender, EventArgs e)
     {
+        if (!string.IsNullOrWhiteSpace(App.StartupUri))
+            Browser.Location = App.StartupUri.ToGeminiUri();
+
         if (LoadPageOnAppearing)
         {
             LoadPageOnAppearing = false;

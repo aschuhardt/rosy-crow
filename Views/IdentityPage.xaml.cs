@@ -148,6 +148,10 @@ public partial class IdentityPage : ContentPage
     {
         var name = await DisplayPromptAsync("Generate Identity", "Enter the name you would like to use for this key.",
             maxLength: 400);
+
+        if (string.IsNullOrWhiteSpace(name))
+            return;
+
         var key = $"_ident_{KeyReplacePattern.Replace(name, "_").ToLowerInvariant()}_{Guid.NewGuid():N}";
 
         var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(10), name);

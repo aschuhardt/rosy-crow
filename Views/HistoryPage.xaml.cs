@@ -14,8 +14,13 @@ public partial class HistoryPage : ContentPage
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ISettingsDatabase _settingsDatabase;
     private ICommand _clearHistory;
+    private int _currentPage;
+    private bool _hasNextPage;
+    private bool _hasPreviousPage;
     private ICommand _loadPage;
-    private readonly MainPage _mainPage;
+    private ICommand _nextPage;
+    private int _pageCount;
+    private ICommand _previousPage;
 
     private ObservableCollection<Visited> _visited;
 
@@ -25,14 +30,26 @@ public partial class HistoryPage : ContentPage
 
         _browsingDatabase = browsingDatabase;
         _settingsDatabase = settingsDatabase;
-        _mainPage = mainPage;
 
-        Visited = _browsingDatabase.Visited;
+        NextPage = new Command(() =>
+        {
+            CurrentPage++;
+            LoadCurrentPage();
+        });
+
+        PreviousPage = new Command(() =>
+        {
+            CurrentPage--;
+            LoadCurrentPage();
+        });
+
+        Visited = new ObservableCollection<Visited>();
+
         ClearHistory = new Command(async () => await TryClearHistory());
         LoadPage = new Command(async param =>
         {
-            _mainPage.Browser.Location = new Uri((string)param);
-            _mainPage.LoadPageOnAppearing = true;
+            mainPage.Browser.Location = new Uri((string)param);
+            mainPage.LoadPageOnAppearing = true;
             await Navigation.PopAsync(true);
         });
 
@@ -84,6 +101,72 @@ public partial class HistoryPage : ContentPage
         }
     }
 
+    public ICommand NextPage
+    {
+        get => _nextPage;
+        set
+        {
+            if (Equals(value, _nextPage)) return;
+            _nextPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand PreviousPage
+    {
+        get => _previousPage;
+        set
+        {
+            if (Equals(value, _previousPage)) return;
+            _previousPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int CurrentPage
+    {
+        get => _currentPage;
+        set
+        {
+            if (value == _currentPage) return;
+            _currentPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasNextPage
+    {
+        get => _hasNextPage;
+        set
+        {
+            if (value == _hasNextPage) return;
+            _hasNextPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool HasPreviousPage
+    {
+        get => _hasPreviousPage;
+        set
+        {
+            if (value == _hasPreviousPage) return;
+            _hasPreviousPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int PageCount
+    {
+        get => _pageCount;
+        set
+        {
+            if (value == _pageCount) return;
+            _pageCount = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async Task TryClearHistory()
     {
         if (!Visited.Any())
@@ -95,5 +178,26 @@ public partial class HistoryPage : ContentPage
             if (deleted > 0)
                 this.ShowToast($"{deleted} visited pages deleted", ToastDuration.Short);
         }
+    }
+
+    private void LoadCurrentPage()
+    {
+        Visited?.Clear();
+
+        var page = _browsingDatabase.GetVisitedPage(CurrentPage, out var lastPage);
+
+        foreach (var entry in page)
+            Visited.Add(entry);
+
+        HasNextPage = !lastPage;
+        HasPreviousPage = CurrentPage > 1;
+        PageCount = _browsingDatabase.GetVisitedPageCount();
+    }
+
+    private void HistoryPage_OnAppearing(object sender, EventArgs e)
+    {
+        CurrentPage = 1;
+        PageCount = _browsingDatabase.GetVisitedPageCount();
+        LoadCurrentPage();
     }
 }

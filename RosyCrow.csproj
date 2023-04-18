@@ -127,6 +127,10 @@
 		<MauiImage Include="Resources\Images\Add\add_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Drag\drag_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Drag\drag_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Navigation\next_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Navigation\next_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Navigation\back_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Navigation\back_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>

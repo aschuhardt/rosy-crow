@@ -6,7 +6,8 @@
              xmlns:views="clr-namespace:RosyCrow.Views"
              x:Class="RosyCrow.Views.HistoryPage"
              x:DataType="views:HistoryPage"
-             Title="History">
+             Title="History"
+             Appearing="HistoryPage_OnAppearing">
     <NavigationPage.TitleView>
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
             <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
@@ -20,6 +21,23 @@
             <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,32">
                 <Label VerticalTextAlignment="Center" Text="Save page history:" FontSize="16" Grid.Column="0" />
                 <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button
+                    Grid.Column="0"
+                    IsEnabled="{Binding HasPreviousPage}"
+                    Command="{Binding PreviousPage}"
+                    ImageSource="{AppThemeBinding Light=back_dark.png, Dark=back_light.png}" />
+                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
+                    <Label Text="{Binding CurrentPage}" />
+                    <Label Text="of" />
+                    <Label Text="{Binding PageCount}" />
+                </HorizontalStackLayout>
+                <Button
+                    Grid.Column="2"
+                    IsEnabled="{Binding HasNextPage}"
+                    Command="{Binding NextPage}"
+                    ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
             </Grid>
             <CollectionView ItemsSource="{Binding Visited}">
                 <CollectionView.ItemTemplate>

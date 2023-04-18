@@ -11,6 +11,7 @@ namespace RosyCrow.Database;
 
 internal class BrowsingDatabase : IBrowsingDatabase
 {
+    private const int VisitedPageSize = 10;
     private readonly ILiteCollection<Bookmark> _bookmarksStore;
     private readonly ILiteCollection<Identity> _identityStore;
     private readonly ILiteCollection<Visited> _visitedStore;
@@ -18,7 +19,6 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     private ObservableCollection<Bookmark> _bookmarks;
     private ObservableCollection<Identity> _identities;
-    private ObservableCollection<Visited> _visited;
 
     public BrowsingDatabase(ILiteDatabase database, ISettingsDatabase settingsDatabase)
     {
@@ -27,11 +27,9 @@ internal class BrowsingDatabase : IBrowsingDatabase
         _bookmarksStore.EnsureIndex(b => b.Url);
 
         _visitedStore = database.GetCollection<Visited>();
-
         _identityStore = database.GetCollection<Identity>();
 
         Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList());
-        Visited = new ObservableCollection<Visited>(_visitedStore.FindAll());
         Identities = new ObservableCollection<Identity>(_identityStore.Query().OrderBy(i => i.Name).ToList());
 
         var activeIdentityId = _settingsDatabase.ActiveIdentityId ?? -1;
@@ -73,23 +71,6 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
     }
 
-    public ObservableCollection<Visited> Visited
-    {
-        get => _visited;
-        set
-        {
-            if (Equals(value, _visited))
-                return;
-
-            if (_visited != null)
-                _visited.CollectionChanged -= Visited_CollectionChanged;
-
-            _visited = value;
-            _visited.CollectionChanged += Visited_CollectionChanged;
-            OnPropertyChanged();
-        }
-    }
-
     public bool IsBookmark(Uri location, out Bookmark found)
     {
         found = _bookmarks.FirstOrDefault(b =>
@@ -106,9 +87,29 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public int ClearVisited()
     {
-        var deleted = _visitedStore.DeleteAll();
-        Visited.Clear();
-        return deleted;
+        return _visitedStore.DeleteAll();
+    }
+
+    public int GetVisitedPageCount()
+    {
+        return Math.Max(1, _visitedStore.Count() / VisitedPageSize);
+    }
+
+    public void AddVisitedPage(Visited visited)
+    {
+        _visitedStore.Insert(visited);
+    }
+
+    public IEnumerable<Visited> GetVisitedPage(int page, out bool lastPage)
+    {
+        var result = _visitedStore.Query()
+            .OrderByDescending(v => v.Timestamp)
+            .Skip((page - 1) * VisitedPageSize).Limit(VisitedPageSize)
+            .ToList();
+
+        lastPage = result.Count < VisitedPageSize;
+
+        return result;
     }
 
     private void Identities_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -133,30 +134,6 @@ internal class BrowsingDatabase : IBrowsingDatabase
                     identity.IsActive = identity.Id == activeId;
                     _identities.Add(identity);
                 }
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    private void Visited_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
-    {
-        switch (e.Action)
-        {
-            case NotifyCollectionChangedAction.Add when e.NewItems != null:
-                foreach (var entity in e.NewItems.Cast<Visited>())
-                    entity.Id = _visitedStore.Insert(entity);
-                break;
-            case NotifyCollectionChangedAction.Remove when e.OldItems != null:
-                foreach (var entity in e.OldItems.Cast<Visited>())
-                    _visitedStore.Delete(entity.Id);
-                break;
-            case NotifyCollectionChangedAction.Replace:
-            case NotifyCollectionChangedAction.Move:
-                throw new NotImplementedException();
-            case NotifyCollectionChangedAction.Reset:
-                foreach (var visited in _visitedStore.Query().OrderByDescending(v => v.Timestamp).ToList())
-                    _visited.Add(visited);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

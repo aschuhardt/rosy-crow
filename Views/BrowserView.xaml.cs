@@ -386,7 +386,7 @@ public partial class BrowserView : ContentView
 
                         if (_settingsDatabase.SaveVisited)
                         {
-                            _browsingDatabase.Visited.Add(new Visited
+                            _browsingDatabase.AddVisitedPage(new Visited
                             {
                                 Url = response.Uri.ToString(), Timestamp = DateTime.Now,
                                 Title = _pageTitle ?? response.Uri.Segments.LastOrDefault() ?? response.Uri.Host

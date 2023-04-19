@@ -20,7 +20,7 @@
                             Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:BookmarksPage}}}"
                             CommandParameter="{Binding Url}" />
                     </VerticalStackLayout.GestureRecognizers>
-                    <Grid ColumnDefinitions="*,Auto" InputTransparent="true">
+                    <Grid ColumnDefinitions="*,Auto">
                         <VerticalStackLayout Grid.Column="0" InputTransparent="true">
                             <Label FontSize="18" Text="{Binding Title}" LineBreakMode="TailTruncation"
                                    InputTransparent="true" />

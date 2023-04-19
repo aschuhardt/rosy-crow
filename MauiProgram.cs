@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Opal;
 using RosyCrow.Database;
 using RosyCrow.Interfaces;
+using RosyCrow.Services.Cache;
 using RosyCrow.Services.Fingerprint;
 using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Identity;
@@ -40,7 +41,8 @@ public static class MauiProgram
             .AddSingleton<AboutPage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()
-            .AddTransient<IOpalClient, OpalClient>();
+            .AddTransient<IOpalClient, OpalClient>()
+            .AddTransient<ICacheService, DiskCacheService>();
 
 #if DEBUG
         builder.Logging.AddDebug();

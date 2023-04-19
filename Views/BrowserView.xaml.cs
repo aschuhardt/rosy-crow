@@ -11,6 +11,7 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
+using RosyCrow.Services.Cache;
 using RosyCrow.Services.Identity;
 
 // ReSharper disable AsyncVoidLambda
@@ -25,6 +26,8 @@ public partial class BrowserView : ContentView
     private readonly IIdentityService _identityService;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ICacheService _cache;
+
     private bool _canPrint;
     private string _htmlTemplate;
     private string _input;
@@ -43,12 +46,13 @@ public partial class BrowserView : ContentView
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
             MauiProgram.Services.GetRequiredService<ISettingsDatabase>(),
             MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
-            MauiProgram.Services.GetRequiredService<IIdentityService>())
+            MauiProgram.Services.GetRequiredService<IIdentityService>(),
+            MauiProgram.Services.GetRequiredService<ICacheService>())
     {
     }
 
     public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase,
-        IIdentityService identityService)
+        IIdentityService identityService, ICacheService cache)
     {
         InitializeComponent();
 
@@ -58,9 +62,10 @@ public partial class BrowserView : ContentView
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
         _identityService = identityService;
+        _cache = cache;
         _recentHistory = new Stack<Uri>();
 
-        Refresh = new Command(async () => await LoadPage());
+        Refresh = new Command(async () => await LoadPage(true));
 
         _geminiClient.GetActiveCertificateCallback = GetActiveCertificateCallback;
 
@@ -132,10 +137,15 @@ public partial class BrowserView : ContentView
         get => _location;
         set
         {
-            if (value == _location) return;
-            _location = value;
-            OnPropertyChanged();
-            Dispatcher.Dispatch(async () => await LoadPage());
+            if (value != _location) 
+            {
+                _location = value;
+                OnPropertyChanged();
+            }
+            
+            if (!_isLoading)
+                Dispatcher.Dispatch(async () => await LoadPage());
+
             OnPropertyChanged(nameof(IsPageLoaded));
         }
     }
@@ -243,12 +253,20 @@ public partial class BrowserView : ContentView
                 $"<link rel=\"stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
     }
 
-    private string RenderGemtextAsHtml(GemtextResponse gemtext)
+    private string RenderCachedHtml(string html)
+    {
+        var document = new HtmlDocument();
+        document.LoadHtml(html);
+        var childNodes = document.DocumentNode.ChildNodes;
+        PageTitle = (childNodes.FindFirst("h1") ?? childNodes.FindFirst("h2") ?? childNodes.FindFirst("h3"))?.InnerText;
+        InjectStylesheet(document.DocumentNode);
+        return document.DocumentNode.OuterHtml;
+    }
+
+    private async Task<string> RenderGemtextAsHtml(GemtextResponse gemtext)
     {
         var document = new HtmlDocument();
         document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
-
-        InjectStylesheet(document.DocumentNode);
 
         var body = document.DocumentNode.ChildNodes.FindFirst("main");
 
@@ -295,6 +313,11 @@ public partial class BrowserView : ContentView
         if (listNode != null)
             body.AppendChild(listNode);
 
+        // cache the page prior to injecting the stylesheet
+        await _cache.WriteCached(gemtext.Uri, _input, document.DocumentNode.OuterHtml);
+
+        InjectStylesheet(document.DocumentNode);
+
         return document.DocumentNode.OuterHtml;
     }
 
@@ -316,7 +339,7 @@ public partial class BrowserView : ContentView
         }
     }
 
-    public async Task LoadPage()
+    public async Task LoadPage(bool triggeredByRefresh = false)
     {
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
@@ -341,6 +364,19 @@ public partial class BrowserView : ContentView
 
         do
         {
+            if (!triggeredByRefresh)
+            {
+                var cached = await _cache.TryGetCached(Location, Input);
+                if (!string.IsNullOrEmpty(cached))
+                {
+                    RenderedHtml = RenderCachedHtml(cached);
+                    RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
+                    StoreVisitedLocation(Location);
+                    CanPrint = _printService != null;
+                    break;
+                }
+            }
+
             var response = !string.IsNullOrEmpty(Input)
                 ? await _geminiClient.SendRequestAsync(Location.ToString(), Input)
                 : await _geminiClient.SendRequestAsync(Location.ToString());
@@ -375,25 +411,11 @@ public partial class BrowserView : ContentView
                 }
                 case SuccessfulResponse success:
                 {
-                    if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(response.Uri))
-                        _recentHistory.Push(response.Uri);
-
-                    _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
+                    Location = response.Uri;
 
                     if (success is GemtextResponse gemtext)
                     {
-                        RenderedHtml = RenderGemtextAsHtml(gemtext);
-
-                        if (_settingsDatabase.SaveVisited)
-                        {
-                            _browsingDatabase.AddVisitedPage(new Visited
-                            {
-                                Url = response.Uri.ToString(), Timestamp = DateTime.Now,
-                                Title = _pageTitle ?? response.Uri.Segments.LastOrDefault() ?? response.Uri.Host
-                            });
-                        }
-
-                        // only allow printing if we just loaded a gemtext document
+                        RenderedHtml = await RenderGemtextAsHtml(gemtext);
                         CanPrint = _printService != null;
                     }
                     else
@@ -411,6 +433,8 @@ public partial class BrowserView : ContentView
                             new OpenFileRequest(fileName, new ReadOnlyFile(path, success.MimeType)));
                     }
 
+                    StoreVisitedLocation(Location);
+
                     finished = true;
                     break;
                 }
@@ -421,6 +445,23 @@ public partial class BrowserView : ContentView
         _isLoading = false;
 
         Input = null;
+    }
+
+    private void StoreVisitedLocation(Uri uri)
+    {
+        _settingsDatabase.LastVisitedUrl = uri.ToString();
+
+        if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
+            _recentHistory.Push(uri);
+
+        if (_settingsDatabase.SaveVisited)
+        {
+            _browsingDatabase.AddVisitedPage(new Visited
+            {
+                Url = uri.ToString(), Timestamp = DateTime.Now,
+                Title = _pageTitle ?? uri.Segments.LastOrDefault() ?? uri.Host
+            });
+        }
     }
 
     private async Task LoadInternalPage(string name = "default")

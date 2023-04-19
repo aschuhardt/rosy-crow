@@ -23,6 +23,8 @@ public partial class HistoryPage : ContentPage
     private ICommand _previousPage;
 
     private ObservableCollection<Visited> _visited;
+    private string _pageDescription;
+    private bool _shouldShowNavigation;
 
     public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -123,6 +125,17 @@ public partial class HistoryPage : ContentPage
         }
     }
 
+    public bool ShouldShowNavigation
+    {
+        get => _shouldShowNavigation;
+        set
+        {
+            if (value == _shouldShowNavigation) return;
+            _shouldShowNavigation = value;
+            OnPropertyChanged();
+        }
+    }
+
     public int CurrentPage
     {
         get => _currentPage;
@@ -156,6 +169,17 @@ public partial class HistoryPage : ContentPage
         }
     }
 
+    public string PageDescription
+    {
+        get => _pageDescription;
+        set
+        {
+            if (value == _pageDescription) return;
+            _pageDescription = value;
+            OnPropertyChanged();
+        }
+    }
+
     public int PageCount
     {
         get => _pageCount;
@@ -175,6 +199,7 @@ public partial class HistoryPage : ContentPage
         if (await DisplayAlert("Clear History", "Are you sure you want to clear your stored history?", "Yes", "No"))
         {
             var deleted = _browsingDatabase.ClearVisited();
+            LoadCurrentPage();
             if (deleted > 0)
                 this.ShowToast($"{deleted} visited pages deleted", ToastDuration.Short);
         }
@@ -182,7 +207,10 @@ public partial class HistoryPage : ContentPage
 
     private void LoadCurrentPage()
     {
-        Visited?.Clear();
+        if (Visited == null)
+            return;
+
+        Visited.Clear();
 
         var page = _browsingDatabase.GetVisitedPage(CurrentPage, out var lastPage);
 
@@ -192,6 +220,8 @@ public partial class HistoryPage : ContentPage
         HasNextPage = !lastPage;
         HasPreviousPage = CurrentPage > 1;
         PageCount = _browsingDatabase.GetVisitedPageCount();
+        PageDescription = $" Page {CurrentPage} of {PageCount}";
+        ShouldShowNavigation = HasNextPage || HasPreviousPage;
     }
 
     private void HistoryPage_OnAppearing(object sender, EventArgs e)

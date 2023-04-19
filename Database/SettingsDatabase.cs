@@ -14,6 +14,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private string _lastVisitedUrl;
     private bool? _storeVisited;
     private string _theme;
+    private int? _historyPageSize;
 
     public SettingsDatabase(ILiteDatabase database)
     {
@@ -62,6 +63,20 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         {
             if (SetField(ref _homeUrl, value))
                 SetStringValue(value);
+        }
+    }
+
+    public int HistoryPageSize
+    {
+        get
+        {
+            _historyPageSize ??= GetIntValue(16);
+            return _historyPageSize.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _historyPageSize, value))
+                SetIntValue(value);
         }
     }
 

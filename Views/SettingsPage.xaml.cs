@@ -16,6 +16,7 @@ public partial class SettingsPage : ContentPage
     private IList<ThemeChoice> _choices;
     private ThemeChoice _selectedTheme;
     private ICommand _openAbout;
+    private int _historyPageSize;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -64,6 +65,18 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public int HistoryPageSize
+    {
+        get => _historyPageSize;
+        set
+        {
+            if (value == _historyPageSize) return;
+            _historyPageSize = value;
+            _settingsDatabase.HistoryPageSize = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async void SettingsPage_OnLoaded(object sender, EventArgs e)
     {
         if (Choices != null)
@@ -74,6 +87,7 @@ public partial class SettingsPage : ContentPage
         Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
         SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
         ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");
+        HistoryPageSize = _settingsDatabase.HistoryPageSize;
     }
 
     private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)

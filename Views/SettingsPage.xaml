@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
+
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
@@ -11,6 +12,11 @@
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <Label Text="History page size" Grid.Column="0" VerticalOptions="Center" />
+            <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"></Label>
+            <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5"  />
+        </Grid>
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="Theme" Grid.Column="0" VerticalOptions="Center" />
             <Picker
@@ -21,7 +27,7 @@
                 SelectedItem="{Binding SelectedTheme}"
                 SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
         </Grid>
-        <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" />
+        <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
         <Button Text="About Rosy Crow" Command="{Binding OpenAbout}" />
     </VerticalStackLayout>
 </ContentPage>

@@ -11,7 +11,6 @@ namespace RosyCrow.Database;
 
 internal class BrowsingDatabase : IBrowsingDatabase
 {
-    private const int VisitedPageSize = 10;
     private readonly ILiteCollection<Bookmark> _bookmarksStore;
     private readonly ILiteCollection<Identity> _identityStore;
     private readonly ILiteCollection<Visited> _visitedStore;
@@ -92,7 +91,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public int GetVisitedPageCount()
     {
-        return Math.Max(1, _visitedStore.Count() / VisitedPageSize);
+        return Math.Max(1, (int)Math.Ceiling(_visitedStore.Count() / (double)_settingsDatabase.HistoryPageSize));
     }
 
     public void AddVisitedPage(Visited visited)
@@ -102,12 +101,13 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public IEnumerable<Visited> GetVisitedPage(int page, out bool lastPage)
     {
+        var pageSize = _settingsDatabase.HistoryPageSize;
         var result = _visitedStore.Query()
             .OrderByDescending(v => v.Timestamp)
-            .Skip((page - 1) * VisitedPageSize).Limit(VisitedPageSize)
+            .Skip((page - 1) * pageSize).Limit(pageSize)
             .ToList();
 
-        lastPage = result.Count < VisitedPageSize;
+        lastPage = result.Count < pageSize;
 
         return result;
     }

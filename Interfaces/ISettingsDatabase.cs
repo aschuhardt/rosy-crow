@@ -7,4 +7,5 @@ public interface ISettingsDatabase
     bool SaveVisited { get; set; }
     string Theme { get; set; }
     int? ActiveIdentityId { get; set; }
+    int HistoryPageSize { get; set; }
 }

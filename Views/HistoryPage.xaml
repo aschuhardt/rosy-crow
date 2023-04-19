@@ -18,28 +18,26 @@
     </NavigationPage.TitleView>
     <ScrollView>
         <VerticalStackLayout Padding="8,0">
-            <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,32">
+            <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,0">
                 <Label VerticalTextAlignment="Center" Text="Save page history:" FontSize="16" Grid.Column="0" />
                 <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
             </Grid>
-            <Grid ColumnDefinitions="Auto,*,Auto">
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,2,2,14" IsVisible="{Binding ShouldShowNavigation}">
                 <Button
-                    Grid.Column="0"
+                    Grid.Column="0" Scale="0.75"
                     IsEnabled="{Binding HasPreviousPage}"
                     Command="{Binding PreviousPage}"
                     ImageSource="{AppThemeBinding Light=back_dark.png, Dark=back_light.png}" />
-                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center">
-                    <Label Text="{Binding CurrentPage}" />
-                    <Label Text="of" />
-                    <Label Text="{Binding PageCount}" />
+                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="{Binding PageDescription}" />
                 </HorizontalStackLayout>
                 <Button
-                    Grid.Column="2"
+                    Grid.Column="2" Scale="0.75"
                     IsEnabled="{Binding HasNextPage}"
                     Command="{Binding NextPage}"
                     ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
             </Grid>
-            <CollectionView ItemsSource="{Binding Visited}">
+            <CollectionView ItemsSource="{Binding Visited}" Margin="0,8">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Visited">
                         <VerticalStackLayout Margin="8,0">
@@ -48,10 +46,13 @@
                                     Command="{Binding LoadPage, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:HistoryPage}}}"
                                     CommandParameter="{Binding Url}" />
                             </VerticalStackLayout.GestureRecognizers>
-                            <Label TextColor="{StaticResource Gray300}"
-                                   Text="{Binding Timestamp, StringFormat='{0:S}'}" InputTransparent="true" />
-                            <Label FontSize="18" Text="{Binding Title}" LineBreakMode="TailTruncation"
-                                   InputTransparent="true" />
+                            <Grid ColumnDefinitions="*,128">
+                                <Label FontSize="16" Text="{Binding Title}" LineBreakMode="TailTruncation"
+                                       InputTransparent="true" Grid.Column="0" />
+                                <Label TextColor="{StaticResource Gray300}" HorizontalTextAlignment="End"
+                                       Text="{Binding Timestamp, StringFormat='{0:g}'}" InputTransparent="true"
+                                       Grid.Column="1" LineBreakMode="NoWrap" />
+                            </Grid>
                             <Label FontSize="12" Text="{Binding Url}" LineBreakMode="MiddleTruncation"
                                    InputTransparent="true" />
                             <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
@@ -60,6 +61,21 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+            <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,14,2,2" IsVisible="{Binding ShouldShowNavigation}">
+                <Button
+                    Grid.Column="0" Scale="0.75"
+                    IsEnabled="{Binding HasPreviousPage}"
+                    Command="{Binding PreviousPage}"
+                    ImageSource="{AppThemeBinding Light=back_dark.png, Dark=back_light.png}" />
+                <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="{Binding PageDescription}" />
+                </HorizontalStackLayout>
+                <Button
+                    Grid.Column="2" Scale="0.75"
+                    IsEnabled="{Binding HasNextPage}"
+                    Command="{Binding NextPage}"
+                    ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
+            </Grid>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

@@ -9,7 +9,6 @@ on:
       - '**/*.gitattributes'
   pull_request:
     branches: [ main ]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -58,12 +57,12 @@ jobs:
           name: android-build-${{ github.run_number }}
           path: bin\Release\net7.0-android33.0\*Signed.a*
 
-      - name: Upload Android Release to Play Store
-        uses: r0adkll/upload-google-play@v1.1.1
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-          packageName: app.rosy-crow
-          releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-          track: alpha
-          mappingFile: bin\Release\net7.0-android33.0\mapping.txt
-          releaseName: ci-internal-${{ github.run_number }}
+#       - name: Upload Android Release to Play Store
+#         uses: r0adkll/upload-google-play@v1.1.1
+#         with:
+#           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+#           packageName: app.rosy-crow
+#           releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
+#           track: alpha
+#           mappingFile: bin\Release\net7.0-android33.0\mapping.txt
+#           releaseName: ci-internal-${{ github.run_number }}

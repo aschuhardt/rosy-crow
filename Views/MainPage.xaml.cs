@@ -43,7 +43,7 @@ public partial class MainPage : ContentPage
         _isNavBarVisible = true;
 
         BindingContext = this;
-        LoadEnteredUrl = new Command<string>(url => Browser.Location = url.ToGeminiUri());
+        LoadEnteredUrl = new Command<string>(url => Browser.Location = url.StartsWith(Constants.InternalScheme) ? new Uri(url) : url.ToGeminiUri());
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);

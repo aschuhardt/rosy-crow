@@ -37,7 +37,7 @@
                     Command="{Binding NextPage}"
                     ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
             </Grid>
-            <CollectionView ItemsSource="{Binding Visited}" Margin="0,8">
+            <CollectionView ItemsSource="{Binding Visited}">
                 <CollectionView.ItemTemplate>
                     <DataTemplate x:DataType="models:Visited">
                         <VerticalStackLayout Margin="8,0">

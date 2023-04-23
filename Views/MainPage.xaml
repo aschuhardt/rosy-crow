@@ -24,7 +24,7 @@
             HorizontalOptions="Fill"
             VerticalOptions="Fill" />
         <VerticalStackLayout
-            x:Name="NavBar" Padding="0,0,0,6"
+            x:Name="NavBar" Padding="0,0,0,2"
             AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
             AbsoluteLayout.LayoutFlags="WidthProportional"
             BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
@@ -35,13 +35,13 @@
                 <SwipeGestureRecognizer x:Name="SwipeDownRecognizer" Direction="Down" Command="{Binding ExpandMenu}" />
                 <SwipeGestureRecognizer x:Name="SwipeUpRecognizer" Direction="Up" Command="{Binding HideMenu}" />
             </VerticalStackLayout.GestureRecognizers>
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" Padding="0,2,0,0">
                 <ImageButton
                     Grid.Column="0"
                     Scale="0.75"
                     Command="{Binding ToggleMenuExpanded}"
                     Source="{Binding IsMenuExpanded, Converter={StaticResource ExpandButtonImageConverter}}" />
-                <Border Grid.Column="1" StrokeThickness="1" HeightRequest="36">
+                <Border Grid.Column="1" StrokeThickness="1">
                     <Border.StrokeShape>
                         <RoundRectangle CornerRadius="2.5" />
                     </Border.StrokeShape>
@@ -49,7 +49,7 @@
                         Text="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
-                        ReturnType="Go" Keyboard="Url" FontSize="12" x:Name="UrlEntry" />
+                        ReturnType="Go" Keyboard="Url" x:Name="UrlEntry" />
                 </Border>
                 <ImageButton
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"

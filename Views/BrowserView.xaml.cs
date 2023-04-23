@@ -377,9 +377,10 @@ public partial class BrowserView : ContentView
                 }
             }
 
-            var response = !string.IsNullOrEmpty(Input)
-                ? await _geminiClient.SendRequestAsync(Location.ToString(), Input)
-                : await _geminiClient.SendRequestAsync(Location.ToString());
+            if (!string.IsNullOrWhiteSpace(Input))
+                Location = new UriBuilder(Location) { Query = Input }.Uri;
+
+            var response = await _geminiClient.SendRequestAsync(Location.ToString());
 
             RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
 

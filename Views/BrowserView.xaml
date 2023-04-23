@@ -11,6 +11,12 @@
             <WebView.Source>
                 <HtmlWebViewSource Html="{Binding RenderedHtml}" />
             </WebView.Source>
+            <FlyoutBase.ContextFlyout>
+                <MenuFlyout>
+                    <MenuFlyoutItem Text="Test" />
+                    <MenuFlyoutItem Text="Test" />
+                </MenuFlyout>
+            </FlyoutBase.ContextFlyout>
         </WebView>
     </RefreshView>
 </ContentView>

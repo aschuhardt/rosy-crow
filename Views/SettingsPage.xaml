@@ -3,9 +3,11 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
+             xmlns:models="clr-namespace:RosyCrow.Models"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.SettingsPage"
              x:DataType="views:SettingsPage"
-             Title="Settings"
+             Title="{x:Static localization:Text.SettingsPage_Title}"
              Loaded="SettingsPage_OnLoaded"
              Disappearing="SettingsPage_OnDisappearing">
     <NavigationPage.TitleView>
@@ -13,21 +15,22 @@
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
         <Grid ColumnDefinitions="Auto,*,Auto">
-            <Label Text="History page size" Grid.Column="0" VerticalOptions="Center" />
+            <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0" VerticalOptions="Center" />
             <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"></Label>
             <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5"  />
         </Grid>
         <Grid ColumnDefinitions="*,Auto">
-            <Label Text="Theme" Grid.Column="0" VerticalOptions="Center" />
+            <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />
+            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
             <Picker
                 Grid.Column="1"
                 VerticalOptions="Center"
                 ItemsSource="{Binding Choices}"
-                ItemDisplayBinding="{Binding Name}"
+                ItemDisplayBinding="{Binding Path=Name}"
                 SelectedItem="{Binding SelectedTheme}"
                 SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
         </Grid>
         <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
-        <Button Text="About Rosy Crow" Command="{Binding OpenAbout}" />
+        <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
     </VerticalStackLayout>
 </ContentPage>

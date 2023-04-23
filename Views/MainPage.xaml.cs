@@ -4,6 +4,7 @@ using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Resources.Localization;
 #if ANDROID
 #endif
 
@@ -43,7 +44,8 @@ public partial class MainPage : ContentPage
         _isNavBarVisible = true;
 
         BindingContext = this;
-        LoadEnteredUrl = new Command<string>(url => Browser.Location = url.StartsWith(Constants.InternalScheme) ? new Uri(url) : url.ToGeminiUri());
+        LoadEnteredUrl = new Command<string>(url =>
+            Browser.Location = url.StartsWith(Constants.InternalScheme) ? new Uri(url) : url.ToGeminiUri());
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
@@ -297,7 +299,7 @@ public partial class MainPage : ContentPage
     private void TryLoadHomeUrl()
     {
         if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
-            this.ShowToast("No home URL has been set. Long-press the Home button to set one.", ToastDuration.Long);
+            this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
         else
             Browser.Location = _settingsDatabase.HomeUrl.ToGeminiUri();
     }
@@ -311,7 +313,7 @@ public partial class MainPage : ContentPage
 
         Browser.SimulateLocationChanged(); // force buttons to update
 
-        this.ShowToast("Home set", ToastDuration.Short);
+        this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
     }
 
     private void TryToggleBookmarked()
@@ -325,7 +327,7 @@ public partial class MainPage : ContentPage
 
             Browser.SimulateLocationChanged(); // force buttons to update
 
-            this.ShowToast("Bookmark removed", ToastDuration.Short);
+            this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_removed, ToastDuration.Short);
         }
         else
         {
@@ -337,7 +339,7 @@ public partial class MainPage : ContentPage
 
             Browser.SimulateLocationChanged(); // force buttons to update
 
-            this.ShowToast("Bookmark added", ToastDuration.Short);
+            this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
         }
     }
 

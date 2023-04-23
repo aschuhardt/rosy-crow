@@ -4,9 +4,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
              xmlns:models="clr-namespace:RosyCrow.Models"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.IdentityPage"
              x:DataType="views:IdentityPage"
-             Title="Identity"
+             Title="{x:Static localization:Text.IdentityPage_Title}"
              Appearing="IdentityPage_OnAppearing">
     <NavigationPage.TitleView>
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">

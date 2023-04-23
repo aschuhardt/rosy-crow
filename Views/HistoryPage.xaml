@@ -4,9 +4,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:models="clr-namespace:RosyCrow.Models"
              xmlns:views="clr-namespace:RosyCrow.Views"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.HistoryPage"
              x:DataType="views:HistoryPage"
-             Title="History"
+             Title="{x:Static localization:Text.HistoryPage_Title}"
              Appearing="HistoryPage_OnAppearing">
     <NavigationPage.TitleView>
         <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
@@ -19,7 +20,8 @@
     <ScrollView>
         <VerticalStackLayout Padding="8,0">
             <Grid ColumnDefinitions="*,Auto" Padding="16,8,16,0">
-                <Label VerticalTextAlignment="Center" Text="Save page history:" FontSize="16" Grid.Column="0" />
+                <Label VerticalTextAlignment="Center" Text="{x:Static localization:Text.HistoryPage_Save_page_history}"
+                       FontSize="16" Grid.Column="0" />
                 <Switch IsToggled="{Binding StoreVisited}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="Auto,*,Auto" Margin="2,2,2,14" IsVisible="{Binding ShouldShowNavigation}">

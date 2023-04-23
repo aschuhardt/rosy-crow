@@ -36,7 +36,7 @@ namespace RosyCrow.Services.Fingerprint
         /// </summary>
         public static void Dispose()
         {
-            if (_implementation != null && _implementation.IsValueCreated)
+            if (_implementation is { IsValueCreated: true })
             {
                 _implementation = new Lazy<IFingerprint>(CreateFingerprint, LazyThreadSafetyMode.PublicationOnly);
             }

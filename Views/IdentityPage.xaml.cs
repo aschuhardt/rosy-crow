@@ -1,19 +1,19 @@
 using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
-using Android.Media;
 using CommunityToolkit.Maui.Alerts;
 using LiteDB;
 using Opal.Authentication;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Resources.Localization;
 using RosyCrow.Services.Fingerprint;
 using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Fingerprint.Platforms.Android.Utils;
 using RosyCrow.Services.Identity;
-using Encoding = System.Text.Encoding;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -131,22 +131,24 @@ public partial class IdentityPage : ContentPage
         if (identity == null)
             return;
 
-        if (!await DisplayAlert("Delete Identity", "Are you sure you want to delete this identity?", "Yes", "No"))
+        if (!await DisplayAlert(Text.IdentityPage_DeleteKey_Delete_Identity, Text.IdentityPage_DeleteKey_Confirm,
+                Text.Global_Yes, Text.Global_No))
             return;
 
         if (string.IsNullOrEmpty(identity.EncryptedPassword) || new CryptoObjectHelper(identity.SemanticKey).Delete())
         {
             Identities.Remove(identity);
             _liteDatabase.FileStorage.Delete(identity.SemanticKey);
-            await Toast.Make("Identity deleted").Show();
+            await Toast.Make(Text.IdentityPage_DeleteKey_Identity_deleted).Show();
         }
         else
-            await Toast.Make("Failed to delete identity").Show();
+            await Toast.Make(Text.IdentityPage_DeleteKey_Failed_to_delete_identity).Show();
     }
 
     private async Task GenerateNewKey()
     {
-        var name = await DisplayPromptAsync("Generate Identity", "Enter the name you would like to use for this key.",
+        var name = await DisplayPromptAsync(Text.IdentityPage_GenerateNewKey_Generate_Identity,
+            Text.IdentityPage_GenerateNewKey_Prompt,
             maxLength: 400);
 
         if (string.IsNullOrWhiteSpace(name))
@@ -165,13 +167,14 @@ public partial class IdentityPage : ContentPage
 
         if (OperatingSystem.IsAndroidVersionAtLeast(28) &&
             await CrossFingerprint.Current.IsAvailableAsync(true) &&
-            await DisplayAlert("Generate Identity", "Secure this identity with your device credentials?", "Yes", "No"))
+            await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
+                Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No))
         {
             var password = RandomNumberGenerator.GetBytes(32);
 
             var authConfig = new AuthenticationRequestConfiguration(
-                "Secure the Identity",
-                "Authenticate to protect the new identity's encryption key.", key)
+                Text.IdentityPage_GenerateNewKey_Secure_the_Identity,
+                Text.IdentityPage_GenerateNewKey_Authenticate, key)
             {
                 AllowAlternativeAuthentication = true
             };
@@ -179,7 +182,7 @@ public partial class IdentityPage : ContentPage
             var result = await _fingerprint.EncryptAsync(authConfig, password);
             if (!result.AuthenticationResult.Authenticated)
             {
-                await Toast.Make("Could not protect the identity").Show();
+                await Toast.Make(Text.IdentityPage_GenerateNewKey_Could_not_protect_the_identity).Show();
                 return;
             }
 
@@ -205,7 +208,8 @@ public partial class IdentityPage : ContentPage
         await using var writer = new StreamWriter(storage);
         await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
         await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY",
-            certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(Encoding.UTF8.GetString(password).ToCharArray(),
+            certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(
+                Encoding.UTF8.GetString(password).ToCharArray(),
                 new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, EncryptionIterations))));
         await writer.FlushAsync();
     }

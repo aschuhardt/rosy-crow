@@ -4,6 +4,7 @@ using CommunityToolkit.Maui.Core;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Resources.Localization;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -20,11 +21,11 @@ public partial class HistoryPage : ContentPage
     private ICommand _loadPage;
     private ICommand _nextPage;
     private int _pageCount;
+    private string _pageDescription;
     private ICommand _previousPage;
+    private bool _shouldShowNavigation;
 
     private ObservableCollection<Visited> _visited;
-    private string _pageDescription;
-    private bool _shouldShowNavigation;
 
     public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -196,12 +197,16 @@ public partial class HistoryPage : ContentPage
         if (!Visited.Any())
             return;
 
-        if (await DisplayAlert("Clear History", "Are you sure you want to clear your stored history?", "Yes", "No"))
+        if (await DisplayAlert(Text.HistoryPage_TryClearHistory_Clear_History, Text.HistoryPage_TryClearHistory_Confirm,
+                Text.Global_Yes, Text.Global_No))
         {
             var deleted = _browsingDatabase.ClearVisited();
             LoadCurrentPage();
             if (deleted > 0)
-                this.ShowToast($"{deleted} visited pages deleted", ToastDuration.Short);
+            {
+                this.ShowToast(string.Format(Text.HistoryPage_TryClearHistory__0__visited_pages_deleted, deleted),
+                    ToastDuration.Short);
+            }
         }
     }
 
@@ -220,7 +225,7 @@ public partial class HistoryPage : ContentPage
         HasNextPage = !lastPage;
         HasPreviousPage = CurrentPage > 1;
         PageCount = _browsingDatabase.GetVisitedPageCount();
-        PageDescription = $" Page {CurrentPage} of {PageCount}";
+        PageDescription = string.Format(Text.HistoryPage_LoadCurrentPage__Page__0__of__1_, CurrentPage, PageCount);
         ShouldShowNavigation = HasNextPage || HasPreviousPage;
     }
 

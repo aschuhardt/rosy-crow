@@ -2,6 +2,7 @@
 using System.Windows.Input;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Resources.Localization;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -9,12 +10,12 @@ namespace RosyCrow.Views;
 
 public partial class BookmarksPage : ContentPage
 {
-    private ObservableCollection<Bookmark> _bookmarks;
-    private ICommand _loadPage;
-    private ICommand _delete;
+    private readonly IBrowsingDatabase _browsingDatabase;
 
     private readonly MainPage _mainPage;
-    private readonly IBrowsingDatabase _browsingDatabase;
+    private ObservableCollection<Bookmark> _bookmarks;
+    private ICommand _delete;
+    private ICommand _loadPage;
 
     public BookmarksPage(MainPage mainPage, IBrowsingDatabase browsingDatabase)
     {
@@ -69,7 +70,8 @@ public partial class BookmarksPage : ContentPage
 
     private async Task TryDeleteBookmark(int id)
     {
-        if (await DisplayAlert("Delete Bookmark", "Are you sure you want to delete this bookmark?", "Yes", "No"))
+        if (await DisplayAlert(Text.BookmarksPage_TryDeleteBookmark_Delete_Bookmark,
+                Text.BookmarksPage_TryDeleteBookmark_Confirm, Text.Global_Yes, Text.Global_No))
         {
             var bookmark = Bookmarks.FirstOrDefault(b => b.Id == id);
             if (bookmark == null)

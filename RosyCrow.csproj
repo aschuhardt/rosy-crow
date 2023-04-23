@@ -67,6 +67,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AndroidResource Remove="Fingerprint\**" />
+	  <Compile Remove="Fingerprint\**" />
+	  <EmbeddedResource Remove="Fingerprint\**" />
+	  <MauiCss Remove="Fingerprint\**" />
+	  <MauiXaml Remove="Fingerprint\**" />
+	  <None Remove="Fingerprint\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<MauiCss Remove="resources\raw\style.css" />
 	</ItemGroup>
 
@@ -160,10 +169,6 @@
 	  <MauiXaml Update="Views\BrowserView.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Fingerprint\" />
 	</ItemGroup>
 
 	<ItemGroup>

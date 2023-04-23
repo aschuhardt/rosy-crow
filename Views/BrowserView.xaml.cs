@@ -22,11 +22,11 @@ public partial class BrowserView : ContentView
 {
     private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
+    private readonly ICacheService _cache;
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly ICacheService _cache;
 
     private bool _canPrint;
     private string _htmlTemplate;
@@ -72,6 +72,8 @@ public partial class BrowserView : ContentView
 #if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
             (handler, _) => _printService = new AndroidPrintService(handler.PlatformView));
+        WebViewHandler.Mapper.PrependToMapping("SetCustomWebViewClient",
+            (handler, _) => handler.PlatformView.SetWebViewClient(new CustomWebViewClient(_geminiClient)));
         RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
             (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
 #endif
@@ -137,12 +139,12 @@ public partial class BrowserView : ContentView
         get => _location;
         set
         {
-            if (value != _location) 
+            if (value != _location)
             {
                 _location = value;
                 OnPropertyChanged();
             }
-            
+
             if (!_isLoading)
                 Dispatcher.Dispatch(async () => await LoadPage());
 
@@ -230,6 +232,66 @@ public partial class BrowserView : ContentView
             : $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
     }
 
+    private static HtmlNode RenderLinkLine(LinkLine line)
+    {
+        var fileName = line.Uri.Segments.LastOrDefault();
+
+        if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out var mimeType))
+        {
+            if (mimeType.StartsWith("image"))
+            {
+                // build an (optionally captioned) image element
+                var img = HtmlNode.CreateNode(
+                    $"<a href=\"{line.Uri}\"><img width=\"256\" src=\"{line.Uri}\" /></a>");
+
+                if (!string.IsNullOrWhiteSpace(line.Text))
+                {
+                    var figure = HtmlNode.CreateNode("<figure></figure>");
+                    figure.AppendChild(img);
+                    figure.AppendChild(HtmlNode.CreateNode($"<figcaption>{line.Text}</figcaption>"));
+                    return figure;
+                }
+
+                return img;
+            }
+
+            if (mimeType.StartsWith("audio"))
+            {
+                var audio = HtmlNode.CreateNode(
+                    $"<audio controls src=\"{line.Uri}\"><a href=\"{line.Uri}\">Download audio</a></audio>");
+
+                if (!string.IsNullOrWhiteSpace(line.Text))
+                {
+                    var figure = HtmlNode.CreateNode("<figure></figure>");
+                    figure.AppendChild(HtmlNode.CreateNode($"<figcaption>{line.Text}</figcaption>"));
+                    figure.AppendChild(audio);
+                    return figure;
+                }
+
+                return audio;
+            }
+
+            if (mimeType.StartsWith("video"))
+            {
+                var video = HtmlNode.CreateNode(
+                    $"<video controls width=\"256\" src=\"{line.Uri}\"><a href=\"{line.Uri}\">Download video</a></video>");
+
+                if (!string.IsNullOrWhiteSpace(line.Text))
+                {
+                    var figure = HtmlNode.CreateNode("<figure></figure>");
+                    figure.AppendChild(video);
+                    figure.AppendChild(HtmlNode.CreateNode($"<figcaption>{line.Text}</figcaption>"));
+                    return figure;
+                }
+
+                return video;
+            }
+        }
+
+        return HtmlNode.CreateNode(
+            $"<p><a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a></p>");
+    }
+
     private static HtmlNode RenderGemtextLine(ILine line)
     {
         return line switch
@@ -237,8 +299,7 @@ public partial class BrowserView : ContentView
             EmptyLine => null,
             HeadingLine headingLine => HtmlNode.CreateNode(
                 $"<h{headingLine.Level}>{HttpUtility.HtmlEncode(headingLine.Text)}</h{headingLine.Level}>"),
-            LinkLine linkLine => HtmlNode.CreateNode(
-                $"<p><a href=\"{linkLine.Uri}\">{HttpUtility.HtmlEncode(linkLine.Text ?? linkLine.Uri.ToString())}</a></p>"),
+            LinkLine linkLine => RenderLinkLine(linkLine),
             QuoteLine quoteLine => HtmlNode.CreateNode(
                 $"<blockquote><p>{HttpUtility.HtmlEncode(quoteLine.Text)}</p></blockquote>"),
             TextLine textLine => HtmlNode.CreateNode($"<p>{HttpUtility.HtmlEncode(textLine.Text)}</p>"),
@@ -278,13 +339,15 @@ public partial class BrowserView : ContentView
         foreach (var line in gemtext.AsDocument())
             switch (line)
             {
-                case FormattedBeginLine:
-                    preNode = HtmlNode.CreateNode("<pre></pre>");
+                case FormattedBeginLine preBegin:
+                    var preParent = body.AppendChild(HtmlNode.CreateNode("<figure></figure>"));
+                    if (!string.IsNullOrWhiteSpace(preBegin.Text))
+                        preParent.AppendChild(HtmlNode.CreateNode($"<figcaption>{preBegin.Text}</figcaption>"));
+                    preNode = preParent.AppendChild(HtmlNode.CreateNode("<pre></pre>"));
                     preText.Clear();
                     break;
                 case FormattedEndLine when preNode != null:
                     preNode.InnerHtml = HttpUtility.HtmlEncode(preText.ToString());
-                    body.AppendChild(preNode);
                     break;
                 case FormattedLine formatted:
                     preText.AppendLine(formatted.Text);

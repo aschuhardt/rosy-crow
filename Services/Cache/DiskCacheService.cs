@@ -68,11 +68,6 @@ public class DiskCacheService : ICacheService
         return File.Exists(GetPathFromKey(bucket, key));
     }
 
-    public string GetResourcePath(string bucket, string key)
-    {
-        return GetPathFromKey(bucket, key);
-    }
-
     public async Task<string> LoadResource(string bucket, string key, Stream destination)
     {
         var path = GetPathFromKey(bucket, key);

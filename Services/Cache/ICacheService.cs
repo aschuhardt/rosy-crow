@@ -7,5 +7,4 @@ public interface ICacheService
     Task StoreResource(string bucket, string key, Stream contents);
     bool ResourceExists(string bucket, string key);
     Task<string> LoadResource(string bucket, string key, Stream destination);
-    string GetResourcePath(string bucket, string key);
 }

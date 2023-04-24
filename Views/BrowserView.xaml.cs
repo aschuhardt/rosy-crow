@@ -14,6 +14,7 @@ using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
 using RosyCrow.Services.Cache;
 using RosyCrow.Services.Identity;
+using ReturnType = HtmlAgilityPack.ReturnType;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -351,7 +352,7 @@ public partial class BrowserView : ContentView
             else
             {
                 // http, etc. can be handled by the browser
-                node.AppendChild(HtmlNode.CreateNode($"<a href=\"{line.Uri}\"><img src=\"{line.Uri}\" /></a>"));
+                node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
             }
 
             return node;
@@ -371,7 +372,10 @@ public partial class BrowserView : ContentView
                 HtmlNode.CreateNode($"<figcaption>{HttpUtility.HtmlEncode(line.Text)}</figcaption>"));
         }
 
-        return figure;
+        var anchor = HtmlNode.CreateNode($"<a href=\"{line.Uri}\"></a>");
+        anchor.AppendChild(figure);
+
+        return anchor;
     }
 
     private async Task<HtmlNode> RenderGemtextLine(ILine line)

@@ -2,6 +2,7 @@ using System.Text;
 using System.Web;
 using System.Windows.Input;
 using HtmlAgilityPack;
+using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Opal;
 using Opal.Authentication.Certificate;
@@ -22,11 +23,12 @@ public partial class BrowserView : ContentView
 {
     private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
+    private readonly ICacheService _cache;
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
+    private readonly List<Task> _parallelRenderWorkload;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly ICacheService _cache;
 
     private bool _canPrint;
     private string _htmlTemplate;
@@ -64,6 +66,7 @@ public partial class BrowserView : ContentView
         _identityService = identityService;
         _cache = cache;
         _recentHistory = new Stack<Uri>();
+        _parallelRenderWorkload = new List<Task>();
 
         Refresh = new Command(async () => await LoadPage(true));
 
@@ -137,12 +140,12 @@ public partial class BrowserView : ContentView
         get => _location;
         set
         {
-            if (value != _location) 
+            if (value != _location)
             {
                 _location = value;
                 OnPropertyChanged();
             }
-            
+
             if (!_isLoading)
                 Dispatcher.Dispatch(async () => await LoadPage());
 
@@ -230,15 +233,155 @@ public partial class BrowserView : ContentView
             : $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
     }
 
-    private static HtmlNode RenderGemtextLine(ILine line)
+    private static async Task<MemoryStream> CreateInlinedImagePreview(Stream source, string mimetype)
+    {
+        var typeHint = mimetype switch
+        {
+            "image/jpeg" => ImageFormat.Jpeg,
+            "image/gif" => ImageFormat.Gif,
+            "image/bmp" => ImageFormat.Bmp,
+            "image/tiff" => ImageFormat.Tiff,
+            _ => ImageFormat.Png
+        };
+
+        var image = PlatformImage.FromStream(source, typeHint);
+        using var downsized = image.Downsize(256.0f, true);
+
+        var output = new MemoryStream();
+        await downsized.SaveAsync(output);
+
+        return output;
+    }
+
+    private string CreateInlineImageDataUrl(MemoryStream data)
+    {
+        data.Seek(0, SeekOrigin.Begin);
+        return $"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
+    }
+
+    private async Task<string> TryLoadCachedImage(Uri uri)
+    {
+        var bucket = uri.Host.ToUpperInvariant();
+        var key = uri.ToString().ToUpperInvariant();
+
+        if (_cache.ResourceExists(bucket, key))
+        {
+            var image = new MemoryStream();
+            await _cache.LoadResource(bucket, key, image);
+            return CreateInlineImageDataUrl(image);
+        }
+
+        return null;
+    }
+
+    private async Task<string> FetchAndCacheInlinedImage(Uri uri)
+    {
+        var bucket = uri.Host.ToUpperInvariant();
+        var key = uri.ToString().ToUpperInvariant();
+
+        for (var i = 0; i < 6; i++)
+        {
+            try
+            {
+                if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
+                {
+                    var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
+                    image.Seek(0, SeekOrigin.Begin);
+                    await _cache.StoreResource(bucket, key, image);
+                    return CreateInlineImageDataUrl(image);
+                }
+
+                // if the error was only temporary (according to the server), then
+                // we can try again
+            }
+            catch (Exception)
+            {
+                // don't care
+            }
+
+            await Task.Delay(Convert.ToInt32(Math.Pow(2, i) * 100));
+        }
+
+        return null;
+    }
+
+    private async Task<HtmlNode> RenderLinkLine(LinkLine line)
+    {
+        return _settingsDatabase.InlineImages
+            ? await RenderInlineImage(line)
+            : RenderDefaultLinkLine(line);
+    }
+
+    private static HtmlNode RenderDefaultLinkLine(LinkLine line)
+    {
+        return HtmlNode.CreateNode(
+            $"<p><a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a></p>");
+    }
+
+    private async Task<HtmlNode> RenderInlineImage(LinkLine line)
+    {
+        var fileName = line.Uri.Segments.LastOrDefault()?.Trim('/');
+
+        if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out var mimeType) &&
+            mimeType.StartsWith("image"))
+        {
+            var node = HtmlNode.CreateNode("<p></p>");
+
+            if (line.Uri.Scheme == "gemini")
+            {
+                var cached = await TryLoadCachedImage(line.Uri);
+                if (cached != null)
+                    node.AppendChild(RenderInlineImageFigure(line, cached));
+                else
+                {
+                    _parallelRenderWorkload.Add(Task.Run(async () =>
+                    {
+                        var source = await FetchAndCacheInlinedImage(line.Uri);
+                        if (!string.IsNullOrEmpty(source))
+                            node.AppendChild(RenderInlineImageFigure(line, source));
+                        else
+                        {
+                            // did not load the image preview; fallback to a simple link
+                            node.AppendChild(HtmlNode.CreateNode(
+                                $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
+                        }
+                    }));
+                }
+            }
+            else
+            {
+                // http, etc. can be handled by the browser
+                node.AppendChild(HtmlNode.CreateNode($"<a href=\"{line.Uri}\"><img src=\"{line.Uri}\" /></a>"));
+            }
+
+            return node;
+        }
+
+        return RenderDefaultLinkLine(line);
+    }
+
+    private static HtmlNode RenderInlineImageFigure(LinkLine line, string source)
+    {
+        // successfully loaded the image preview
+        var figure = HtmlNode.CreateNode($"<figure><img src=\"{source}\" /></figure>");
+
+        if (!string.IsNullOrWhiteSpace(line.Text))
+        {
+            figure.AppendChild(
+                HtmlNode.CreateNode($"<figcaption>{HttpUtility.HtmlEncode(line.Text)}</figcaption>"));
+        }
+
+        return figure;
+    }
+
+    private async Task<HtmlNode> RenderGemtextLine(ILine line)
     {
         return line switch
         {
             EmptyLine => null,
             HeadingLine headingLine => HtmlNode.CreateNode(
                 $"<h{headingLine.Level}>{HttpUtility.HtmlEncode(headingLine.Text)}</h{headingLine.Level}>"),
-            LinkLine linkLine => HtmlNode.CreateNode(
-                $"<p><a href=\"{linkLine.Uri}\">{HttpUtility.HtmlEncode(linkLine.Text ?? linkLine.Uri.ToString())}</a></p>"),
+            LinkLine linkLine => await RenderLinkLine(linkLine),
             QuoteLine quoteLine => HtmlNode.CreateNode(
                 $"<blockquote><p>{HttpUtility.HtmlEncode(quoteLine.Text)}</p></blockquote>"),
             TextLine textLine => HtmlNode.CreateNode($"<p>{HttpUtility.HtmlEncode(textLine.Text)}</p>"),
@@ -278,13 +421,15 @@ public partial class BrowserView : ContentView
         foreach (var line in gemtext.AsDocument())
             switch (line)
             {
-                case FormattedBeginLine:
-                    preNode = HtmlNode.CreateNode("<pre></pre>");
+                case FormattedBeginLine preBegin:
+                    var preParent = body.AppendChild(HtmlNode.CreateNode("<figure></figure>"));
+                    if (!string.IsNullOrWhiteSpace(preBegin.Text))
+                        preParent.AppendChild(HtmlNode.CreateNode($"<figcaption>{preBegin.Text}</figcaption>"));
+                    preNode = preParent.AppendChild(HtmlNode.CreateNode("<pre></pre>"));
                     preText.Clear();
                     break;
                 case FormattedEndLine when preNode != null:
                     preNode.InnerHtml = HttpUtility.HtmlEncode(preText.ToString());
-                    body.AppendChild(preNode);
                     break;
                 case FormattedLine formatted:
                     preText.AppendLine(formatted.Text);
@@ -303,7 +448,7 @@ public partial class BrowserView : ContentView
                     if (PageTitle == null && line is HeadingLine heading)
                         PageTitle = heading.Text;
 
-                    var renderedLine = RenderGemtextLine(line);
+                    var renderedLine = await RenderGemtextLine(line);
                     if (renderedLine != null)
                         body.AppendChild(renderedLine);
 
@@ -313,8 +458,14 @@ public partial class BrowserView : ContentView
         if (listNode != null)
             body.AppendChild(listNode);
 
+        if (_parallelRenderWorkload.Any())
+        {
+            await Task.WhenAll(_parallelRenderWorkload.ToArray());
+            _parallelRenderWorkload.Clear();
+        }
+
         // cache the page prior to injecting the stylesheet
-        await _cache.WriteCached(gemtext.Uri, _input, document.DocumentNode.OuterHtml);
+        await _cache.StoreString(gemtext.Uri, _input, document.DocumentNode.OuterHtml);
 
         InjectStylesheet(document.DocumentNode);
 
@@ -354,6 +505,7 @@ public partial class BrowserView : ContentView
 
         var finished = false;
         var remainingAttempts = 5;
+        var attempt = 0;
 
         _isLoading = true;
 
@@ -366,7 +518,7 @@ public partial class BrowserView : ContentView
         {
             if (!triggeredByRefresh)
             {
-                var cached = await _cache.TryGetCached(Location, Input);
+                var cached = await _cache.LoadString(Location, Input);
                 if (!string.IsNullOrEmpty(cached))
                 {
                     RenderedHtml = RenderCachedHtml(cached);
@@ -405,7 +557,7 @@ public partial class BrowserView : ContentView
                         finished = true;
                     }
                     else
-                        await Task.Delay(1000 / remainingAttempts);
+                        await Task.Delay(Convert.ToInt32(Math.Pow(2, attempt) * 100));
 
                     remainingAttempts--;
                     break;
@@ -440,6 +592,8 @@ public partial class BrowserView : ContentView
                     break;
                 }
             }
+
+            attempt++;
         } while (!finished);
 
         IsRefreshing = false;

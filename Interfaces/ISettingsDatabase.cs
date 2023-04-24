@@ -8,4 +8,5 @@ public interface ISettingsDatabase
     string Theme { get; set; }
     int? ActiveIdentityId { get; set; }
     int HistoryPageSize { get; set; }
+    bool InlineImages { get; set; }
 }

@@ -17,6 +17,7 @@ public partial class SettingsPage : ContentPage
     private ThemeChoice _selectedTheme;
     private ICommand _openAbout;
     private int _historyPageSize;
+    private bool _inlineImages;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -73,6 +74,18 @@ public partial class SettingsPage : ContentPage
             if (value == _historyPageSize) return;
             _historyPageSize = value;
             _settingsDatabase.HistoryPageSize = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool InlineImages
+    {
+        get => _inlineImages;
+        set
+        {
+            if (value == _inlineImages) return;
+            _inlineImages = value;
+            _settingsDatabase.InlineImages = value;
             OnPropertyChanged();
         }
     }

@@ -15,6 +15,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private bool? _storeVisited;
     private string _theme;
     private int? _historyPageSize;
+    private bool? _inlineImages;
 
     public SettingsDatabase(ILiteDatabase database)
     {
@@ -91,6 +92,20 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         {
             if (SetField(ref _lastVisitedUrl, value))
                 SetStringValue(value);
+        }
+    }
+
+    public bool InlineImages
+    {
+        get
+        {
+            _inlineImages ??= GetBoolValue();
+            return _inlineImages.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _inlineImages, value))
+                SetBoolValue(value);
         }
     }
 

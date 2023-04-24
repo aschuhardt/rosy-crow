@@ -133,7 +133,7 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Save page history:.
+        ///   Looks up a localized string similar to Save page history.
         /// </summary>
         internal static string HistoryPage_Save_page_history {
             get {
@@ -372,6 +372,15 @@ namespace RosyCrow.Resources.Localization {
         internal static string SettingsPage_History_page_size {
             get {
                 return ResourceManager.GetString("SettingsPage_History_page_size", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show images inline (very slow at the moment).
+        /// </summary>
+        internal static string SettingsPage_InlineImages {
+            get {
+                return ResourceManager.GetString("SettingsPage_InlineImages", resourceCulture);
             }
         }
         

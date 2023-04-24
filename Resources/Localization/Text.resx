@@ -120,7 +120,7 @@
 		<value>No</value>
 	</data>
 	<data name="HistoryPage_Save_page_history" xml:space="preserve">
-		<value>Save page history:</value>
+		<value>Save page history</value>
 	</data>
 	<data name="HistoryPage_Title" xml:space="preserve">
 		<value>History</value>
@@ -208,5 +208,8 @@
 	</data>
 	<data name="SettingsPage_Theme" xml:space="preserve">
 		<value>Theme</value>
+	</data>
+	<data name="SettingsPage_InlineImages" xml:space="preserve">
+		<value>Show images inline (currently very slow)</value>
 	</data>
 </root>

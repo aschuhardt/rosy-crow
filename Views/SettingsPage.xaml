@@ -3,7 +3,6 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
-             xmlns:models="clr-namespace:RosyCrow.Models"
              xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.SettingsPage"
              x:DataType="views:SettingsPage"
@@ -14,10 +13,16 @@
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="{x:Static localization:Text.SettingsPage_InlineImages}" Grid.Column="0" VerticalTextAlignment="Center" />
+            <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
+        </Grid>
         <Grid ColumnDefinitions="Auto,*,Auto">
-            <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0" VerticalOptions="Center" />
-            <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center" VerticalTextAlignment="Center"></Label>
-            <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5"  />
+            <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0"
+                   VerticalOptions="Center" />
+            <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="Center" />
+            <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />

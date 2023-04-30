@@ -65,20 +65,24 @@
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Bookmarks}" HorizontalOptions="Fill"
                         Command="{Binding OpenBookmarks}"
                         IsEnabled="{Binding IsMenuExpanded}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}"></Line>
                 <Button Text="{x:Static localization:Text.MainPage_Menu_History}" HorizontalOptions="Fill"
                         Command="{Binding OpenHistory}"
                         IsEnabled="{Binding IsMenuExpanded}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}"></Line>
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Identity}" HorizontalOptions="Fill"
                         Command="{Binding OpenIdentity}"
                         IsEnabled="{Binding IsMenuExpanded}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}"></Line>
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Print}" HorizontalOptions="Fill"
                         IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
                         Command="{Binding Print}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}"></Line>
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Settings}" HorizontalOptions="Fill"
                         Command="{Binding OpenSettings}"
                         IsEnabled="{Binding IsMenuExpanded}" />
             </VerticalStackLayout>
-            <Image Margin="-20" ScaleY="0.5" Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
+            <Image HeightRequest="6" ScaleY="4" ScaleX="10"  Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
         </VerticalStackLayout>
     </AbsoluteLayout>
 </ContentPage>

@@ -66,7 +66,7 @@ public partial class MainPage : ContentPage
         BookmarkButton.GestureRecognizers.Add(SwipeDownRecognizer);
         BookmarkButton.GestureRecognizers.Add(SwipeUpRecognizer);
 
-        foreach (var button in ExpandableMenu.Children.Cast<Button>())
+        foreach (var button in ExpandableMenu.Children.Where(v => v is Button).Cast<Button>())
         {
             button.GestureRecognizers.Add(SwipeUpRecognizer);
             button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
@@ -294,7 +294,11 @@ public partial class MainPage : ContentPage
     {
         _isMenuExpanded = false;
         _menuHideAnimation.Commit(this, "HideMenu", length: 150,
-            finished: async (_, _) => await Navigation.PushPageAsync<T>());
+            finished: async (_, _) =>
+            {
+                await NavBar.FadeTo(0, 100);
+                await Navigation.PushPageAsync<T>();
+            });
     }
 
     private void TryLoadHomeUrl()
@@ -346,7 +350,7 @@ public partial class MainPage : ContentPage
 
     private double GetExpandedMenuHeight()
     {
-        return ExpandableMenu.Sum(element => element.MinimumHeight);
+        return ExpandableMenu.Where(e => e is Button).Sum(e => e.MinimumHeight);
     }
 
     private void AddMenuAnimations()
@@ -366,6 +370,8 @@ public partial class MainPage : ContentPage
     {
         if (!string.IsNullOrWhiteSpace(App.StartupUri))
             Browser.Location = App.StartupUri.ToGeminiUri();
+
+        await NavBar.FadeTo(1, 100);
 
         if (LoadPageOnAppearing)
         {

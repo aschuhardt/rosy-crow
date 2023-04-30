@@ -501,7 +501,7 @@ public partial class BrowserView : ContentView
 
         if (Location == null || Location.Scheme == Constants.InternalScheme)
         {
-            await LoadInternalPage(Location?.Host);
+            await LoadInternalPage(Location?.Host ?? "default");
             IsRefreshing = false;
             _isLoading = false;
             return;

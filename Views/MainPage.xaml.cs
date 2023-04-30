@@ -37,13 +37,14 @@ public partial class MainPage : ContentPage
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
     {
-        InitializeComponent();
-
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
         _isNavBarVisible = true;
 
+        InitializeComponent();
+
         BindingContext = this;
+
         LoadEnteredUrl = new Command<string>(url =>
             Browser.Location = url.StartsWith(Constants.InternalScheme) ? new Uri(url) : url.ToGeminiUri());
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);

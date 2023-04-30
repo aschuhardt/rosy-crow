@@ -29,10 +29,12 @@ public partial class HistoryPage : ContentPage
 
     public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
-        BindingContext = this;
-
         _browsingDatabase = browsingDatabase;
         _settingsDatabase = settingsDatabase;
+
+        InitializeComponent();
+
+        BindingContext = this;
 
         NextPage = new Command(() =>
         {
@@ -55,8 +57,6 @@ public partial class HistoryPage : ContentPage
             mainPage.LoadPageOnAppearing = true;
             await Navigation.PopAsync(true);
         });
-
-        InitializeComponent();
     }
 
     public ObservableCollection<Visited> Visited

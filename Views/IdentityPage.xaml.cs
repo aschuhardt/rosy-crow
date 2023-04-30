@@ -36,13 +36,13 @@ public partial class IdentityPage : ContentPage
     public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint, ILiteDatabase liteDatabase,
         IIdentityService identityService, ISettingsDatabase settingsDatabase)
     {
-        InitializeComponent();
-
         _browsingDatabase = browsingDatabase;
         _fingerprint = fingerprint;
         _liteDatabase = liteDatabase;
         _identityService = identityService;
         _settingsDatabase = settingsDatabase;
+
+        InitializeComponent();
 
         BindingContext = this;
 

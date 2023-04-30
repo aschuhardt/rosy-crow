@@ -19,12 +19,12 @@ public partial class BookmarksPage : ContentPage
 
     public BookmarksPage(MainPage mainPage, IBrowsingDatabase browsingDatabase)
     {
+        _mainPage = mainPage;
+        _browsingDatabase = browsingDatabase;
+
         InitializeComponent();
 
         BindingContext = this;
-
-        _mainPage = mainPage;
-        _browsingDatabase = browsingDatabase;
 
         LoadPage = new Command(async param =>
         {

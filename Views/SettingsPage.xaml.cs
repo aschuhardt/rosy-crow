@@ -16,19 +16,17 @@ public partial class SettingsPage : ContentPage
     private IList<ThemeChoice> _choices;
     private ThemeChoice _selectedTheme;
     private ICommand _openAbout;
-    private int _historyPageSize;
-    private bool _inlineImages;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
+        _settingsDatabase = settingsDatabase;
+        _mainPage = mainPage;
+
         InitializeComponent();
 
         BindingContext = this;
 
         OpenAbout = new Command(async () => await Navigation.PushPageAsync<AboutPage>());
-
-        _settingsDatabase = settingsDatabase;
-        _mainPage = mainPage;
     }
 
     public IList<ThemeChoice> Choices
@@ -68,11 +66,11 @@ public partial class SettingsPage : ContentPage
 
     public int HistoryPageSize
     {
-        get => _historyPageSize;
+        get => _settingsDatabase?.HistoryPageSize ?? default;
         set
         {
-            if (value == _historyPageSize) return;
-            _historyPageSize = value;
+            if (value == _settingsDatabase.HistoryPageSize)
+                return;
             _settingsDatabase.HistoryPageSize = value;
             OnPropertyChanged();
         }
@@ -80,11 +78,11 @@ public partial class SettingsPage : ContentPage
 
     public bool InlineImages
     {
-        get => _inlineImages;
+        get => _settingsDatabase?.InlineImages ?? default;
         set
         {
-            if (value == _inlineImages) return;
-            _inlineImages = value;
+            if (value == _settingsDatabase.InlineImages)
+                return;
             _settingsDatabase.InlineImages = value;
             OnPropertyChanged();
         }

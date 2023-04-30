@@ -1,6 +1,7 @@
 using System.Text;
 using System.Web;
 using System.Windows.Input;
+using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
@@ -12,9 +13,9 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
+using RosyCrow.Resources.Localization;
 using RosyCrow.Services.Cache;
 using RosyCrow.Services.Identity;
-using ReturnType = HtmlAgilityPack.ReturnType;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -32,6 +33,7 @@ public partial class BrowserView : ContentView
     private readonly ISettingsDatabase _settingsDatabase;
 
     private bool _canPrint;
+    private string _findNextQuery;
     private string _htmlTemplate;
     private string _input;
     private bool _isLoading;
@@ -44,6 +46,7 @@ public partial class BrowserView : ContentView
     private ICommand _refresh;
     private string _renderedHtml;
     private string _renderUrl;
+    private bool _resetFindNext;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -76,6 +79,31 @@ public partial class BrowserView : ContentView
 #if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
             (handler, _) => _printService = new AndroidPrintService(handler.PlatformView));
+        WebViewHandler.Mapper.AppendToMapping("SetClearFindResultsHandler",
+            (handler, _) => ClearMatches += (_, _) => handler.PlatformView.ClearMatches());
+        WebViewHandler.Mapper.AppendToMapping("SetFindInPageHandler",
+            (handler, _) => FindNext += (_, _) =>
+            {
+                if (_resetFindNext) // new query
+                    handler.PlatformView.FindAllAsync(FindNextQuery);
+                else // existing query; continue forward
+                    handler.PlatformView.FindNext(true);
+            });
+        WebViewHandler.Mapper.AppendToMapping("SetFindListener",
+            (handler, _) => handler.PlatformView.SetFindListener(new CallbackFindListener(count =>
+            {
+                if (!_resetFindNext)
+                    return;
+
+                if (count == 0)
+                {
+                    _parentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
+                    FindNextQuery = null;
+                }
+                else
+                    _parentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
+                        ToastDuration.Short);
+            })));
         RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
             (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
 #endif
@@ -187,6 +215,21 @@ public partial class BrowserView : ContentView
         }
     }
 
+    public bool HasFindNextQuery => !string.IsNullOrEmpty(FindNextQuery);
+
+    public string FindNextQuery
+    {
+        get => _findNextQuery;
+        private set
+        {
+            if (value == _findNextQuery)
+                return;
+            _findNextQuery = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(HasFindNextQuery));
+        }
+    }
+
     private async Task<IClientCertificate> GetActiveCertificateCallback()
     {
         if (_identityService.ShouldReloadActiveCertificate)
@@ -197,6 +240,10 @@ public partial class BrowserView : ContentView
 
         return null;
     }
+
+    private event EventHandler FindNext;
+
+    private event EventHandler ClearMatches;
 
     public void Print()
     {
@@ -224,6 +271,24 @@ public partial class BrowserView : ContentView
     public void SimulateLocationChanged()
     {
         OnPropertyChanged(nameof(Location));
+    }
+
+    public void ClearFindResults()
+    {
+        FindNextQuery = null;
+        OnClearFindNext();
+    }
+
+    public void FindTextInPage(string query)
+    {
+        // if the query is different from the last time, then start the search over from the top of the page
+        if (query != FindNextQuery)
+            _resetFindNext = true;
+
+        FindNextQuery = query;
+
+        OnFindNext();
+        _resetFindNext = false;
     }
 
     private static string GetDefaultFileNameByMimeType(string mimeType)
@@ -518,6 +583,9 @@ public partial class BrowserView : ContentView
 
         CanPrint = false;
 
+        if (HasFindNextQuery)
+            ClearFindResults();
+
         do
         {
             if (!triggeredByRefresh)
@@ -674,5 +742,15 @@ public partial class BrowserView : ContentView
             await LoadInternalPage();
         else
             await LoadPage();
+    }
+
+    protected virtual void OnFindNext()
+    {
+        FindNext?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void OnClearFindNext()
+    {
+        ClearMatches?.Invoke(this, EventArgs.Empty);
     }
 }

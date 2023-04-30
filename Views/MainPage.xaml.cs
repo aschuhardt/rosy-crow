@@ -18,6 +18,8 @@ public partial class MainPage : ContentPage
     private readonly ISettingsDatabase _settingsDatabase;
 
     private ICommand _expandMenu;
+    private ICommand _findInPage;
+    private ICommand _findNextInPage;
     private ICommand _hideMenu;
     private bool _isMenuExpanded;
     private bool _isNavBarVisible;
@@ -58,6 +60,8 @@ public partial class MainPage : ContentPage
         OpenHistory = new Command(OpenMenuItem<HistoryPage>);
         OpenIdentity = new Command(OpenMenuItem<IdentityPage>);
         OpenSettings = new Command(OpenMenuItem<SettingsPage>);
+        FindInPage = new Command(async () => await TryFindInPage());
+        FindNextInPage = new Command(() => Browser.FindTextInPage(Browser.FindNextQuery));
 
         UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
         UrlEntry.GestureRecognizers.Add(SwipeUpRecognizer);
@@ -146,7 +150,9 @@ public partial class MainPage : ContentPage
         get => _isNavBarVisible;
         set
         {
-            if (value == _isNavBarVisible) return;
+            // don't allow the navbar to be hidden if "Find in page" is active
+            if (value == _isNavBarVisible || (!value && Browser.HasFindNextQuery))
+                return;
             _isNavBarVisible = value;
             OnPropertyChanged();
             PerformNavBarAnimations();
@@ -253,6 +259,28 @@ public partial class MainPage : ContentPage
         }
     }
 
+    public ICommand FindInPage
+    {
+        get => _findInPage;
+        set
+        {
+            if (Equals(value, _findInPage)) return;
+            _findInPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand FindNextInPage
+    {
+        get => _findNextInPage;
+        set
+        {
+            if (Equals(value, _findNextInPage)) return;
+            _findNextInPage = value;
+            OnPropertyChanged();
+        }
+    }
+
     private void PerformNavBarAnimations()
     {
         if (IsNavBarVisible)
@@ -319,6 +347,33 @@ public partial class MainPage : ContentPage
         Browser.SimulateLocationChanged(); // force buttons to update
 
         this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
+    }
+
+    private async Task TryFindInPage()
+    {
+        string query;
+        if (Browser.HasFindNextQuery)
+        {
+            query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
+                Text.MainPage_TryFindInPage_OngoingPrompt,
+                initialValue: Browser.FindNextQuery);
+        }
+        else
+        {
+            query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
+                Text.MainPage_TryFindInPage_InitialPrompt);
+        }
+
+        if (string.IsNullOrEmpty(query))
+        {
+            if (Browser.HasFindNextQuery)
+                Browser.ClearFindResults();
+            return;
+        }
+
+        IsMenuExpanded = false;
+
+        Browser.FindTextInPage(query);
     }
 
     private void TryToggleBookmarked()

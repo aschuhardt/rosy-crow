@@ -106,6 +106,24 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Found {0} instances.
+        /// </summary>
+        internal static string BrowserView_FindNext_Found__0__instances {
+            get {
+                return ResourceManager.GetString("BrowserView_FindNext_Found__0__instances", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No instances found.
+        /// </summary>
+        internal static string BrowserView_FindNext_No_instances_found {
+            get {
+                return ResourceManager.GetString("BrowserView_FindNext_No_instances_found", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         internal static string Global_No {
@@ -322,6 +340,33 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Find in Page.
+        /// </summary>
+        internal static string MainPage_TryFindInPage_Find_in_Page {
+            get {
+                return ResourceManager.GetString("MainPage_TryFindInPage_Find_in_Page", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter the text to search for..
+        /// </summary>
+        internal static string MainPage_TryFindInPage_InitialPrompt {
+            get {
+                return ResourceManager.GetString("MainPage_TryFindInPage_InitialPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter the text to search for, or clear-out this prompt to cancel the search..
+        /// </summary>
+        internal static string MainPage_TryFindInPage_OngoingPrompt {
+            get {
+                return ResourceManager.GetString("MainPage_TryFindInPage_OngoingPrompt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No home URL has been set. Long-press the Home button to set one..
         /// </summary>
         internal static string MainPage_TryLoadHomeUrl_No_home_set {
@@ -376,7 +421,7 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show images inline (very slow at the moment).
+        ///   Looks up a localized string similar to Show images inline (currently very slow).
         /// </summary>
         internal static string SettingsPage_InlineImages {
             get {

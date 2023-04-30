@@ -212,4 +212,19 @@
 	<data name="SettingsPage_InlineImages" xml:space="preserve">
 		<value>Show images inline (currently very slow)</value>
 	</data>
+	<data name="MainPage_TryFindInPage_Find_in_Page" xml:space="preserve">
+		<value>Find in Page</value>
+	</data>
+	<data name="MainPage_TryFindInPage_OngoingPrompt" xml:space="preserve">
+		<value>Enter the text to search for, or clear-out this prompt to cancel the search.</value>
+	</data>
+	<data name="MainPage_TryFindInPage_InitialPrompt" xml:space="preserve">
+		<value>Enter the text to search for.</value>
+	</data>
+	<data name="BrowserView_FindNext_No_instances_found" xml:space="preserve">
+		<value>No instances found</value>
+	</data>
+	<data name="BrowserView_FindNext_Found__0__instances" xml:space="preserve">
+		<value>Found {0} instances</value>
+	</data>
 </root>

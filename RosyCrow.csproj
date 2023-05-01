@@ -99,7 +99,7 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="Opal" Version="1.4.0" />
+		<PackageReference Include="Opal" Version="1.5.0" />
 		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.5.1.1" />
 		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.11" />
 	</ItemGroup>
@@ -140,6 +140,8 @@
 		<MauiImage Include="Resources\Images\Navigation\next_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Navigation\back_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Navigation\back_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Info\info_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Info\info_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -155,6 +157,9 @@
 
 	<ItemGroup>
 	  <MauiXaml Update="Views\AboutPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
+	  <MauiXaml Update="Views\CertificatePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Views\HistoryPage.xaml">

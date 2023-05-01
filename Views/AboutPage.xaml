@@ -4,8 +4,11 @@
              xmlns:views="clr-namespace:RosyCrow.Views"
              x:Class="RosyCrow.Views.AboutPage"
              x:DataType="views:AboutPage"
-             Title="AboutPage"
+             Title="About"
              Appearing="AboutPage_OnAppearing">
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
+    </NavigationPage.TitleView>
     <AbsoluteLayout>
         <views:BrowserView
             x:Name="Browser"

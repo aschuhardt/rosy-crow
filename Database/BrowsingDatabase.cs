@@ -2,7 +2,9 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 using LiteDB;
+using Opal.Tofu;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -12,9 +14,10 @@ namespace RosyCrow.Database;
 internal class BrowsingDatabase : IBrowsingDatabase
 {
     private readonly ILiteCollection<Bookmark> _bookmarksStore;
+    private readonly ILiteCollection<HostCertificate> _hostCertificates;
     private readonly ILiteCollection<Identity> _identityStore;
-    private readonly ILiteCollection<Visited> _visitedStore;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ILiteCollection<Visited> _visitedStore;
 
     private ObservableCollection<Bookmark> _bookmarks;
     private ObservableCollection<Identity> _identities;
@@ -22,8 +25,12 @@ internal class BrowsingDatabase : IBrowsingDatabase
     public BrowsingDatabase(ILiteDatabase database, ISettingsDatabase settingsDatabase)
     {
         _settingsDatabase = settingsDatabase;
+
         _bookmarksStore = database.GetCollection<Bookmark>();
         _bookmarksStore.EnsureIndex(b => b.Url);
+
+        _hostCertificates = database.GetCollection<HostCertificate>();
+        _hostCertificates.EnsureIndex(c => c.Host, true);
 
         _visitedStore = database.GetCollection<Visited>();
         _identityStore = database.GetCollection<Identity>();
@@ -99,6 +106,27 @@ internal class BrowsingDatabase : IBrowsingDatabase
         _visitedStore.Insert(visited);
     }
 
+    public void SetHostCertificate(string host, X509Certificate2 certificate)
+    {
+        _hostCertificates.Insert(new HostCertificate
+        {
+            Added = DateTime.UtcNow,
+            Updated = DateTime.UtcNow,
+            Expiration = certificate.NotAfter,
+            Fingerprint = certificate.Thumbprint,
+            Subject = certificate.Subject,
+            Issuer = certificate.Issuer,
+            Host = host.ToLowerInvariant()
+        });
+    }
+
+    public bool TryGetHostCertificate(string host, out HostCertificate certificate)
+    {
+        host = host.ToLowerInvariant();
+        certificate = _hostCertificates.FindOne(c => c.Host == host);
+        return certificate != null;
+    }
+
     public IEnumerable<Visited> GetVisitedPage(int page, out bool lastPage)
     {
         var pageSize = _settingsDatabase.HistoryPageSize;
@@ -110,6 +138,58 @@ internal class BrowsingDatabase : IBrowsingDatabase
         lastPage = result.Count < pageSize;
 
         return result;
+    }
+
+    public bool IsCertificateValid(string host, X509Certificate certificate, out InvalidCertificateReason result)
+    {
+        host = host.ToLowerInvariant();
+
+        // Opal *should* be returning this version under the hood
+        var cert = certificate as X509Certificate2 ?? new X509Certificate2(certificate);
+
+        if (!cert.MatchesHostname(host))
+        {
+            result = InvalidCertificateReason.NameMismatch;
+            return false;
+        }
+
+        if (DateTime.UtcNow > cert.NotAfter)
+        {
+            result = InvalidCertificateReason.Expired;
+            return false;
+        }
+
+        if (DateTime.UtcNow < cert.NotBefore)
+        {
+            result = InvalidCertificateReason.NotYet;
+            return false;
+        }
+
+        if (!TryGetHostCertificate(host, out var stored))
+        {
+            // never seen this one; add a new entry for it
+            SetHostCertificate(host, cert);
+            result = InvalidCertificateReason.Other;
+            return true;
+        }
+
+        if (stored.Fingerprint != cert.Thumbprint)
+        {
+            // this is a different one from what we remember
+            result = InvalidCertificateReason.TrustedMismatch;
+            return false;
+        }
+
+        result = default;
+        return true;
+    }
+
+    public void RemoveTrusted(string host)
+    {
+        host = host.ToLowerInvariant();
+        var stored = _hostCertificates.FindOne(c => c.Host == host);
+        if (stored != null)
+            _hostCertificates.Delete(stored.Id);
     }
 
     private void Identities_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
@@ -134,6 +214,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                     identity.IsActive = identity.Id == activeId;
                     _identities.Add(identity);
                 }
+
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

@@ -3,6 +3,7 @@ using CommunityToolkit.Maui;
 using LiteDB;
 using Microsoft.Extensions.Logging;
 using Opal;
+using Opal.Response;
 using RosyCrow.Database;
 using RosyCrow.Interfaces;
 using RosyCrow.Services.Cache;
@@ -39,9 +40,10 @@ public static class MauiProgram
             .AddSingleton<SettingsPage>()
             .AddSingleton<HistoryPage>()
             .AddSingleton<AboutPage>()
+            .AddSingleton<CertificatePage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()
-            .AddTransient<IOpalClient, OpalClient>()
+            .AddTransient<IOpalClient>(services => new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();
 
 #if DEBUG

@@ -36,6 +36,8 @@ public partial class MainPage : ContentPage
     private ICommand _setHomeUrl;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
+    private ICommand _showPageCertificate;
+    private bool _canViewCertificate;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
     {
@@ -62,6 +64,7 @@ public partial class MainPage : ContentPage
         OpenSettings = new Command(OpenMenuItem<SettingsPage>);
         FindInPage = new Command(async () => await TryFindInPage());
         FindNextInPage = new Command(() => Browser.FindTextInPage(Browser.FindNextQuery));
+        ShowPageCertificate = new Command(OpenMenuItem<CertificatePage>);
 
         UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
         UrlEntry.GestureRecognizers.Add(SwipeUpRecognizer);
@@ -277,6 +280,17 @@ public partial class MainPage : ContentPage
         {
             if (Equals(value, _findNextInPage)) return;
             _findNextInPage = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand ShowPageCertificate
+    {
+        get => _showPageCertificate;
+        set
+        {
+            if (Equals(value, _showPageCertificate)) return;
+            _showPageCertificate = value;
             OnPropertyChanged();
         }
     }

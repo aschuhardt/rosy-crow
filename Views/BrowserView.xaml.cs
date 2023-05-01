@@ -33,6 +33,7 @@ public partial class BrowserView : ContentView
     private readonly ISettingsDatabase _settingsDatabase;
 
     private bool _canPrint;
+    private bool _canShowHostCertificate;
     private string _findNextQuery;
     private string _htmlTemplate;
     private string _input;
@@ -74,7 +75,7 @@ public partial class BrowserView : ContentView
 
         Refresh = new Command(async () => await LoadPage(true));
 
-        _geminiClient.GetActiveCertificateCallback = GetActiveCertificateCallback;
+        _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
 
 #if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
@@ -101,12 +102,25 @@ public partial class BrowserView : ContentView
                     FindNextQuery = null;
                 }
                 else
+                {
                     _parentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
                         ToastDuration.Short);
+                }
             })));
         RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
             (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
 #endif
+    }
+
+    public bool CanShowHostCertificate
+    {
+        get => _canShowHostCertificate;
+        set
+        {
+            if (value == _canShowHostCertificate) return;
+            _canShowHostCertificate = value;
+            OnPropertyChanged();
+        }
     }
 
     public ICommand Refresh
@@ -564,6 +578,8 @@ public partial class BrowserView : ContentView
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
 
+        CanShowHostCertificate = false;
+
         if (Location == null || Location.Scheme == Constants.InternalScheme)
         {
             await LoadInternalPage(Location?.Host ?? "default");
@@ -594,6 +610,7 @@ public partial class BrowserView : ContentView
                 if (!string.IsNullOrEmpty(cached))
                 {
                     RenderedHtml = RenderCachedHtml(cached);
+                    CanShowHostCertificate = true;
                     RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
                     StoreVisitedLocation(Location, false);
                     CanPrint = _printService != null;
@@ -640,6 +657,7 @@ public partial class BrowserView : ContentView
 
                     if (success is GemtextResponse gemtext)
                     {
+                        CanShowHostCertificate = true;
                         RenderedHtml = await RenderGemtextAsHtml(gemtext);
                         StoreVisitedLocation(Location, false);
                         CanPrint = _printService != null;

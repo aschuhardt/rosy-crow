@@ -595,7 +595,7 @@ public partial class BrowserView : ContentView
                 {
                     RenderedHtml = RenderCachedHtml(cached);
                     RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
-                    StoreVisitedLocation(Location);
+                    StoreVisitedLocation(Location, false);
                     CanPrint = _printService != null;
                     break;
                 }
@@ -641,10 +641,13 @@ public partial class BrowserView : ContentView
                     if (success is GemtextResponse gemtext)
                     {
                         RenderedHtml = await RenderGemtextAsHtml(gemtext);
+                        StoreVisitedLocation(Location, false);
                         CanPrint = _printService != null;
                     }
                     else
                     {
+                        StoreVisitedLocation(Location, true);
+
                         // not gemtext; save as a file
                         var fileName = response.Uri.Segments.LastOrDefault() ??
                                        GetDefaultFileNameByMimeType(success.MimeType);
@@ -657,8 +660,6 @@ public partial class BrowserView : ContentView
                         await Launcher.Default.OpenAsync(
                             new OpenFileRequest(fileName, new ReadOnlyFile(path, success.MimeType)));
                     }
-
-                    StoreVisitedLocation(Location);
 
                     finished = true;
                     break;
@@ -674,12 +675,15 @@ public partial class BrowserView : ContentView
         Input = null;
     }
 
-    private void StoreVisitedLocation(Uri uri)
+    private void StoreVisitedLocation(Uri uri, bool isExternal)
     {
-        _settingsDatabase.LastVisitedUrl = uri.ToString();
+        if (!isExternal)
+        {
+            _settingsDatabase.LastVisitedUrl = uri.ToString();
 
-        if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
-            _recentHistory.Push(uri);
+            if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
+                _recentHistory.Push(uri);
+        }
 
         if (_settingsDatabase.SaveVisited)
         {

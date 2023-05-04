@@ -142,6 +142,8 @@
 		<MauiImage Include="Resources\Images\Navigation\back_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Info\info_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Info\info_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Copy\copy_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Copy\copy_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>

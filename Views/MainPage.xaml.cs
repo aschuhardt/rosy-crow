@@ -334,13 +334,25 @@ public partial class MainPage : ContentPage
 
     private void OpenMenuItem<T>() where T : ContentPage
     {
-        _isMenuExpanded = false;
-        _menuHideAnimation.Commit(this, "HideMenu", length: 150,
-            finished: async (_, _) =>
+        if (IsMenuExpanded)
+        {
+            // collapse and then navigate
+            _isMenuExpanded = false;
+            _menuHideAnimation.Commit(this, "HideMenu", length: 150,
+                finished: async (_, _) =>
+                {
+                    await NavBar.FadeTo(0, 100);
+                    await Navigation.PushPageAsync<T>();
+                });
+        }
+        else
+        {
+            Dispatcher.Dispatch(async () =>
             {
                 await NavBar.FadeTo(0, 100);
                 await Navigation.PushPageAsync<T>();
             });
+        }
     }
 
     private void TryLoadHomeUrl()

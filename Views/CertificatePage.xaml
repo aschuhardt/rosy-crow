@@ -12,27 +12,29 @@
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
         <Grid ColumnDefinitions="*,Auto,Auto">
-            <Label Grid.Column="0" Text="Expiration" VerticalTextAlignment="Center"/>
+            <Label Grid.Column="0" Text="Expiration" VerticalTextAlignment="Center" />
             <Label Grid.Column="1" Text="{Binding Expiration, StringFormat='{0:g}'}" VerticalTextAlignment="Center" />
-            <ImageButton 
-                Grid.Column="2" WidthRequest="24" HeightRequest="24"  Aspect="AspectFill" Margin="16,0,0,0"
+            <ImageButton
+                Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
                 Command="{Binding CopyText}" CommandParameter="{Binding Expiration, StringFormat='{0:g}'}"
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,12">
-            <Label Grid.Column="0" Text="Subject" VerticalTextAlignment="Center"/>
-            <Label Grid.Column="1" Text="{Binding Subject}" VerticalTextAlignment="Center" />
-            <ImageButton 
-                Grid.Column="2" WidthRequest="24" HeightRequest="24"  Aspect="AspectFill" Margin="16,0,0,0"
+            <Label Grid.Column="0" Text="Subject" VerticalTextAlignment="Center" />
+            <Label Grid.Column="1" MaximumWidthRequest="200" FontFamily="monospace"
+                   Text="{Binding Subject}" VerticalTextAlignment="Center" />
+            <ImageButton
+                Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
                 Command="{Binding CopyText}" CommandParameter="{Binding Subject}"
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto,Auto">
-            <Label Grid.Column="0" Text="Fingerprint" VerticalTextAlignment="Start"/>
+            <Label Grid.Column="0" Text="Fingerprint" VerticalTextAlignment="Start" />
             <Label Grid.Column="1" FontFamily="monospace"
                    MaximumWidthRequest="200" Text="{Binding Fingerprint}" VerticalTextAlignment="Center" />
-            <ImageButton 
-                Grid.Column="2" WidthRequest="24" HeightRequest="24"  Aspect="AspectFill" Margin="16,0,0,0" VerticalOptions="Start"
+            <ImageButton
+                Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
+                VerticalOptions="Start"
                 Command="{Binding CopyText}" CommandParameter="{Binding Fingerprint}"
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
         </Grid>

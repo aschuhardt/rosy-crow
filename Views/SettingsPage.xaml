@@ -18,7 +18,7 @@
             <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto">
-            <Label Text="Confirm every host certificate" Grid.Column="0" VerticalTextAlignment="Center" />
+            <Label Text="{x:Static localization:Text.SettingPage_ConfirmEveryCertificate}" Grid.Column="0" VerticalTextAlignment="Center" />
             <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
         </Grid>
         <Grid ColumnDefinitions="Auto,*,Auto">

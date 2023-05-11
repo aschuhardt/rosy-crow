@@ -263,6 +263,33 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Expiration.
+        /// </summary>
+        internal static string CertificatePage_Expiration {
+            get {
+                return ResourceManager.GetString("CertificatePage_Expiration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fingerprint.
+        /// </summary>
+        internal static string CertificatePage_Fingerprint {
+            get {
+                return ResourceManager.GetString("CertificatePage_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject.
+        /// </summary>
+        internal static string CertificatePage_Subject {
+            get {
+                return ResourceManager.GetString("CertificatePage_Subject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         internal static string Global_No {
@@ -538,6 +565,15 @@ namespace RosyCrow.Resources.Localization {
         internal static string MainPage_TryToggleBookmarked_Bookmark_removed {
             get {
                 return ResourceManager.GetString("MainPage_TryToggleBookmarked_Bookmark_removed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirm every host certificate.
+        /// </summary>
+        internal static string SettingPage_ConfirmEveryCertificate {
+            get {
+                return ResourceManager.GetString("SettingPage_ConfirmEveryCertificate", resourceCulture);
             }
         }
         

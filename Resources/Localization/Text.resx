@@ -272,4 +272,16 @@
 	<data name="BrowserView_LoadPage_OK" xml:space="preserve">
 		<value>OK</value>
 	</data>
+	<data name="CertificatePage_Expiration" xml:space="preserve">
+		<value>Expiration</value>
+	</data>
+	<data name="SettingPage_ConfirmEveryCertificate" xml:space="preserve">
+		<value>Confirm every host certificate</value>
+	</data>
+	<data name="CertificatePage_Subject" xml:space="preserve">
+		<value>Subject</value>
+	</data>
+	<data name="CertificatePage_Fingerprint" xml:space="preserve">
+		<value>Fingerprint</value>
+	</data>
 </root>

@@ -3,6 +3,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.CertificatePage"
              x:DataType="views:CertificatePage"
              Title="Certificate"
@@ -12,7 +13,7 @@
     </NavigationPage.TitleView>
     <VerticalStackLayout Padding="16,8,16,32">
         <Grid ColumnDefinitions="*,Auto,Auto">
-            <Label Grid.Column="0" Text="Expiration" VerticalTextAlignment="Center" />
+            <Label Grid.Column="0" Text="{x:Static localization:Text.CertificatePage_Expiration}" VerticalTextAlignment="Center" />
             <Label Grid.Column="1" Text="{Binding Expiration, StringFormat='{0:g}'}" VerticalTextAlignment="Center" />
             <ImageButton
                 Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
@@ -20,7 +21,7 @@
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,12">
-            <Label Grid.Column="0" Text="Subject" VerticalTextAlignment="Center" />
+            <Label Grid.Column="0" Text="{x:Static localization:Text.CertificatePage_Subject}" VerticalTextAlignment="Center" />
             <Label Grid.Column="1" MaximumWidthRequest="200" FontFamily="monospace"
                    Text="{Binding Subject}" VerticalTextAlignment="Center" />
             <ImageButton
@@ -29,7 +30,7 @@
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto,Auto">
-            <Label Grid.Column="0" Text="Fingerprint" VerticalTextAlignment="Start" />
+            <Label Grid.Column="0" Text="{x:Static localization:Text.CertificatePage_Fingerprint}" VerticalTextAlignment="Start" />
             <Label Grid.Column="1" FontFamily="monospace"
                    MaximumWidthRequest="200" Text="{Binding Fingerprint}" VerticalTextAlignment="Center" />
             <ImageButton

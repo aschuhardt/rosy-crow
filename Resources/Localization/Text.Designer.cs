@@ -124,6 +124,145 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string BrowserView_LoadPage_Error {
+            get {
+                return ResourceManager.GetString("BrowserView_LoadPage_Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Input Required.
+        /// </summary>
+        internal static string BrowserView_LoadPage_Input_Required {
+            get {
+                return ResourceManager.GetString("BrowserView_LoadPage_Input_Required", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string BrowserView_LoadPage_OK {
+            get {
+                return ResourceManager.GetString("BrowserView_LoadPage_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cancel.
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_Cancel {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_Cancel", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate Problem.
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The host&apos;s certificate has changed..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_changed_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_changed_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The host&apos;s certificate has expired..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_expired_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_expired_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The host&apos;s certificate is invalid..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_invalid_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_invalid_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The host&apos;s certificate is missing required information..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_missing_required_information_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_missing_re" +
+                        "quired_information_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The host&apos;s certificate is not valid yet..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_not_valid_yet_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_not_valid_" +
+                        "yet_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name on the server&apos;s certificate is incorrect..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateInvalidCallback_The_name_on_the_server_s_certificate_is_incorrect_ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateInvalidCallback_The_name_on_the_server_s_certificate" +
+                        "_is_incorrect_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Accept the host&apos;s new certificate and continue?  Its fingerprint is {0}..
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__ {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certifica" +
+                        "te_and_continue___Its_fingerprint_is__0__", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to New Certificate.
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateUnrecognizedCallback_No {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateUnrecognizedCallback_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        internal static string BrowserView_RemoteCertificateUnrecognizedCallback_Yes {
+            get {
+                return ResourceManager.GetString("BrowserView_RemoteCertificateUnrecognizedCallback_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         internal static string Global_No {

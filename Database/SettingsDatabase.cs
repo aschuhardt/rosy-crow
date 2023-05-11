@@ -16,6 +16,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private string _theme;
     private int? _historyPageSize;
     private bool? _inlineImages;
+    private bool? _strictTofuMode;
 
     public SettingsDatabase(ILiteDatabase database)
     {
@@ -105,6 +106,20 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         set
         {
             if (SetField(ref _inlineImages, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public bool StrictTofuMode
+    {
+        get
+        {
+            _strictTofuMode ??= GetBoolValue();
+            return _strictTofuMode.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _strictTofuMode, value))
                 SetBoolValue(value);
         }
     }

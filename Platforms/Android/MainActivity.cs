@@ -2,7 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 
-namespace RosyCrow;
+namespace RosyCrow.Platforms.Android;
 
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode |

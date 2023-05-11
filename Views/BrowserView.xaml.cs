@@ -7,8 +7,10 @@ using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Opal;
 using Opal.Authentication.Certificate;
+using Opal.CallbackArgs;
 using Opal.Document.Line;
 using Opal.Response;
+using Opal.Tofu;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -76,6 +78,8 @@ public partial class BrowserView : ContentView
         Refresh = new Command(async () => await LoadPage(true));
 
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
+        _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
+        _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
 
 #if ANDROID
         WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
@@ -242,6 +246,45 @@ public partial class BrowserView : ContentView
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasFindNextQuery));
         }
+    }
+
+    private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
+    {
+        await Dispatcher.DispatchAsync(async () =>
+            arg.AcceptAndTrust = await _parentPage.DisplayAlert(
+                Text.BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate,
+                string.Format(
+                    Text
+                        .BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__,
+                    arg.Fingerprint), Text.BrowserView_RemoteCertificateUnrecognizedCallback_Yes,
+                Text.BrowserView_RemoteCertificateUnrecognizedCallback_No));
+
+        if (arg.AcceptAndTrust)
+            _browsingDatabase.AcceptHostCertificate(arg.Host);
+    }
+
+    private async Task RemoteCertificateInvalidCallback(RemoteCertificateInvalidArgs arg)
+    {
+        var message = arg.Reason switch
+        {
+            InvalidCertificateReason.NameMismatch => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_name_on_the_server_s_certificate_is_incorrect_,
+            InvalidCertificateReason.TrustedMismatch => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_changed_,
+            InvalidCertificateReason.Expired => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_expired_,
+            InvalidCertificateReason.NotYet => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_not_valid_yet_,
+            InvalidCertificateReason.Other => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_invalid_,
+            InvalidCertificateReason.MissingInformation => Text
+                .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_missing_required_information_,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        await Dispatcher.DispatchAsync(() =>
+            _parentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem, message,
+                Text.BrowserView_RemoteCertificateInvalidCallback_Cancel));
     }
 
     private async Task<IClientCertificate> GetActiveCertificateCallback()
@@ -561,7 +604,6 @@ public partial class BrowserView : ContentView
 
         switch (status)
         {
-            case StatusCode.Unknown:
             case StatusCode.TemporaryFailure:
             case StatusCode.ServerUnavailable:
             case StatusCode.CgiError:
@@ -629,7 +671,8 @@ public partial class BrowserView : ContentView
             {
                 case InputRequiredResponse inputRequired:
                 {
-                    Input = await _parentPage.DisplayPromptAsync("Input Required", inputRequired.Message);
+                    Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                        inputRequired.Message);
                     if (string.IsNullOrEmpty(Input))
                     {
                         _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
@@ -640,9 +683,20 @@ public partial class BrowserView : ContentView
                 }
                 case ErrorResponse error:
                 {
+                    if (!error.CanRetry)
+                    {
+                        // Opal has indicated that this request should not be re-sent; bail early
+                        //
+                        // Currently this only happens in the case of invalid or rejected remote
+                        // certificates, where re-sending the request would not make sense
+                        finished = true;
+                        break;
+                    }
+
                     if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
                     {
-                        await _parentPage.DisplayAlert("Error", error.Message, "OK");
+                        await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message,
+                            Text.BrowserView_LoadPage_OK);
                         finished = true;
                     }
                     else

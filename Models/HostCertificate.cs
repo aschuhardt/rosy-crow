@@ -3,6 +3,7 @@
 public class HostCertificate
 {
     public int Id { get; set; }
+    public bool Accepted { get; set; }
     public string Host { get; set; }
     public string Subject { get; set; }
     public string Issuer { get; set; }

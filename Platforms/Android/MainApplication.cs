@@ -1,8 +1,7 @@
 ﻿using Android.App;
 using Android.Runtime;
-using RosyCrow.Platforms.Android;
 
-namespace RosyCrow;
+namespace RosyCrow.Platforms.Android;
 
 [Application]
 public class MainApplication : MauiApplication

@@ -88,6 +88,18 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public bool StrictTofuMode
+    {
+        get => _settingsDatabase?.StrictTofuMode ?? default;
+        set
+        {
+            if (value == _settingsDatabase.StrictTofuMode)
+                return;
+            _settingsDatabase.StrictTofuMode = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async void SettingsPage_OnLoaded(object sender, EventArgs e)
     {
         if (Choices != null)

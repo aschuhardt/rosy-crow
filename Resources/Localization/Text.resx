@@ -227,4 +227,49 @@
 	<data name="BrowserView_FindNext_Found__0__instances" xml:space="preserve">
 		<value>Found {0} instances</value>
 	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_name_on_the_server_s_certificate_is_incorrect_" xml:space="preserve">
+		<value>The name on the server's certificate is incorrect.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_changed_" xml:space="preserve">
+		<value>The host's certificate has changed.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_has_expired_" xml:space="preserve">
+		<value>The host's certificate has expired.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_not_valid_yet_" xml:space="preserve">
+		<value>The host's certificate is not valid yet.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_invalid_" xml:space="preserve">
+		<value>The host's certificate is invalid.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_missing_required_information_" xml:space="preserve">
+		<value>The host's certificate is missing required information.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate" xml:space="preserve">
+		<value>New Certificate</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__" xml:space="preserve">
+		<value>Accept the host's new certificate and continue?  Its fingerprint is {0}.</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateUnrecognizedCallback_Yes" xml:space="preserve">
+		<value>Yes</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateUnrecognizedCallback_No" xml:space="preserve">
+		<value>No</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem" xml:space="preserve">
+		<value>Certificate Problem</value>
+	</data>
+	<data name="BrowserView_RemoteCertificateInvalidCallback_Cancel" xml:space="preserve">
+		<value>Cancel</value>
+	</data>
+	<data name="BrowserView_LoadPage_Input_Required" xml:space="preserve">
+		<value>Input Required</value>
+	</data>
+	<data name="BrowserView_LoadPage_Error" xml:space="preserve">
+		<value>Error</value>
+	</data>
+	<data name="BrowserView_LoadPage_OK" xml:space="preserve">
+		<value>OK</value>
+	</data>
 </root>

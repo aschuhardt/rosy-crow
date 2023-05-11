@@ -17,6 +17,10 @@
             <Label Text="{x:Static localization:Text.SettingsPage_InlineImages}" Grid.Column="0" VerticalTextAlignment="Center" />
             <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
         </Grid>
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="Confirm every host certificate" Grid.Column="0" VerticalTextAlignment="Center" />
+            <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
+        </Grid>
         <Grid ColumnDefinitions="Auto,*,Auto">
             <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0"
                    VerticalOptions="Center" />

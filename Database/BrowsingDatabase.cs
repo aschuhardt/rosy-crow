@@ -106,7 +106,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         _visitedStore.Insert(visited);
     }
 
-    public void SetHostCertificate(string host, X509Certificate2 certificate)
+    public void SetHostCertificate(string host, X509Certificate2 certificate, bool accepted)
     {
         _hostCertificates.Insert(new HostCertificate
         {
@@ -116,7 +116,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             Fingerprint = certificate.Thumbprint,
             Subject = certificate.Subject,
             Issuer = certificate.Issuer,
-            Host = host.ToLowerInvariant()
+            Host = host.ToLowerInvariant(),
+            Accepted = accepted
         });
     }
 
@@ -140,10 +141,17 @@ internal class BrowsingDatabase : IBrowsingDatabase
         return result;
     }
 
+    public void AcceptHostCertificate(string host)
+    {
+        if (!TryGetHostCertificate(host, out var cert))
+            return;
+
+        cert.Accepted = true;
+        _hostCertificates.Update(cert);
+    }
+
     public bool IsCertificateValid(string host, X509Certificate certificate, out InvalidCertificateReason result)
     {
-        host = host.ToLowerInvariant();
-
         // Opal *should* be returning this version under the hood
         var cert = certificate as X509Certificate2 ?? new X509Certificate2(certificate);
 
@@ -168,12 +176,18 @@ internal class BrowsingDatabase : IBrowsingDatabase
         if (!TryGetHostCertificate(host, out var stored))
         {
             // never seen this one; add a new entry for it
-            SetHostCertificate(host, cert);
+            SetHostCertificate(host, cert, !_settingsDatabase.StrictTofuMode);
+
+            if (_settingsDatabase.StrictTofuMode)
+            {
+                result = InvalidCertificateReason.TrustedMismatch;
+                return false;
+            }
             result = InvalidCertificateReason.Other;
             return true;
         }
 
-        if (stored.Fingerprint != cert.Thumbprint)
+        if (stored == null || !stored.Accepted || stored.Fingerprint != cert.Thumbprint)
         {
             // this is a different one from what we remember
             result = InvalidCertificateReason.TrustedMismatch;
@@ -182,14 +196,6 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         result = default;
         return true;
-    }
-
-    public void RemoveTrusted(string host)
-    {
-        host = host.ToLowerInvariant();
-        var stored = _hostCertificates.FindOne(c => c.Host == host);
-        if (stored != null)
-            _hostCertificates.Delete(stored.Id);
     }
 
     private void Identities_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

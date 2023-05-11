@@ -9,4 +9,5 @@ public interface ISettingsDatabase
     int? ActiveIdentityId { get; set; }
     int HistoryPageSize { get; set; }
     bool InlineImages { get; set; }
+    bool StrictTofuMode { get; set; }
 }

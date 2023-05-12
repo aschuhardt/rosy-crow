@@ -587,6 +587,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Export Error Logs.
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogs {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to History page size.
         /// </summary>
         internal static string SettingsPage_History_page_size {

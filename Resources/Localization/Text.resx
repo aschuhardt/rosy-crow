@@ -284,4 +284,7 @@
 	<data name="CertificatePage_Fingerprint" xml:space="preserve">
 		<value>Fingerprint</value>
 	</data>
+	<data name="SettingsPage_ExportErrorLogs" xml:space="preserve">
+		<value>Export Error Logs</value>
+	</data>
 </root>

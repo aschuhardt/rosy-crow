@@ -40,6 +40,7 @@
                 SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
         </Grid>
         <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
+        <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
         <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
     </VerticalStackLayout>
 </ContentPage>

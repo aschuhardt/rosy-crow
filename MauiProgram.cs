@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui;
 using LiteDB;
-using Microsoft.Extensions.Logging;
 using Opal;
 using Opal.Response;
 using RosyCrow.Database;
@@ -11,6 +10,10 @@ using RosyCrow.Services.Fingerprint;
 using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Identity;
 using RosyCrow.Views;
+using Serilog;
+using Serilog.Events;
+using Serilog.Exceptions;
+using Serilog.Formatting.Compact;
 
 namespace RosyCrow;
 
@@ -46,9 +49,15 @@ public static class MauiProgram
             .AddTransient<IOpalClient>(services => new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();
 
-#if DEBUG
-        builder.Logging.AddDebug();
-#endif
+        var logDirectory = Path.Combine(FileSystem.AppDataDirectory, "logs");
+        if (!Directory.Exists(logDirectory))
+            Directory.CreateDirectory(logDirectory);
+
+        var logConfig = new LoggerConfiguration()
+            .Enrich.WithExceptionDetails()
+            .WriteTo.Async(a => a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"), LogEventLevel.Warning, retainedFileCountLimit: 7))
+            .WriteTo.Debug(LogEventLevel.Debug);
+        builder.Logging.AddSerilog(logConfig.CreateLogger());
 
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => Debugger.Break();
 

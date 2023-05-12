@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Extensions.Logging;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -14,6 +15,7 @@ public partial class HistoryPage : ContentPage
 {
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ILogger<HistoryPage> _logger;
     private ICommand _clearHistory;
     private int _currentPage;
     private bool _hasNextPage;
@@ -194,39 +196,55 @@ public partial class HistoryPage : ContentPage
 
     private async Task TryClearHistory()
     {
-        if (!Visited.Any())
-            return;
-
-        if (await DisplayAlert(Text.HistoryPage_TryClearHistory_Clear_History, Text.HistoryPage_TryClearHistory_Confirm,
-                Text.Global_Yes, Text.Global_No))
+        try
         {
-            var deleted = _browsingDatabase.ClearVisited();
-            LoadCurrentPage();
-            if (deleted > 0)
+            if (!Visited.Any())
+                return;
+
+            if (await DisplayAlert(Text.HistoryPage_TryClearHistory_Clear_History, Text.HistoryPage_TryClearHistory_Confirm,
+                    Text.Global_Yes, Text.Global_No))
             {
-                this.ShowToast(string.Format(Text.HistoryPage_TryClearHistory__0__visited_pages_deleted, deleted),
-                    ToastDuration.Short);
+                var deleted = _browsingDatabase.ClearVisited();
+                LoadCurrentPage();
+                if (deleted > 0)
+                {
+                    this.ShowToast(string.Format(Text.HistoryPage_TryClearHistory__0__visited_pages_deleted, deleted),
+                        ToastDuration.Short);
+                }
+
+                _logger.LogInformation("Cleared the {Count} visited page entries", deleted);
             }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while attempting to clear the visited page history");
         }
     }
 
     private void LoadCurrentPage()
     {
-        if (Visited == null)
-            return;
+        try
+        {
+            if (Visited == null)
+                return;
 
-        Visited.Clear();
+            Visited.Clear();
 
-        var page = _browsingDatabase.GetVisitedPage(CurrentPage, out var lastPage);
+            var page = _browsingDatabase.GetVisitedPage(CurrentPage, out var lastPage);
 
-        foreach (var entry in page)
-            Visited.Add(entry);
+            foreach (var entry in page)
+                Visited.Add(entry);
 
-        HasNextPage = !lastPage;
-        HasPreviousPage = CurrentPage > 1;
-        PageCount = _browsingDatabase.GetVisitedPageCount();
-        PageDescription = string.Format(Text.HistoryPage_LoadCurrentPage__Page__0__of__1_, CurrentPage, PageCount);
-        ShouldShowNavigation = HasNextPage || HasPreviousPage;
+            HasNextPage = !lastPage;
+            HasPreviousPage = CurrentPage > 1;
+            PageCount = _browsingDatabase.GetVisitedPageCount();
+            PageDescription = string.Format(Text.HistoryPage_LoadCurrentPage__Page__0__of__1_, CurrentPage, PageCount);
+            ShouldShowNavigation = HasNextPage || HasPreviousPage;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while loading a page of previously-visited URIs");
+        }
     }
 
     private void HistoryPage_OnAppearing(object sender, EventArgs e)

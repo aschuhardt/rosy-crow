@@ -1,12 +1,11 @@
 ﻿using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
-#if ANDROID
-#endif
 
 // ReSharper disable AsyncVoidLambda
 
@@ -16,6 +15,7 @@ public partial class MainPage : ContentPage
 {
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ILogger<MainPage> _logger;
 
     private ICommand _expandMenu;
     private ICommand _findInPage;
@@ -297,70 +297,107 @@ public partial class MainPage : ContentPage
 
     private void PerformNavBarAnimations()
     {
-        if (IsNavBarVisible)
+        try
         {
-            Dispatcher.Dispatch(async () =>
-                await NavBar.TranslateTo(NavBar.TranslationX, 0));
-        }
-        else
-        {
-            // also collapse the menu if the navbar is being hidden
-            if (IsMenuExpanded)
-                IsMenuExpanded = false;
+            if (IsNavBarVisible)
+            {
+                Dispatcher.Dispatch(async () =>
+                    await NavBar.TranslateTo(NavBar.TranslationX, 0));
+            }
+            else
+            {
+                // also collapse the menu if the navbar is being hidden
+                if (IsMenuExpanded)
+                    IsMenuExpanded = false;
 
-            new Animation(v => NavBar.TranslationY = v, 0, -NavBar.Height * 1.25).Commit(this, "HideNavBar");
+                new Animation(v => NavBar.TranslationY = v, 0, -NavBar.Height * 1.25).Commit(this, "HideNavBar");
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while performing navbar animation");
         }
     }
 
     private void PerformMenuAnimations()
     {
-        if (IsMenuExpanded)
-            _menuShowAnimation.Commit(this, "ShowMenu");
-        else
-            _menuHideAnimation.Commit(this, "HideMenu", length: 150);
+        try
+        {
+            if (IsMenuExpanded)
+                _menuShowAnimation.Commit(this, "ShowMenu");
+            else
+                _menuHideAnimation.Commit(this, "HideMenu", length: 150);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while performing menu animation");
+        }
     }
 
     protected override bool OnBackButtonPressed()
     {
-        // if the menu is visible, just close it
-        if (IsMenuExpanded)
+        try
         {
-            IsMenuExpanded = false;
-            return true;
-        }
+            // if the menu is visible, just close it
+            if (IsMenuExpanded)
+            {
+                IsMenuExpanded = false;
+                return true;
+            }
 
-        return Browser.GoBack();
+            return Browser.GoBack();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while navigating backward");
+        }
     }
 
     private void OpenMenuItem<T>() where T : ContentPage
     {
-        if (IsMenuExpanded)
+        try
         {
-            // collapse and then navigate
-            _isMenuExpanded = false;
-            _menuHideAnimation.Commit(this, "HideMenu", length: 150,
-                finished: async (_, _) =>
+            if (IsMenuExpanded)
+            {
+                // collapse and then navigate
+                _isMenuExpanded = false;
+                _menuHideAnimation.Commit(this, "HideMenu", length: 150,
+                    finished: async (_, _) =>
+                    {
+                        await NavBar.FadeTo(0, 100);
+                        await Navigation.PushPageAsync<T>();
+                    });
+            }
+            else
+            {
+                Dispatcher.Dispatch(async () =>
                 {
                     await NavBar.FadeTo(0, 100);
                     await Navigation.PushPageAsync<T>();
                 });
+            }
         }
-        else
+        catch (Exception e)
         {
-            Dispatcher.Dispatch(async () =>
-            {
-                await NavBar.FadeTo(0, 100);
-                await Navigation.PushPageAsync<T>();
-            });
+            _logger.LogError(e, "Exception thrown while opening menu item {Name}", typeof(T).Name);
         }
     }
 
     private void TryLoadHomeUrl()
     {
-        if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
-            this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
-        else
-            Browser.Location = _settingsDatabase.HomeUrl.ToGeminiUri();
+        try
+        {
+            _logger.LogDebug("Attempting to load the home URI");
+
+            if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
+                this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
+            else
+                Browser.Location = _settingsDatabase.HomeUrl.ToGeminiUri();
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while navigating to the home URI");
+        }
     }
 
     private void TrySetHomeUrl()
@@ -368,38 +405,54 @@ public partial class MainPage : ContentPage
         if (Browser.Location == null)
             return;
 
-        _settingsDatabase.HomeUrl = Browser.Location.ToString();
+        try
+        {
+            _settingsDatabase.HomeUrl = Browser.Location.ToString();
 
-        Browser.SimulateLocationChanged(); // force buttons to update
+            _logger.LogInformation("Home URI set to {URI}", _settingsDatabase.HomeUrl);
 
-        this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
+            Browser.SimulateLocationChanged(); // force buttons to update
+
+            this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while setting the home URI to {URI}", Browser.Location);
+        }
     }
 
     private async Task TryFindInPage()
     {
-        string query;
-        if (Browser.HasFindNextQuery)
+        try
         {
-            query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
-                Text.MainPage_TryFindInPage_OngoingPrompt,
-                initialValue: Browser.FindNextQuery);
-        }
-        else
-        {
-            query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
-                Text.MainPage_TryFindInPage_InitialPrompt);
-        }
-
-        if (string.IsNullOrEmpty(query))
-        {
+            string query;
             if (Browser.HasFindNextQuery)
-                Browser.ClearFindResults();
-            return;
+            {
+                query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
+                    Text.MainPage_TryFindInPage_OngoingPrompt,
+                    initialValue: Browser.FindNextQuery);
+            }
+            else
+            {
+                query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
+                    Text.MainPage_TryFindInPage_InitialPrompt);
+            }
+
+            if (string.IsNullOrEmpty(query))
+            {
+                if (Browser.HasFindNextQuery)
+                    Browser.ClearFindResults();
+                return;
+            }
+
+            IsMenuExpanded = false;
+
+            Browser.FindTextInPage(query);
         }
-
-        IsMenuExpanded = false;
-
-        Browser.FindTextInPage(query);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown attempting to find text in the page");
+        }
     }
 
     private void TryToggleBookmarked()
@@ -407,25 +460,35 @@ public partial class MainPage : ContentPage
         if (Browser.Location == null)
             return;
 
-        if (_browsingDatabase.IsBookmark(Browser.Location, out var bookmark))
+        try
         {
-            _browsingDatabase.Bookmarks.Remove(bookmark);
-
-            Browser.SimulateLocationChanged(); // force buttons to update
-
-            this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_removed, ToastDuration.Short);
-        }
-        else
-        {
-            _browsingDatabase.Bookmarks.Add(new Bookmark
+            if (_browsingDatabase.IsBookmark(Browser.Location, out var bookmark))
             {
-                Title = Browser.PageTitle ?? Browser.Location.Segments.LastOrDefault() ?? Browser.Location.Host,
-                Url = Browser.Location.ToString()
-            });
 
-            Browser.SimulateLocationChanged(); // force buttons to update
+                _browsingDatabase.Bookmarks.Remove(bookmark);
+                Browser.SimulateLocationChanged(); // force buttons to update
 
-            this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
+                _logger.LogInformation("Removing bookmarked location {URI}", bookmark.Url);
+
+                this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_removed, ToastDuration.Short);
+            }
+            else
+            {
+                _browsingDatabase.Bookmarks.Add(new Bookmark
+                {
+                    Title = Browser.PageTitle ?? Browser.Location.Segments.LastOrDefault() ?? Browser.Location.Host,
+                    Url = Browser.Location.ToString()
+                });
+                Browser.SimulateLocationChanged(); // force buttons to update
+                
+                _logger.LogInformation("Set bookmarked location {URI}", bookmark.Url);
+
+                this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown toggling the bookmark for {URI}", Browser.Location);
         }
     }
 
@@ -443,21 +506,35 @@ public partial class MainPage : ContentPage
 
     private void MainPage_OnLoaded(object sender, EventArgs e)
     {
-        AddMenuAnimations();
-        Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+        try
+        {
+            AddMenuAnimations();
+            Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Exception thrown on MainPage loaded");
+        }
     }
 
     private async void MainPage_OnAppearing(object sender, EventArgs e)
     {
-        if (!string.IsNullOrWhiteSpace(App.StartupUri))
-            Browser.Location = App.StartupUri.ToGeminiUri();
-
-        await NavBar.FadeTo(1, 100);
-
-        if (LoadPageOnAppearing)
+        try
         {
-            LoadPageOnAppearing = false;
-            await Browser.LoadPage();
+            if (!string.IsNullOrWhiteSpace(App.StartupUri))
+                Browser.Location = App.StartupUri.ToGeminiUri();
+
+            await NavBar.FadeTo(1, 100);
+
+            if (LoadPageOnAppearing)
+            {
+                LoadPageOnAppearing = false;
+                await Browser.LoadPage();
+            }
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Exception thrown on MainPage appearing");
         }
     }
 }

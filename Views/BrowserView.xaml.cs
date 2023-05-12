@@ -3,6 +3,7 @@ using System.Web;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
+using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Opal;
@@ -33,6 +34,7 @@ public partial class BrowserView : ContentView
     private readonly List<Task> _parallelRenderWorkload;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ILogger<BrowserView> _logger;
 
     private bool _canPrint;
     private bool _canShowHostCertificate;
@@ -56,12 +58,13 @@ public partial class BrowserView : ContentView
             MauiProgram.Services.GetRequiredService<ISettingsDatabase>(),
             MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
             MauiProgram.Services.GetRequiredService<IIdentityService>(),
-            MauiProgram.Services.GetRequiredService<ICacheService>())
+            MauiProgram.Services.GetRequiredService<ICacheService>(),
+            MauiProgram.Services.GetRequiredService<ILogger<BrowserView>>())
     {
     }
 
     public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase,
-        IIdentityService identityService, ICacheService cache)
+        IIdentityService identityService, ICacheService cache, ILogger<BrowserView> logger)
     {
         InitializeComponent();
 
@@ -72,6 +75,7 @@ public partial class BrowserView : ContentView
         _browsingDatabase = browsingDatabase;
         _identityService = identityService;
         _cache = cache;
+        _logger = logger;
         _recentHistory = new Stack<Uri>();
         _parallelRenderWorkload = new List<Task>();
 
@@ -304,7 +308,14 @@ public partial class BrowserView : ContentView
 
     public void Print()
     {
-        _printService.Print(PageTitle);
+        try
+        {
+            _printService.Print(PageTitle);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while attempting to print the current page");
+        }
     }
 
     public bool GoBack()

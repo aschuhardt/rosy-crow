@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using Opal.Authentication;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -28,19 +29,22 @@ public partial class IdentityPage : ContentPage
     private readonly IIdentityService _identityService;
     private readonly ILiteDatabase _liteDatabase; // for file storage
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly ILogger<IdentityPage> _logger;
+
     private ICommand _delete;
     private ICommand _generateNew;
     private ObservableCollection<Identity> _identities;
     private ICommand _toggleActive;
 
     public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint, ILiteDatabase liteDatabase,
-        IIdentityService identityService, ISettingsDatabase settingsDatabase)
+        IIdentityService identityService, ISettingsDatabase settingsDatabase, ILogger<IdentityPage> logger)
     {
         _browsingDatabase = browsingDatabase;
         _fingerprint = fingerprint;
         _liteDatabase = liteDatabase;
         _identityService = identityService;
         _settingsDatabase = settingsDatabase;
+        _logger = logger;
 
         InitializeComponent();
 
@@ -97,19 +101,28 @@ public partial class IdentityPage : ContentPage
 
     private async Task ToggleActiveKey(int id)
     {
-        var identity = Identities.FirstOrDefault(i => i.Id == id);
-        if (identity == null)
-            return;
+        try
+        {
+            var identity = Identities.FirstOrDefault(i => i.Id == id);
+            if (identity == null)
+                return;
 
-        if (id == _settingsDatabase.ActiveIdentityId.GetValueOrDefault(-1))
-        {
-            ClearIdentityActiveIndicator();
-            _identityService.ClearActiveCertificate();
+            if (id == _settingsDatabase.ActiveIdentityId.GetValueOrDefault(-1))
+            {
+                ClearIdentityActiveIndicator();
+                _identityService.ClearActiveCertificate();
+                _logger.LogInformation("Deactivated identity {ID} ({Name})", identity.Id, identity.Name);
+            }
+            else
+            {
+                SetIdentityActiveIndicator(id);
+                await _identityService.Activate(identity);
+                _logger.LogInformation("Activated identity {ID} ({Name})", identity.Id, identity.Name);
+            }
         }
-        else
+        catch (Exception e)
         {
-            SetIdentityActiveIndicator(id);
-            await _identityService.Activate(identity);
+            _logger.LogError(e, "Exception thrown while toggling the active status of identity {ID}", id);
         }
     }
 
@@ -127,22 +140,31 @@ public partial class IdentityPage : ContentPage
 
     private async Task DeleteKey(int id)
     {
-        var identity = Identities.FirstOrDefault(i => i.Id == id);
-        if (identity == null)
-            return;
-
-        if (!await DisplayAlert(Text.IdentityPage_DeleteKey_Delete_Identity, Text.IdentityPage_DeleteKey_Confirm,
-                Text.Global_Yes, Text.Global_No))
-            return;
-
-        if (string.IsNullOrEmpty(identity.EncryptedPassword) || new CryptoObjectHelper(identity.SemanticKey).Delete())
+        try
         {
-            Identities.Remove(identity);
-            _liteDatabase.FileStorage.Delete(identity.SemanticKey);
-            await Toast.Make(Text.IdentityPage_DeleteKey_Identity_deleted).Show();
+            var identity = Identities.FirstOrDefault(i => i.Id == id);
+            if (identity == null)
+                return;
+
+            if (!await DisplayAlert(Text.IdentityPage_DeleteKey_Delete_Identity, Text.IdentityPage_DeleteKey_Confirm,
+                    Text.Global_Yes, Text.Global_No))
+                return;
+
+            if (string.IsNullOrEmpty(identity.EncryptedPassword) || new CryptoObjectHelper(identity.SemanticKey).Delete())
+            {
+                Identities.Remove(identity);
+                _liteDatabase.FileStorage.Delete(identity.SemanticKey);
+                await Toast.Make(Text.IdentityPage_DeleteKey_Identity_deleted).Show();
+            }
+            else
+                await Toast.Make(Text.IdentityPage_DeleteKey_Failed_to_delete_identity).Show();
+
+            _logger.LogInformation("Deleted identity {ID} ({Name})", identity.Id, identity.Name);
         }
-        else
-            await Toast.Make(Text.IdentityPage_DeleteKey_Failed_to_delete_identity).Show();
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while deleting identity {ID}", id);
+        }
     }
 
     private async Task GenerateNewKey()
@@ -165,53 +187,75 @@ public partial class IdentityPage : ContentPage
             Hash = certificate.Thumbprint
         };
 
-        if (OperatingSystem.IsAndroidVersionAtLeast(28) &&
-            await CrossFingerprint.Current.IsAvailableAsync(true) &&
-            await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
-                Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No))
+        _logger.LogDebug("Generating a new identity named {Name}", identity.Name);
+
+        try
         {
-            var password = RandomNumberGenerator.GetBytes(32);
-
-            var authConfig = new AuthenticationRequestConfiguration(
-                Text.IdentityPage_GenerateNewKey_Secure_the_Identity,
-                Text.IdentityPage_GenerateNewKey_Authenticate, key)
+            if (OperatingSystem.IsAndroidVersionAtLeast(28) &&
+                await CrossFingerprint.Current.IsAvailableAsync(true) &&
+                await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
+                    Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No))
             {
-                AllowAlternativeAuthentication = true
-            };
+                var password = RandomNumberGenerator.GetBytes(32);
 
-            var result = await _fingerprint.EncryptAsync(authConfig, password);
-            if (!result.AuthenticationResult.Authenticated)
-            {
-                await Toast.Make(Text.IdentityPage_GenerateNewKey_Could_not_protect_the_identity).Show();
-                return;
+                var authConfig = new AuthenticationRequestConfiguration(
+                    Text.IdentityPage_GenerateNewKey_Secure_the_Identity,
+                    Text.IdentityPage_GenerateNewKey_Authenticate, key)
+                {
+                    AllowAlternativeAuthentication = true
+                };
+
+                var result = await _fingerprint.EncryptAsync(authConfig, password);
+                if (!result.AuthenticationResult.Authenticated)
+                {
+                    await Toast.Make(Text.IdentityPage_GenerateNewKey_Could_not_protect_the_identity).Show();
+                    return;
+                }
+
+                identity.EncryptedPassword = Convert.ToBase64String(result.Ciphertext);
+                identity.EncryptedPasswordIv = Convert.ToBase64String(result.Iv);
+
+                _logger.LogInformation("Encrypted the password for the new identity using device credentials");
+
+                await StoreCertificate(identity, certificate, password);
             }
+            else
+                await StoreCertificate(identity, certificate);
 
-            identity.EncryptedPassword = Convert.ToBase64String(result.Ciphertext);
-            identity.EncryptedPasswordIv = Convert.ToBase64String(result.Iv);
+            Identities.Add(identity);
 
-            await StoreCertificate(identity, certificate, password);
+            _logger.LogInformation("Saved the new identity named {Name}", identity.Name);
         }
-        else
-            await StoreCertificate(identity, certificate);
-
-        Identities.Add(identity);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while generating a new identity");
+        }
     }
 
     private async Task StoreCertificate(Identity identity, X509Certificate2 certificate, byte[] password = null)
     {
-        password ??= await _identityService.DerivePassword(identity);
-        if (password == null)
-            return;
+        try
+        {
+            password ??= await _identityService.DerivePassword(identity);
+            if (password == null)
+                return;
 
-        await using var storage =
-            _liteDatabase.FileStorage.OpenWrite(identity.SemanticKey, $"{identity.SemanticKey}.pem");
-        await using var writer = new StreamWriter(storage);
-        await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
-        await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY",
-            certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(
-                Encoding.UTF8.GetString(password).ToCharArray(),
-                new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, EncryptionIterations))));
-        await writer.FlushAsync();
+            await using var storage =
+                _liteDatabase.FileStorage.OpenWrite(identity.SemanticKey, $"{identity.SemanticKey}.pem");
+            await using var writer = new StreamWriter(storage);
+            await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
+            await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY",
+                certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(
+                    Encoding.UTF8.GetString(password).ToCharArray(),
+                    new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, EncryptionIterations))));
+            await writer.FlushAsync();
+
+            _logger.LogInformation("Stored an encrypted PEM-encoded identity certificate");
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while storing the certificate for an identity ({Name})", identity.Name);
+        }
     }
 
     private void IdentityPage_OnAppearing(object sender, EventArgs e)

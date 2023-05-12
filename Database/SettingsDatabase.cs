@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using LiteDB;
+using Microsoft.Extensions.Logging;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 
@@ -9,6 +10,9 @@ namespace RosyCrow.Database;
 internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 {
     private readonly ILiteCollection<Setting> _settingsStore;
+    private readonly ILogger<SettingsDatabase> _logger;
+
+
     private int? _activeIdentityId;
     private string _homeUrl;
     private string _lastVisitedUrl;
@@ -18,8 +22,9 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private bool? _inlineImages;
     private bool? _strictTofuMode;
 
-    public SettingsDatabase(ILiteDatabase database)
+    public SettingsDatabase(ILiteDatabase database, ILogger<SettingsDatabase> logger)
     {
+        _logger = logger;
         _settingsStore = database.GetCollection<Setting>();
         _settingsStore.EnsureIndex(s => s.Name, true);
     }
@@ -143,15 +148,24 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
-
-        if (entity != null && !value.HasValue)
-            _settingsStore.Delete(entity.Id);
-        else if (value.HasValue)
+        try
         {
-            entity ??= new Setting { Name = name };
-            entity.BoolValue = value.Value;
-            _settingsStore.Upsert(entity);
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+
+            if (entity != null && !value.HasValue)
+                _settingsStore.Delete(entity.Id);
+            else if (value.HasValue)
+            {
+                _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
+
+                entity ??= new Setting { Name = name };
+                entity.BoolValue = value.Value;
+                _settingsStore.Upsert(entity);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
         }
     }
 
@@ -160,18 +174,27 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
-
-        if (entity != null && string.IsNullOrEmpty(value))
-            _settingsStore.Delete(entity.Id);
-        else if (!string.IsNullOrEmpty(value))
+        try
         {
-            entity ??= new Setting { Name = name };
-            entity.StringValue = value;
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+
+            if (entity != null && string.IsNullOrEmpty(value))
+                _settingsStore.Delete(entity.Id);
+            else if (!string.IsNullOrEmpty(value))
+            {
+                _logger.LogInformation("Setting {Name} to \"{Value}\"", name, value);
+
+                entity ??= new Setting { Name = name };
+                entity.StringValue = value;
+                _settingsStore.Upsert(entity);
+            }
+
             _settingsStore.Upsert(entity);
         }
-
-        _settingsStore.Upsert(entity);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
+        }
     }
 
     private void SetIntValue(int? value, [CallerMemberName] string name = null)
@@ -179,73 +202,106 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         if (name == null)
             return;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
-
-        if (entity != null && !value.HasValue)
-            _settingsStore.Delete(entity.Id);
-        else if (value.HasValue)
+        try
         {
-            entity ??= new Setting { Name = name };
-            entity.IntValue = value.Value;
-            _settingsStore.Upsert(entity);
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+
+            if (entity != null && !value.HasValue)
+                _settingsStore.Delete(entity.Id);
+            else if (value.HasValue)
+            {
+                _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
+
+                entity ??= new Setting { Name = name };
+                entity.IntValue = value.Value;
+                _settingsStore.Upsert(entity);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
         }
     }
 
     private string GetStringValue(string defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)
-            return null;
+            return defaultValue;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+        try
+        {
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
 
-        if (entity != null)
+            if (entity != null)
+                return entity.StringValue;
+
+            if (string.IsNullOrEmpty(defaultValue))
+                return null;
+
+            entity = new Setting { Name = name, StringValue = defaultValue };
+            _settingsStore.Insert(entity);
+
             return entity.StringValue;
-
-        if (string.IsNullOrEmpty(defaultValue))
-            return null;
-
-        entity = new Setting { Name = name, StringValue = defaultValue };
-        _settingsStore.Insert(entity);
-
-        return entity.StringValue;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            return defaultValue;
+        }
     }
 
     private bool? GetBoolValue(bool? defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)
-            return default;
+            return defaultValue;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+        try
+        {
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
 
-        if (entity != null)
+            if (entity != null)
+                return entity.BoolValue;
+
+            if (!defaultValue.HasValue)
+                return null;
+
+            entity = new Setting { Name = name, BoolValue = defaultValue.Value };
+            _settingsStore.Insert(entity);
+
             return entity.BoolValue;
-
-        if (!defaultValue.HasValue)
-            return null;
-
-        entity = new Setting { Name = name, BoolValue = defaultValue.Value };
-        _settingsStore.Insert(entity);
-
-        return entity.BoolValue;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            return defaultValue;
+        }
     }
 
     private int? GetIntValue(int? defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)
-            return default;
+            return defaultValue;
 
-        var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+        try
+        {
+            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
 
-        if (entity != null)
+            if (entity != null)
+                return entity.IntValue;
+
+            if (!defaultValue.HasValue)
+                return null;
+
+            entity = new Setting { Name = name, IntValue = defaultValue.Value };
+            _settingsStore.Insert(entity);
+
             return entity.IntValue;
-
-        if (!defaultValue.HasValue)
-            return null;
-
-        entity = new Setting { Name = name, IntValue = defaultValue.Value };
-        _settingsStore.Insert(entity);
-
-        return entity.IntValue;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            return defaultValue;
+        }
     }
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

@@ -75,23 +75,23 @@
                 <Button Text="Find in page" HorizontalOptions="Fill"
                         Command="{Binding FindInPage}"
                         IsEnabled="{Binding IsMenuExpanded}" />
-                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Bookmarks}" HorizontalOptions="Fill"
                         Command="{Binding OpenBookmarks}"
                         IsEnabled="{Binding IsMenuExpanded}" />
-                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_History}" HorizontalOptions="Fill"
                         Command="{Binding OpenHistory}"
                         IsEnabled="{Binding IsMenuExpanded}" />
-                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Identity}" HorizontalOptions="Fill"
                         Command="{Binding OpenIdentity}"
                         IsEnabled="{Binding IsMenuExpanded}" />
-                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Print}" HorizontalOptions="Fill"
                         IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
                         Command="{Binding Print}" />
-                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" />
+                <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Settings}" HorizontalOptions="Fill"
                         Command="{Binding OpenSettings}"
                         IsEnabled="{Binding IsMenuExpanded}" />

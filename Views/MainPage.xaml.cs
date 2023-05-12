@@ -496,7 +496,7 @@ public partial class MainPage : ContentPage
 
     private double GetExpandedMenuHeight()
     {
-        return ExpandableMenu.Where(e => e is Button).Sum(e => e.MinimumHeight);
+        return ExpandableMenu.Sum(e => (double.IsNaN(e.MinimumHeight) ? 0 : e.MinimumHeight) + e.Margin.VerticalThickness);
     }
 
     private void AddMenuAnimations()

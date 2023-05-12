@@ -39,10 +39,11 @@ public partial class MainPage : ContentPage
     private ICommand _showPageCertificate;
     private bool _canViewCertificate;
 
-    public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase)
+    public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
+        _logger = logger;
         _isNavBarVisible = true;
 
         InitializeComponent();
@@ -350,6 +351,7 @@ public partial class MainPage : ContentPage
         catch (Exception e)
         {
             _logger.LogError(e, "Exception thrown while navigating backward");
+            return false;
         }
     }
 

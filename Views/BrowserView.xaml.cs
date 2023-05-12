@@ -31,10 +31,10 @@ public partial class BrowserView : ContentView
     private readonly ICacheService _cache;
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
+    private readonly ILogger<BrowserView> _logger;
     private readonly List<Task> _parallelRenderWorkload;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly ILogger<BrowserView> _logger;
 
     private bool _canPrint;
     private bool _canShowHostCertificate;
@@ -84,40 +84,6 @@ public partial class BrowserView : ContentView
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
         _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
-
-#if ANDROID
-        WebViewHandler.Mapper.AppendToMapping("CreateAndroidPrintService",
-            (handler, _) => _printService = new AndroidPrintService(handler.PlatformView));
-        WebViewHandler.Mapper.AppendToMapping("SetClearFindResultsHandler",
-            (handler, _) => ClearMatches += (_, _) => handler.PlatformView.ClearMatches());
-        WebViewHandler.Mapper.AppendToMapping("SetFindInPageHandler",
-            (handler, _) => FindNext += (_, _) =>
-            {
-                if (_resetFindNext) // new query
-                    handler.PlatformView.FindAllAsync(FindNextQuery);
-                else // existing query; continue forward
-                    handler.PlatformView.FindNext(true);
-            });
-        WebViewHandler.Mapper.AppendToMapping("SetFindListener",
-            (handler, _) => handler.PlatformView.SetFindListener(new CallbackFindListener(count =>
-            {
-                if (!_resetFindNext)
-                    return;
-
-                if (count == 0)
-                {
-                    _parentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
-                    FindNextQuery = null;
-                }
-                else
-                {
-                    _parentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
-                        ToastDuration.Short);
-                }
-            })));
-        RefreshViewHandler.Mapper.AppendToMapping("SetRefreshIndicatorOffset",
-            (handler, _) => handler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4));
-#endif
     }
 
     public bool CanShowHostCertificate
@@ -438,20 +404,23 @@ public partial class BrowserView : ContentView
                 {
                     if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
-                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}", success.MimeType, uri);
+                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
+                            success.MimeType, uri);
 
                         var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
 
                         if (image == null)
                         {
-                            _logger.LogWarning("Loaded an image to be inlined from {URI} but failed to create the preview", uri);
+                            _logger.LogWarning(
+                                "Loaded an image to be inlined from {URI} but failed to create the preview", uri);
                             break;
                         }
 
                         image.Seek(0, SeekOrigin.Begin);
                         await _cache.StoreResource(bucket, key, image);
 
-                        _logger.LogInformation("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
+                        _logger.LogInformation("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri,
+                            i + 1);
 
                         return CreateInlineImageDataUrl(image);
                     }
@@ -515,7 +484,8 @@ public partial class BrowserView : ContentView
                     }
                     else
                     {
-                        _logger.LogDebug("Queueing the image download to complete after the rest of the page has been rendered.");
+                        _logger.LogDebug(
+                            "Queueing the image download to complete after the rest of the page has been rendered.");
                         _parallelRenderWorkload.Add(Task.Run(async () =>
                         {
                             var source = await FetchAndCacheInlinedImage(line.Uri);
@@ -527,7 +497,8 @@ public partial class BrowserView : ContentView
                             else
                             {
                                 // did not load the image preview; fallback to a simple link
-                                _logger.LogDebug("Could not create the image preview; falling-back to a simple gemtext link line");
+                                _logger.LogDebug(
+                                    "Could not create the image preview; falling-back to a simple gemtext link line");
                                 node.AppendChild(HtmlNode.CreateNode(
                                     $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
                             }
@@ -537,14 +508,17 @@ public partial class BrowserView : ContentView
                 else
                 {
                     // http, etc. can be handled by the browser
-                    _logger.LogDebug("The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
+                    _logger.LogDebug(
+                        "The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
                     node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
                 }
 
                 return node;
             }
 
-            _logger.LogDebug("The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered", line.Uri, mimeType ?? "none");
+            _logger.LogDebug(
+                "The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
+                line.Uri, mimeType ?? "none");
             return RenderDefaultLinkLine(line);
         }
         catch (Exception e)
@@ -737,9 +711,7 @@ public partial class BrowserView : ContentView
                     }
                 }
                 else
-                {
                     _logger.LogInformation("User triggered a manual refresh, so the cache will not be checked");
-                }
 
                 if (!string.IsNullOrWhiteSpace(Input))
                 {
@@ -792,7 +764,8 @@ public partial class BrowserView : ContentView
                         else
                         {
                             var delayAmount = Convert.ToInt32(Math.Pow(2, attempt) * 100);
-                            _logger.LogInformation("Waiting {Milliseconds}ms before making another attempt", delayAmount);
+                            _logger.LogInformation("Waiting {Milliseconds}ms before making another attempt",
+                                delayAmount);
                             await Task.Delay(delayAmount);
                         }
 
@@ -814,7 +787,8 @@ public partial class BrowserView : ContentView
                         }
                         else
                         {
-                            _logger.LogInformation("Response is not a gemtext document, so it will be opened externally");
+                            _logger.LogInformation(
+                                "Response is not a gemtext document, so it will be opened externally");
 
                             StoreVisitedLocation(Location, true);
 
@@ -951,5 +925,50 @@ public partial class BrowserView : ContentView
     protected virtual void OnClearFindNext()
     {
         ClearMatches?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void PageWebView_OnHandlerChanged(object sender, EventArgs e)
+    {
+#if ANDROID
+        var webViewHandler = (sender as WebView)?.Handler as WebViewHandler;
+
+        _printService = new AndroidPrintService(webViewHandler.PlatformView);
+
+        ClearMatches += (_, _) => webViewHandler.PlatformView.ClearMatches();
+
+        FindNext += (_, _) =>
+        {
+            if (_resetFindNext) // new query
+                webViewHandler.PlatformView.FindAllAsync(FindNextQuery);
+            else // existing query; continue forward
+                webViewHandler.PlatformView.FindNext(true);
+        };
+
+        webViewHandler.PlatformView.SetFindListener(new CallbackFindListener(count =>
+        {
+            if (!_resetFindNext)
+                return;
+
+            if (count == 0)
+            {
+                _parentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
+                FindNextQuery = null;
+            }
+            else
+            {
+                _parentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
+                    ToastDuration.Short);
+            }
+        }));
+#endif
+    }
+
+    private void RefreshView_OnHandlerChanged(object sender, EventArgs e)
+    {
+#if ANDROID
+        var refreshViewHandler = (sender as RefreshView)?.Handler as RefreshViewHandler;
+
+        refreshViewHandler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4);
+#endif
     }
 }

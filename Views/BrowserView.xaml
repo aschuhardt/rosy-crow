@@ -6,8 +6,8 @@
              x:DataType="views:BrowserView"
              x:Class="RosyCrow.Views.BrowserView"
              Loaded="BrowserView_OnLoaded">
-    <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding Refresh}">
-        <WebView x:Name="PageWebView"  Navigating="PageWebView_OnNavigating">
+    <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding Refresh}" HandlerChanged="RefreshView_OnHandlerChanged">
+        <WebView x:Name="PageWebView"  Navigating="PageWebView_OnNavigating" HandlerChanged="PageWebView_OnHandlerChanged">
             <WebView.Source>
                 <HtmlWebViewSource Html="{Binding RenderedHtml}" />
             </WebView.Source>

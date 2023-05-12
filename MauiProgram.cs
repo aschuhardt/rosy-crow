@@ -55,8 +55,11 @@ public static class MauiProgram
 
         var logConfig = new LoggerConfiguration()
             .Enrich.WithExceptionDetails()
-            .WriteTo.Async(a => a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"), LogEventLevel.Warning, retainedFileCountLimit: 7))
-            .WriteTo.Debug(LogEventLevel.Debug);
+            .WriteTo.Async(a => a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"), LogEventLevel.Warning, retainedFileCountLimit: 7));
+
+        if (Debugger.IsAttached)
+            logConfig.WriteTo.Debug(LogEventLevel.Debug);
+
         builder.Logging.AddSerilog(logConfig.CreateLogger());
 
         AppDomain.CurrentDomain.UnhandledException += (sender, e) => Debugger.Break();

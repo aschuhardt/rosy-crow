@@ -320,17 +320,24 @@ public partial class BrowserView : ContentView
 
     public bool GoBack()
     {
-        // first pop the current page, then peek to get the prior
-        if (_recentHistory.TryPop(out var current))
+        try
         {
-            if (_recentHistory.TryPeek(out var prev))
+            // first pop the current page, then peek to get the prior
+            if (_recentHistory.TryPop(out var current))
             {
-                Location = prev;
-                return true;
-            }
+                if (_recentHistory.TryPeek(out var prev))
+                {
+                    Location = prev;
+                    return true;
+                }
 
-            // there was no previous entry; re-push the current one in order to revert the stack to its initial state
-            _recentHistory.Push(current);
+                // there was no previous entry; re-push the current one in order to revert the stack to its initial state
+                _recentHistory.Push(current);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while navigating backward");
         }
 
         return false;
@@ -395,14 +402,24 @@ public partial class BrowserView : ContentView
 
     private async Task<string> TryLoadCachedImage(Uri uri)
     {
-        var bucket = uri.Host.ToUpperInvariant();
-        var key = uri.ToString().ToUpperInvariant();
-
-        if (_cache.ResourceExists(bucket, key))
+        try
         {
-            var image = new MemoryStream();
-            await _cache.LoadResource(bucket, key, image);
-            return CreateInlineImageDataUrl(image);
+            var bucket = uri.Host.ToUpperInvariant();
+            var key = uri.ToString().ToUpperInvariant();
+
+            if (_cache.ResourceExists(bucket, key))
+            {
+                var image = new MemoryStream();
+                await _cache.LoadResource(bucket, key, image);
+
+                _logger.LogDebug("Loaded cached image originally from {URI}", uri);
+
+                return CreateInlineImageDataUrl(image);
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
         }
 
         return null;
@@ -410,30 +427,50 @@ public partial class BrowserView : ContentView
 
     private async Task<string> FetchAndCacheInlinedImage(Uri uri)
     {
-        var bucket = uri.Host.ToUpperInvariant();
-        var key = uri.ToString().ToUpperInvariant();
-
-        for (var i = 0; i < 6; i++)
+        try
         {
-            try
+            var bucket = uri.Host.ToUpperInvariant();
+            var key = uri.ToString().ToUpperInvariant();
+
+            for (var i = 0; i < 6; i++)
             {
-                if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
+                try
                 {
-                    var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
-                    image.Seek(0, SeekOrigin.Begin);
-                    await _cache.StoreResource(bucket, key, image);
-                    return CreateInlineImageDataUrl(image);
+                    if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
+                    {
+                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}", success.MimeType, uri);
+
+                        var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
+
+                        if (image == null)
+                        {
+                            _logger.LogWarning("Loaded an image to be inlined from {URI} but failed to create the preview", uri);
+                            break;
+                        }
+
+                        image.Seek(0, SeekOrigin.Begin);
+                        await _cache.StoreResource(bucket, key, image);
+
+                        _logger.LogInformation("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
+
+                        return CreateInlineImageDataUrl(image);
+                    }
+
+                    // if the error was only temporary (according to the server), then
+                    // we can try again
+                }
+                catch (Exception e)
+                {
+                    // don't care
+                    _logger.LogDebug(e, "Attempt {Attempt} to fetch and inline an image from {URI} failed", i + 1, uri);
                 }
 
-                // if the error was only temporary (according to the server), then
-                // we can try again
+                await Task.Delay(Convert.ToInt32(Math.Pow(2, i) * 100));
             }
-            catch (Exception)
-            {
-                // don't care
-            }
-
-            await Task.Delay(Convert.ToInt32(Math.Pow(2, i) * 100));
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while attempting to cache an image from {URI}", uri);
         }
 
         return null;
@@ -454,44 +491,67 @@ public partial class BrowserView : ContentView
 
     private async Task<HtmlNode> RenderInlineImage(LinkLine line)
     {
-        var fileName = line.Uri.Segments.LastOrDefault()?.Trim('/');
-
-        if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out var mimeType) &&
-            mimeType.StartsWith("image"))
+        try
         {
-            var node = HtmlNode.CreateNode("<p></p>");
+            var fileName = line.Uri.Segments.LastOrDefault()?.Trim('/');
 
-            if (line.Uri.Scheme == "gemini")
+            string mimeType = null;
+            if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out mimeType) &&
+                mimeType.StartsWith("image"))
             {
-                var cached = await TryLoadCachedImage(line.Uri);
-                if (cached != null)
-                    node.AppendChild(RenderInlineImageFigure(line, cached));
+                var node = HtmlNode.CreateNode("<p></p>");
+
+                _logger.LogDebug("Attempting to render an image preview inline from {URI}", line.Uri);
+
+                if (line.Uri.Scheme == "gemini")
+                {
+                    _logger.LogDebug("The image URI specifies the gemini protocol");
+
+                    var cached = await TryLoadCachedImage(line.Uri);
+                    if (cached != null)
+                    {
+                        _logger.LogDebug("Loading the image preview from the cache");
+                        node.AppendChild(RenderInlineImageFigure(line, cached));
+                    }
+                    else
+                    {
+                        _logger.LogDebug("Queueing the image download to complete after the rest of the page has been rendered.");
+                        _parallelRenderWorkload.Add(Task.Run(async () =>
+                        {
+                            var source = await FetchAndCacheInlinedImage(line.Uri);
+                            if (!string.IsNullOrEmpty(source))
+                            {
+                                _logger.LogDebug("Successfully created the image preview; rendering that now");
+                                node.AppendChild(RenderInlineImageFigure(line, source));
+                            }
+                            else
+                            {
+                                // did not load the image preview; fallback to a simple link
+                                _logger.LogDebug("Could not create the image preview; falling-back to a simple gemtext link line");
+                                node.AppendChild(HtmlNode.CreateNode(
+                                    $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
+                            }
+                        }));
+                    }
+                }
                 else
                 {
-                    _parallelRenderWorkload.Add(Task.Run(async () =>
-                    {
-                        var source = await FetchAndCacheInlinedImage(line.Uri);
-                        if (!string.IsNullOrEmpty(source))
-                            node.AppendChild(RenderInlineImageFigure(line, source));
-                        else
-                        {
-                            // did not load the image preview; fallback to a simple link
-                            node.AppendChild(HtmlNode.CreateNode(
-                                $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
-                        }
-                    }));
+                    // http, etc. can be handled by the browser
+                    _logger.LogDebug("The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
+                    node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
                 }
-            }
-            else
-            {
-                // http, etc. can be handled by the browser
-                node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
+
+                return node;
             }
 
-            return node;
+            _logger.LogDebug("The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered", line.Uri, mimeType ?? "none");
+            return RenderDefaultLinkLine(line);
         }
-
-        return RenderDefaultLinkLine(line);
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while rendering an inline image preview from {URI}", line.Uri);
+            return null;
+        }
     }
 
     private static HtmlNode RenderInlineImageFigure(LinkLine line, string source)
@@ -655,102 +715,138 @@ public partial class BrowserView : ContentView
         if (HasFindNextQuery)
             ClearFindResults();
 
-        do
+        _logger.LogInformation("Navigating to {URI}", Location);
+
+        try
         {
-            if (!triggeredByRefresh)
+            do
             {
-                var cached = await _cache.LoadString(Location, Input);
-                if (!string.IsNullOrEmpty(cached))
+                if (!triggeredByRefresh)
                 {
-                    RenderedHtml = RenderCachedHtml(cached);
-                    CanShowHostCertificate = true;
-                    RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
-                    StoreVisitedLocation(Location, false);
-                    CanPrint = _printService != null;
-                    break;
-                }
-            }
-
-            if (!string.IsNullOrWhiteSpace(Input))
-                Location = new UriBuilder(Location) { Query = Input }.Uri;
-
-            var response = await _geminiClient.SendRequestAsync(Location.ToString());
-
-            RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
-
-            switch (response)
-            {
-                case InputRequiredResponse inputRequired:
-                {
-                    Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
-                        inputRequired.Message);
-                    if (string.IsNullOrEmpty(Input))
+                    var cached = await _cache.LoadString(Location, Input);
+                    if (!string.IsNullOrEmpty(cached))
                     {
-                        _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
-                        finished = true; // if no user-input was provided, then we cannot continue
+                        _logger.LogInformation("Loading a cached copy of the page");
+
+                        RenderedHtml = RenderCachedHtml(cached);
+                        CanShowHostCertificate = true;
+                        RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
+                        StoreVisitedLocation(Location, false);
+                        CanPrint = _printService != null;
+                        break;
                     }
-
-                    break;
                 }
-                case ErrorResponse error:
+                else
                 {
-                    if (!error.CanRetry)
+                    _logger.LogInformation("User triggered a manual refresh, so the cache will not be checked");
+                }
+
+                if (!string.IsNullOrWhiteSpace(Input))
+                {
+                    _logger.LogInformation("User provided input \"{Input}\"", Input);
+                    Location = new UriBuilder(Location) { Query = Input }.Uri;
+                }
+
+                var response = await _geminiClient.SendRequestAsync(Location.ToString());
+
+                RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
+
+                _logger.LogInformation("Response was {Response}", response);
+
+                switch (response)
+                {
+                    case InputRequiredResponse inputRequired:
                     {
-                        // Opal has indicated that this request should not be re-sent; bail early
-                        //
-                        // Currently this only happens in the case of invalid or rejected remote
-                        // certificates, where re-sending the request would not make sense
+                        Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                            inputRequired.Message);
+                        if (string.IsNullOrEmpty(Input))
+                        {
+                            _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
+                            finished = true; // if no user-input was provided, then we cannot continue
+                        }
+
+                        break;
+                    }
+                    case ErrorResponse error:
+                    {
+                        if (!error.CanRetry)
+                        {
+                            // Opal has indicated that this request should not be re-sent; bail early
+                            //
+                            // Currently this only happens in the case of invalid or rejected remote
+                            // certificates, where re-sending the request would not make sense
+                            _logger.LogInformation("Error type precludes further re-request attempts");
+                            finished = true;
+                            break;
+                        }
+
+                        _logger.LogInformation("{Attempts} attempts remaining", remainingAttempts);
+
+                        if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
+                        {
+                            _logger.LogInformation("No further attempts will be made");
+                            await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message,
+                                Text.BrowserView_LoadPage_OK);
+                            finished = true;
+                        }
+                        else
+                        {
+                            var delayAmount = Convert.ToInt32(Math.Pow(2, attempt) * 100);
+                            _logger.LogInformation("Waiting {Milliseconds}ms before making another attempt", delayAmount);
+                            await Task.Delay(delayAmount);
+                        }
+
+                        remainingAttempts--;
+                        break;
+                    }
+                    case SuccessfulResponse success:
+                    {
+                        Location = response.Uri;
+
+                        if (success is GemtextResponse gemtext)
+                        {
+                            _logger.LogInformation("Response is a gemtext document");
+
+                            CanShowHostCertificate = true;
+                            RenderedHtml = await RenderGemtextAsHtml(gemtext);
+                            StoreVisitedLocation(Location, false);
+                            CanPrint = _printService != null;
+                        }
+                        else
+                        {
+                            _logger.LogInformation("Response is not a gemtext document, so it will be opened externally");
+
+                            StoreVisitedLocation(Location, true);
+
+                            // not gemtext; save as a file
+                            var fileName = response.Uri.Segments.LastOrDefault() ??
+                                           GetDefaultFileNameByMimeType(success.MimeType);
+                            var path = Path.Combine(FileSystem.CacheDirectory, fileName);
+                            await using (var outputFile = File.Create(path))
+                            {
+                                await success.Body.CopyToAsync(outputFile);
+                            }
+
+                            _logger.LogInformation("Opening file {Path}", path);
+
+                            await Launcher.Default.OpenAsync(
+                                new OpenFileRequest(fileName, new ReadOnlyFile(path, success.MimeType)));
+                        }
+
                         finished = true;
                         break;
                     }
-
-                    if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
-                    {
-                        await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message,
-                            Text.BrowserView_LoadPage_OK);
-                        finished = true;
-                    }
-                    else
-                        await Task.Delay(Convert.ToInt32(Math.Pow(2, attempt) * 100));
-
-                    remainingAttempts--;
-                    break;
                 }
-                case SuccessfulResponse success:
-                {
-                    Location = response.Uri;
 
-                    if (success is GemtextResponse gemtext)
-                    {
-                        CanShowHostCertificate = true;
-                        RenderedHtml = await RenderGemtextAsHtml(gemtext);
-                        StoreVisitedLocation(Location, false);
-                        CanPrint = _printService != null;
-                    }
-                    else
-                    {
-                        StoreVisitedLocation(Location, true);
+                attempt++;
+            } while (!finished);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while navigating to {URI}", Location);
+        }
 
-                        // not gemtext; save as a file
-                        var fileName = response.Uri.Segments.LastOrDefault() ??
-                                       GetDefaultFileNameByMimeType(success.MimeType);
-                        var path = Path.Combine(FileSystem.CacheDirectory, fileName);
-                        await using (var outputFile = File.Create(path))
-                        {
-                            await success.Body.CopyToAsync(outputFile);
-                        }
-
-                        await Launcher.Default.OpenAsync(
-                            new OpenFileRequest(fileName, new ReadOnlyFile(path, success.MimeType)));
-                    }
-
-                    finished = true;
-                    break;
-                }
-            }
-
-            attempt++;
-        } while (!finished);
+        _logger.LogInformation("Request finished after {Attempts} attempt(s)", attempt);
 
         IsRefreshing = false;
         _isLoading = false;
@@ -760,42 +856,58 @@ public partial class BrowserView : ContentView
 
     private void StoreVisitedLocation(Uri uri, bool isExternal)
     {
-        if (!isExternal)
+        try
         {
-            _settingsDatabase.LastVisitedUrl = uri.ToString();
-
-            if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
-                _recentHistory.Push(uri);
-        }
-
-        if (_settingsDatabase.SaveVisited)
-        {
-            _browsingDatabase.AddVisitedPage(new Visited
+            if (!isExternal)
             {
-                Url = uri.ToString(), Timestamp = DateTime.Now,
-                Title = _pageTitle ?? uri.Segments.LastOrDefault() ?? uri.Host
-            });
+                _settingsDatabase.LastVisitedUrl = uri.ToString();
+
+                if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
+                    _recentHistory.Push(uri);
+            }
+
+            if (_settingsDatabase.SaveVisited)
+            {
+                _browsingDatabase.AddVisitedPage(new Visited
+                {
+                    Url = uri.ToString(), Timestamp = DateTime.Now,
+                    Title = _pageTitle ?? uri.Segments.LastOrDefault() ?? uri.Host
+                });
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while storing a visited page {URI}", uri);
         }
     }
 
     private async Task LoadInternalPage(string name = "default")
     {
-        var document = new HtmlDocument();
-        document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
-
-        InjectStylesheet(document.DocumentNode);
-
-        var body = document.DocumentNode.ChildNodes.FindFirst("main");
-
-        await using (var file = await FileSystem.OpenAppPackageFileAsync($"{name}.html"))
-        using (var reader = new StreamReader(file))
+        try
         {
-            body.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
+            _logger.LogInformation("Loading internal page {Name}", name);
+
+            var document = new HtmlDocument();
+            document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
+
+            InjectStylesheet(document.DocumentNode);
+
+            var body = document.DocumentNode.ChildNodes.FindFirst("main");
+
+            await using (var file = await FileSystem.OpenAppPackageFileAsync($"{name}.html"))
+            using (var reader = new StreamReader(file))
+            {
+                body.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
+            }
+
+            RenderUrl = $"{Constants.InternalScheme}://{name}";
+
+            RenderedHtml = document.DocumentNode.OuterHtml;
         }
-
-        RenderUrl = $"{Constants.InternalScheme}://{name}";
-
-        RenderedHtml = document.DocumentNode.OuterHtml;
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while loading internal page {Name}", name);
+        }
     }
 
     private async void PageWebView_OnNavigating(object sender, WebNavigatingEventArgs e)

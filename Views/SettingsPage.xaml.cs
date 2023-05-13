@@ -20,6 +20,8 @@ public partial class SettingsPage : ContentPage
     private ThemeChoice _selectedTheme;
     private ICommand _openAbout;
     private ICommand _exportLogs;
+    private ICommand _copyVersion;
+    private string _versionInfo;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -32,6 +34,11 @@ public partial class SettingsPage : ContentPage
 
         OpenAbout = new Command(async () => await Navigation.PushPageAsync<AboutPage>());
         ExportLogs = new Command(async () => await ExportErrorLogArchive());
+        CopyVersion = new Command(async () =>
+        {
+            await Clipboard.SetTextAsync(VersionInfo);
+            await Toast.Make("Copied").Show();
+        });
     }
 
     public IList<ThemeChoice> Choices
@@ -65,6 +72,28 @@ public partial class SettingsPage : ContentPage
         {
             if (Equals(value, _openAbout)) return;
             _openAbout = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string VersionInfo
+    {
+        get => _versionInfo;
+        set
+        {
+            if (value == _versionInfo) return;
+            _versionInfo = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand CopyVersion
+    {
+        get => _copyVersion;
+        set
+        {
+            if (Equals(value, _copyVersion)) return;
+            _copyVersion = value;
             OnPropertyChanged();
         }
     }
@@ -139,12 +168,14 @@ public partial class SettingsPage : ContentPage
         if (Choices != null)
             return;
 
-        await using var file = await FileSystem.OpenAppPackageFileAsync("themes.json");
-        using var reader = new StreamReader(file);
-        Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
+        await using (var file = await FileSystem.OpenAppPackageFileAsync("themes.json"))
+        using (var reader = new StreamReader(file))
+            Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
+
         SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
         ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");
         HistoryPageSize = _settingsDatabase.HistoryPageSize;
+        VersionInfo = $"Version {VersionTracking.Default.CurrentVersion}, build {VersionTracking.Default.CurrentBuild}";
     }
 
     private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)

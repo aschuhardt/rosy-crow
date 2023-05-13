@@ -12,35 +12,45 @@
     <NavigationPage.TitleView>
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
-    <VerticalStackLayout Padding="16,8,16,32">
-        <Grid ColumnDefinitions="*,Auto">
-            <Label Text="{x:Static localization:Text.SettingsPage_InlineImages}" Grid.Column="0" VerticalTextAlignment="Center" />
-            <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
-        </Grid>
-        <Grid ColumnDefinitions="*,Auto">
-            <Label Text="{x:Static localization:Text.SettingPage_ConfirmEveryCertificate}" Grid.Column="0" VerticalTextAlignment="Center" />
-            <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
-        </Grid>
-        <Grid ColumnDefinitions="Auto,*,Auto">
-            <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0"
-                   VerticalOptions="Center" />
-            <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center"
-                   VerticalTextAlignment="Center" />
-            <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5" />
-        </Grid>
-        <Grid ColumnDefinitions="*,Auto">
-            <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />
-            <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
-            <Picker
-                Grid.Column="1"
-                VerticalOptions="Center"
-                ItemsSource="{Binding Choices}"
-                ItemDisplayBinding="{Binding Path=Name}"
-                SelectedItem="{Binding SelectedTheme}"
-                SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
-        </Grid>
-        <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
-        <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
-        <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
-    </VerticalStackLayout>
+    <ScrollView>
+        <VerticalStackLayout Padding="16,8,16,32">
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static localization:Text.SettingsPage_InlineImages}" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static localization:Text.SettingPage_ConfirmEveryCertificate}" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
+            </Grid>
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0"
+                       VerticalOptions="Center" />
+                <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center"
+                       VerticalTextAlignment="Center" />
+                <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
+                <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />
+                <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
+                <Picker
+                    Grid.Column="1"
+                    VerticalOptions="Center"
+                    ItemsSource="{Binding Choices}"
+                    ItemDisplayBinding="{Binding Path=Name}"
+                    SelectedItem="{Binding SelectedTheme}"
+                    SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
+            </Grid>
+            <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
+            <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
+            <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
+            <Grid ColumnDefinitions="*,Auto" Margin="8,20">
+                <Label Grid.Column="0" Text="{Binding VersionInfo}" VerticalTextAlignment="Start" />
+                <ImageButton
+                    Grid.Column="1" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
+                    VerticalOptions="Start"
+                    Command="{Binding CopyVersion}"
+                    Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
+            </Grid>
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

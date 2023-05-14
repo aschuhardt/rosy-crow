@@ -188,6 +188,7 @@ public partial class IdentityPage : ContentPage
         };
 
         _logger.LogDebug("Generating a new identity named {Name}", identity.Name);
+        _logger.LogDebug("The new identity's semantic key is {SemanticKey}", key);
 
         try
         {
@@ -220,7 +221,11 @@ public partial class IdentityPage : ContentPage
                 await StoreCertificate(identity, certificate, password);
             }
             else
+            {
+                _logger.LogInformation("The new identity's certificate will not use an encrypted password");
+
                 await StoreCertificate(identity, certificate);
+            }
 
             Identities.Add(identity);
 

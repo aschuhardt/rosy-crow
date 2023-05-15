@@ -37,7 +37,6 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private ICommand _showPageCertificate;
-    private bool _canViewCertificate;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {

@@ -47,6 +47,9 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
 
         public BiometricPrompt.CryptoObject BuildCryptoObject(CryptographicOperation operation, byte[] iv = null)
         {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+                return null;
+
             return operation switch
             {
                 CryptographicOperation.Decrypt => new BiometricPrompt.CryptoObject(CreateCipher(CipherMode.DecryptMode, iv)),
@@ -107,6 +110,9 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
 
         private void CreateNewKey()
         {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+                return;
+
             var keyGen = KeyGenerator.GetInstance(KeyAlgorithm, KeyStoreName);
             var keyGenSpec = new KeyGenParameterSpec.Builder(KeyName, KeyStorePurpose.Encrypt | KeyStorePurpose.Decrypt)
                                     .SetBlockModes(BlockMode)

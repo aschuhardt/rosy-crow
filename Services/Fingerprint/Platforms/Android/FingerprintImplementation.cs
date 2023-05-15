@@ -36,6 +36,9 @@ public class FingerprintImplementation : FingerprintImplementationBase
     public override async Task<FingerprintEncryptionResult> NativeEncryptAsync(
         AuthenticationRequestConfiguration authRequestConfig, byte[] plaintext)
     {
+        if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+            return null;
+
         var crypto = new CryptoObjectHelper(authRequestConfig.KeyName)
             .BuildCryptoObject(CryptoObjectHelper.CryptographicOperation.Encrypt);
         var (result, ciphertext) = await NativeAuthenticateAsync(authRequestConfig, plaintext, crypto);
@@ -53,38 +56,40 @@ public class FingerprintImplementation : FingerprintImplementationBase
         return new FingerprintDecryptionResult(plaintext, result);
     }
 
-    public override async Task<FingerprintAvailability> GetAvailabilityAsync(
+    public override Task<FingerprintAvailability> GetAvailabilityAsync(
         bool allowAlternativeAuthentication = false)
     {
         if (Build.VERSION.SdkInt < BuildVersionCodes.M)
-            return FingerprintAvailability.NoApi;
+            return Task.FromResult(FingerprintAvailability.NoApi);
 
 
         var biometricAvailability = GetBiometricAvailability();
         if (biometricAvailability == FingerprintAvailability.Available || !allowAlternativeAuthentication)
-            return biometricAvailability;
+            return Task.FromResult(biometricAvailability);
 
         var context = Application.Context;
 
         try
         {
             var manager = (KeyguardManager)context.GetSystemService(Context.KeyguardService);
-            if (manager.IsDeviceSecure) return FingerprintAvailability.Available;
+            if (manager.IsDeviceSecure) return Task.FromResult(FingerprintAvailability.Available);
 
-            return FingerprintAvailability.NoFallback;
+            return Task.FromResult(FingerprintAvailability.NoFallback);
         }
         catch
         {
-            return FingerprintAvailability.NoFallback;
+            return Task.FromResult(FingerprintAvailability.NoFallback);
         }
     }
 
     private FingerprintAvailability GetBiometricAvailability()
     {
+        if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+            return FingerprintAvailability.NoImplementation;
+
         var context = Application.Context;
 
-        if (context.CheckCallingOrSelfPermission(Manifest.Permission.UseBiometric) != Permission.Granted &&
-            context.CheckCallingOrSelfPermission(Manifest.Permission.UseFingerprint) != Permission.Granted)
+        if (context.CheckCallingOrSelfPermission(Manifest.Permission.UseBiometric) != Permission.Granted)
             return FingerprintAvailability.NoPermission;
 
         var code = _manager.CanAuthenticate(BiometricManager.Authenticators.BiometricStrong |
@@ -104,6 +109,9 @@ public class FingerprintImplementation : FingerprintImplementationBase
         AuthenticationRequestConfiguration authRequestConfig, byte[] inputData,
         BiometricPrompt.CryptoObject cryptoObject)
     {
+        if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+            return (null, null);
+
         if (string.IsNullOrWhiteSpace(authRequestConfig.Title))
             throw new ArgumentException("Title must not be null or empty on Android.", nameof(authRequestConfig.Title));
 
@@ -114,21 +122,28 @@ public class FingerprintImplementation : FingerprintImplementationBase
                 : authRequestConfig.CancelTitle;
 
             var handler =
-                new AuthenticationHandler(resultCryptoObject => resultCryptoObject.Cipher == cryptoObject.Cipher,
+                new AuthenticationHandler(resultCryptoObject => 
+                        OperatingSystem.IsAndroidVersionAtLeast(28) && 
+                        resultCryptoObject.Cipher == cryptoObject.Cipher,
                     inputData);
             var builder = new BiometricPrompt.Builder(Application.Context)
                 .SetTitle(authRequestConfig.Title)
-                .SetConfirmationRequired(authRequestConfig.ConfirmationRequired)
                 .SetDescription(authRequestConfig.Reason);
 
-            if (authRequestConfig.AllowAlternativeAuthentication)
+            if (OperatingSystem.IsAndroidVersionAtLeast(29))
+                builder.SetConfirmationRequired(authRequestConfig.ConfirmationRequired);
+
+            if (OperatingSystem.IsAndroidVersionAtLeast(30))
             {
-                // It's not allowed to allow alternative auth & set the negative button
-                builder = builder.SetAllowedAuthenticators(BiometricManager.Authenticators.BiometricStrong |
-                                                           BiometricManager.Authenticators.DeviceCredential);
+                if (authRequestConfig.AllowAlternativeAuthentication)
+                {
+                    // It's not allowed to allow alternative auth & set the negative button
+                    builder = builder.SetAllowedAuthenticators(BiometricManager.Authenticators.BiometricStrong |
+                                                               BiometricManager.Authenticators.DeviceCredential);
+                }
+                else
+                    builder = builder.SetAllowedAuthenticators(BiometricManager.Authenticators.BiometricStrong);
             }
-            else
-                builder = builder.SetAllowedAuthenticators(BiometricManager.Authenticators.BiometricStrong);
 
             var executor = Executors.NewSingleThreadExecutor();
 

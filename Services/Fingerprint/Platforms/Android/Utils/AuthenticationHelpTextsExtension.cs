@@ -8,21 +8,18 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
         public static string GetText(this AuthenticationHelpTexts texts, FingerprintAuthenticationHelp help,
             string nativeText)
         {
-            switch (help)
+            return help switch
             {
-                case FingerprintAuthenticationHelp.MovedTooFast when !string.IsNullOrEmpty(texts.MovedTooFast):
-                    return texts.MovedTooFast;
-                case FingerprintAuthenticationHelp.MovedTooSlow when !string.IsNullOrEmpty(texts.MovedTooSlow):
-                    return texts.MovedTooSlow;
-                case FingerprintAuthenticationHelp.Partial when !string.IsNullOrEmpty(texts.Partial):
-                    return texts.Partial;
-                case FingerprintAuthenticationHelp.Insufficient when !string.IsNullOrEmpty(texts.Insufficient):
-                    return texts.Insufficient;
-                case FingerprintAuthenticationHelp.Dirty when !string.IsNullOrEmpty(texts.Dirty):
-                    return texts.Dirty;
-            }
-
-            return nativeText;
+                FingerprintAuthenticationHelp.MovedTooFast when !string.IsNullOrEmpty(texts.MovedTooFast) => texts
+                    .MovedTooFast,
+                FingerprintAuthenticationHelp.MovedTooSlow when !string.IsNullOrEmpty(texts.MovedTooSlow) => texts
+                    .MovedTooSlow,
+                FingerprintAuthenticationHelp.Partial when !string.IsNullOrEmpty(texts.Partial) => texts.Partial,
+                FingerprintAuthenticationHelp.Insufficient when !string.IsNullOrEmpty(texts.Insufficient) => texts
+                    .Insufficient,
+                FingerprintAuthenticationHelp.Dirty when !string.IsNullOrEmpty(texts.Dirty) => texts.Dirty,
+                _ => nativeText
+            };
         }
     }
 }

@@ -12,7 +12,7 @@ internal class CallbackFindListener : Object, WebView.IFindListener
         _callback = callback;
     }
 
-    public IntPtr Handle => PeerReference.Handle;
+    public new IntPtr Handle => PeerReference.Handle;
 
     public void OnFindResultReceived(int activeMatchOrdinal, int numberOfMatches, bool isDoneCounting)
     {

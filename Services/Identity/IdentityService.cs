@@ -4,7 +4,6 @@ using CommunityToolkit.Maui.Alerts;
 using Microsoft.Extensions.Logging;
 using RosyCrow.Interfaces;
 using RosyCrow.Services.Fingerprint.Abstractions;
-using SQLite;
 
 namespace RosyCrow.Services.Identity;
 
@@ -14,17 +13,13 @@ internal class IdentityService : IIdentityService
     private readonly ISettingsDatabase _settingsDatabase;
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<IdentityService> _logger;
-    private readonly SQLiteConnection _database;
 
-    private X509Certificate2 _activeCertificate;
-
-    public IdentityService(IFingerprint fingerprint, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<IdentityService> logger, SQLiteConnection database)
+    public IdentityService(IFingerprint fingerprint, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<IdentityService> logger)
     {
         _fingerprint = fingerprint;
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
         _logger = logger;
-        _database = database;
     }
 
     public X509Certificate2 ActiveCertificate { get; private set; }
@@ -152,7 +147,6 @@ internal class IdentityService : IIdentityService
     {
         try
         {
-            _activeCertificate = null;
             _settingsDatabase.ActiveIdentityId = identity.Id;
             ActiveCertificate = await LoadActiveCertificate();
         }

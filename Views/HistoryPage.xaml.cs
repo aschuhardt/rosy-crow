@@ -29,10 +29,11 @@ public partial class HistoryPage : ContentPage
 
     private ObservableCollection<Visited> _visited;
 
-    public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase, MainPage mainPage)
+    public HistoryPage(IBrowsingDatabase browsingDatabase, ISettingsDatabase settingsDatabase, MainPage mainPage, ILogger<HistoryPage> logger)
     {
         _browsingDatabase = browsingDatabase;
         _settingsDatabase = settingsDatabase;
+        _logger = logger;
 
         InitializeComponent();
 

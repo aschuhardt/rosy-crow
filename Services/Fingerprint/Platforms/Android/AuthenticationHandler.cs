@@ -41,6 +41,9 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android
 
         public override void OnAuthenticationSucceeded(BiometricPrompt.AuthenticationResult result)
         {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+                return;
+
             base.OnAuthenticationSucceeded(result);
 
             var faResult = new FingerprintAuthenticationResult
@@ -97,6 +100,9 @@ namespace RosyCrow.Services.Fingerprint.Platforms.Android
 
         public override void OnAuthenticationError(BiometricErrorCode errorCode, ICharSequence errString)
         {
+            if (!OperatingSystem.IsAndroidVersionAtLeast(28))
+                return;
+
             base.OnAuthenticationError(errorCode, errString);
 
             var message = errString != null ? errString.ToString() : string.Empty;

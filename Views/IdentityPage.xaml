@@ -14,7 +14,8 @@
             <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
                    Grid.Column="0" />
             <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0" Command="{Binding GenerateNew}"
-                         Source="{AppThemeBinding Light=add_dark.png, Dark=add_light.png}" />
+                         Source="{AppThemeBinding Light=add_dark.png, Dark=add_light.png}"
+                         SemanticProperties.Description="New" SemanticProperties.Hint="Create a new identity"/>
         </Grid>
     </NavigationPage.TitleView>
     <CollectionView ItemsSource="{Binding Identities}">
@@ -22,7 +23,7 @@
             <DataTemplate x:DataType="models:Identity">
                 <VerticalStackLayout Margin="8,0">
                     <Grid ColumnDefinitions="Auto,*,Auto">
-                        <CheckBox IsChecked="{Binding IsActive}" Grid.Column="0" IsEnabled="False">
+                        <CheckBox IsChecked="{Binding IsActive}" Grid.Column="0" IsEnabled="False" SemanticProperties.Description="Active" SemanticProperties.Hint="Controls whether this identity is active">
                             <CheckBox.GestureRecognizers>
                                 <TapGestureRecognizer
                                     Command="{Binding ToggleActive, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
@@ -36,15 +37,16 @@
                                     CommandParameter="{Binding Id}" />
                             </VerticalStackLayout.GestureRecognizers>
                             <Label FontSize="18" Text="{Binding Name}" LineBreakMode="TailTruncation"
-                                   InputTransparent="true" />
+                                   InputTransparent="true" SemanticProperties.Description="Name" />
                             <Label FontSize="12" Text="{Binding Hash}" LineBreakMode="MiddleTruncation"
-                                   InputTransparent="true" />
+                                   InputTransparent="true" SemanticProperties.Description="Fingerprint" />
                         </VerticalStackLayout>
                         <Button
                             Grid.Column="2" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
                             CommandParameter="{Binding Id}"                            
-                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
+                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
+                            SemanticProperties.Description="Delete" SemanticProperties.Hint="Delete this identity"/>
                     </Grid>
                     <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
                                Margin="32,12" />

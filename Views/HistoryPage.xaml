@@ -14,7 +14,9 @@
             <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
                    Grid.Column="0" />
             <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0" Command="{Binding ClearHistory}"
-                         Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
+                         Source="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
+                         SemanticProperties.Description="Delete all"
+                         SemanticProperties.Hint="Delete all visited page history" />
         </Grid>
     </NavigationPage.TitleView>
     <ScrollView>
@@ -68,15 +70,18 @@
                     Grid.Column="0" Scale="0.75"
                     IsEnabled="{Binding HasPreviousPage}"
                     Command="{Binding PreviousPage}"
-                    ImageSource="{AppThemeBinding Light=back_dark.png, Dark=back_light.png}" />
+                    ImageSource="{AppThemeBinding Light=back_dark.png, Dark=back_light.png}"
+                    SemanticProperties.Description="Previous" SemanticProperties.Hint="Show the prior page" />
                 <HorizontalStackLayout Grid.Column="1" HorizontalOptions="Center" VerticalOptions="Center">
-                    <Label Text="{Binding PageDescription}" />
+                    <Label Text="{Binding PageDescription}" SemanticProperties.Description="Page"
+                           SemanticProperties.Hint="The current page" />
                 </HorizontalStackLayout>
                 <Button
                     Grid.Column="2" Scale="0.75"
                     IsEnabled="{Binding HasNextPage}"
                     Command="{Binding NextPage}"
-                    ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
+                    ImageSource="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}"
+                    SemanticProperties.Description="Next" SemanticProperties.Hint="Show the next page" />
             </Grid>
         </VerticalStackLayout>
     </ScrollView>

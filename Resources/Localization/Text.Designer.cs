@@ -461,6 +461,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Find in page.
+        /// </summary>
+        internal static string MainPage_FindInPage {
+            get {
+                return ResourceManager.GetString("MainPage_FindInPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bookmarks.
         /// </summary>
         internal static string MainPage_Menu_Bookmarks {

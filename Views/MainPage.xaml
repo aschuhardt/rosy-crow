@@ -41,7 +41,9 @@
                     Grid.Column="0"
                     Scale="0.75" IsEnabled="{Binding CanShowHostCertificate, Source={x:Reference Browser}}"
                     Command="{Binding ShowPageCertificate}"
-                    Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}" />
+                    Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}" 
+                    SemanticProperties.Description="Information"
+                    SemanticProperties.Hint="Display information about the page"/>
                 <!-- <ImageButton -->
                 <!--     Grid.Column="0" -->
                 <!--     Scale="0.75" -->
@@ -55,46 +57,60 @@
                         Text="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
-                        ReturnType="Go" Keyboard="Url" x:Name="UrlEntry" />
+                        ReturnType="Go" Keyboard="Url" x:Name="UrlEntry"
+                        SemanticProperties.Description="URL"
+                        SemanticProperties.Hint="The page's address"/>
                 </Border>
                 <ImageButton
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                     Command="{Binding ToggleBookmarked}"
-                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" />
+                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" 
+                    SemanticProperties.Description="Bookmark"
+                    SemanticProperties.Hint="Toggle a bookmark for the current page"/>
                 <controls:BiModalImageButton
                     Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                     Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}" />
+                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}"
+                    SemanticProperties.Description="Home"
+                    SemanticProperties.Hint="Hold to set a home page, tap to navigate to the home page"/>
                 <ImageButton
                     Scale="0.75" Grid.Column="4" x:Name="FindNextButton"
                     Command="{Binding FindNextInPage}"
                     IsVisible="{Binding HasFindNextQuery, Source={x:Reference Browser}}"
-                    Source="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}" />
+                    Source="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}"
+                    SemanticProperties.Description="Next" 
+                    SemanticProperties.Hint="Find the next occurrence of the text being searched for"/>
             </Grid>
             <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0" IsClippedToBounds="True">
-                <Button Text="Find in page" HorizontalOptions="Fill"
+                <Button Text="{x:Static localization:Text.MainPage_FindInPage}" HorizontalOptions="Fill"
                         Command="{Binding FindInPage}"
-                        IsEnabled="{Binding IsMenuExpanded}" />
+                        IsEnabled="{Binding IsMenuExpanded}"
+                        SemanticProperties.Hint="Search for a piece of text in this page" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Bookmarks}" HorizontalOptions="Fill"
                         Command="{Binding OpenBookmarks}"
-                        IsEnabled="{Binding IsMenuExpanded}" />
+                        IsEnabled="{Binding IsMenuExpanded}"
+                        SemanticProperties.Hint="Show all bookmarks" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_History}" HorizontalOptions="Fill"
                         Command="{Binding OpenHistory}"
-                        IsEnabled="{Binding IsMenuExpanded}" />
+                        IsEnabled="{Binding IsMenuExpanded}"
+                        SemanticProperties.Hint="Show previously visited pages"/>
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Identity}" HorizontalOptions="Fill"
                         Command="{Binding OpenIdentity}"
-                        IsEnabled="{Binding IsMenuExpanded}" />
+                        IsEnabled="{Binding IsMenuExpanded}"
+                        SemanticProperties.Hint="Show identities"/>
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Print}" HorizontalOptions="Fill"
                         IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
-                        Command="{Binding Print}" />
+                        Command="{Binding Print}"
+                        SemanticProperties.Hint="Print this page"/>
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Settings}" HorizontalOptions="Fill"
                         Command="{Binding OpenSettings}"
-                        IsEnabled="{Binding IsMenuExpanded}" />
+                        IsEnabled="{Binding IsMenuExpanded}"
+                        SemanticProperties.Hint="Show configurable settings"/>
             </VerticalStackLayout>
             <Image HeightRequest="6" ScaleY="4" ScaleX="10"
                    Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />

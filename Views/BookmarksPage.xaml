@@ -24,15 +24,18 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <VerticalStackLayout Grid.Column="0" InputTransparent="true">
                             <Label FontSize="18" Text="{Binding Title}" LineBreakMode="TailTruncation"
-                                   InputTransparent="true" />
+                                   InputTransparent="true" SemanticProperties.Hint="Title" />
                             <Label FontSize="12" Text="{Binding Url}" VerticalOptions="Center"
-                                   LineBreakMode="MiddleTruncation" InputTransparent="true" />
+                                   LineBreakMode="MiddleTruncation" InputTransparent="true"
+                                   SemanticProperties.Hint="URL" />
                         </VerticalStackLayout>
                         <Button
                             Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:BookmarksPage}}}"
                             CommandParameter="{Binding Id}"
-                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}" />
+                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
+                            SemanticProperties.Description="Delete"
+                            SemanticProperties.Hint="Delete the bookmark" />
                     </Grid>
                     <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
                                Margin="32,12" />

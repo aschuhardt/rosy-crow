@@ -40,16 +40,21 @@
                     SelectedItem="{Binding SelectedTheme}"
                     SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
             </Grid>
-            <views:BrowserView x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16" />
+            <views:BrowserView
+                x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16"
+                SemanticProperties.Description="Preview" SemanticProperties.Hint="An example of a page rendered using the selected theme"/>
             <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
             <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
             <Grid ColumnDefinitions="*,Auto" Margin="8,20">
-                <Label Grid.Column="0" Text="{Binding VersionInfo}" VerticalTextAlignment="Start" />
+                <Label Grid.Column="0" Text="{Binding VersionInfo}" VerticalTextAlignment="Start"
+                       SemanticProperties.Description="Version" SemanticProperties.Hint="The application's version number"/>
                 <ImageButton
                     Grid.Column="1" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
                     VerticalOptions="Start"
                     Command="{Binding CopyVersion}"
-                    Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}" />
+                    Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}"
+                    SemanticProperties.Description="Copy"
+                    SemanticProperties.Hint="Copy the version number"/>
             </Grid>
         </VerticalStackLayout>
     </ScrollView>

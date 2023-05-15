@@ -287,4 +287,7 @@
 	<data name="SettingsPage_ExportErrorLogs" xml:space="preserve">
 		<value>Export Error Logs</value>
 	</data>
+	<data name="MainPage_FindInPage" xml:space="preserve">
+		<value>Find in page</value>
+	</data>
 </root>

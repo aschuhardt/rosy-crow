@@ -106,7 +106,6 @@
 		<PackageReference Include="Serilog.Sinks.Async" Version="1.5.0" />
 		<PackageReference Include="Serilog.Sinks.Debug" Version="2.0.0" />
 		<PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-		<PackageReference Include="sqlite-net-pcl" Version="1.8.116" />
 		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.5.1.1" />
 		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.11" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.141-beta" />

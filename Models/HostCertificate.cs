@@ -1,9 +1,13 @@
-﻿namespace RosyCrow.Models;
+﻿using SQLite;
+
+namespace RosyCrow.Models;
 
 public class HostCertificate
 {
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
     public bool Accepted { get; set; }
+    [Indexed(Unique = true)]
     public string Host { get; set; }
     public string Subject { get; set; }
     public string Issuer { get; set; }

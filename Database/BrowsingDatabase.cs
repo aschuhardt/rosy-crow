@@ -3,43 +3,34 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography.X509Certificates;
-using LiteDB;
 using Microsoft.Extensions.Logging;
 using Opal.Tofu;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using SQLite;
 
 namespace RosyCrow.Database;
 
 internal class BrowsingDatabase : IBrowsingDatabase
 {
-    private readonly ILiteCollection<Bookmark> _bookmarksStore;
-    private readonly ILiteCollection<HostCertificate> _hostCertificates;
-    private readonly ILiteCollection<Identity> _identityStore;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly ILiteCollection<Visited> _visitedStore;
     private readonly ILogger<BrowsingDatabase> _logger;
+    private readonly SQLiteConnection _database;
 
     private ObservableCollection<Bookmark> _bookmarks;
     private ObservableCollection<Identity> _identities;
 
-    public BrowsingDatabase(ILiteDatabase database, ISettingsDatabase settingsDatabase, ILogger<BrowsingDatabase> logger)
+    public BrowsingDatabase(ISettingsDatabase settingsDatabase, ILogger<BrowsingDatabase> logger, SQLiteConnection database1)
     {
         _settingsDatabase = settingsDatabase;
         _logger = logger;
+        _database = database1;
 
-        _bookmarksStore = database.GetCollection<Bookmark>();
-        _bookmarksStore.EnsureIndex(b => b.Url);
+        _database.CreateTables<Bookmark, Identity, Visited, HostCertificate>();
 
-        _hostCertificates = database.GetCollection<HostCertificate>();
-        _hostCertificates.EnsureIndex(c => c.Host, true);
-
-        _visitedStore = database.GetCollection<Visited>();
-        _identityStore = database.GetCollection<Identity>();
-
-        Bookmarks = new ObservableCollection<Bookmark>(_bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList());
-        Identities = new ObservableCollection<Identity>(_identityStore.Query().OrderBy(i => i.Name).ToList());
+        Bookmarks = new ObservableCollection<Bookmark>(_database.Table<Bookmark>().OrderBy(b => b.Url).ToList());
+        Identities = new ObservableCollection<Identity>(_database.Table<Identity>().OrderBy(i => i.Name).ToList());
 
         var activeIdentityId = _settingsDatabase.ActiveIdentityId ?? -1;
         foreach (var identity in Identities)
@@ -100,7 +91,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         try
         {
-            return _visitedStore.DeleteAll();
+            return _database.DeleteAll<Visited>();
         }
         catch (Exception e)
         {
@@ -111,7 +102,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public int GetVisitedPageCount()
     {
-        var count = Math.Max(1, (int)Math.Ceiling(_visitedStore.Count() / (double)_settingsDatabase.HistoryPageSize));
+        var count = Math.Max(1, (int)Math.Ceiling(_database.Table<Visited>().Count() / (double)_settingsDatabase.HistoryPageSize));
         _logger.LogDebug("{Count} pages visited", count);
         return count;
     }
@@ -122,7 +113,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         try
         {
-            _visitedStore.Insert(visited);
+            _database.Insert(visited);
         }
         catch (Exception e)
         {
@@ -134,7 +125,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
     {
         try
         {
-            _hostCertificates.Insert(new HostCertificate
+            _database.Insert(new HostCertificate
             {
                 Added = DateTime.UtcNow,
                 Updated = DateTime.UtcNow,
@@ -159,7 +150,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         try
         {
             host = host.ToLowerInvariant();
-            certificate = _hostCertificates.FindOne(c => c.Host == host);
+            certificate = _database.Table<HostCertificate>().FirstOrDefault(c => c.Host == host);
         }
         catch (Exception e)
         {
@@ -176,9 +167,9 @@ internal class BrowsingDatabase : IBrowsingDatabase
         try
         {
             var pageSize = _settingsDatabase.HistoryPageSize;
-            var result = _visitedStore.Query()
+            var result = _database.Table<Visited>()
                 .OrderByDescending(v => v.Timestamp)
-                .Skip((page - 1) * pageSize).Limit(pageSize)
+                .Skip((page - 1) * pageSize).Take(pageSize)
                 .ToList();
 
             lastPage = result.Count < pageSize;
@@ -209,7 +200,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         try
         {
-            _hostCertificates.Update(cert);
+            _database.Update(cert);
         }
         catch (Exception e)
         {
@@ -301,18 +292,18 @@ internal class BrowsingDatabase : IBrowsingDatabase
         {
             case NotifyCollectionChangedAction.Add when e.NewItems != null:
                 foreach (var entity in e.NewItems.Cast<Identity>())
-                    entity.Id = _identityStore.Insert(entity);
+                    entity.Id = _database.Insert(entity);
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Identity>())
-                    _identityStore.Delete(entity.Id);
+                    _database.Delete(entity.Id);
                 break;
             case NotifyCollectionChangedAction.Replace:
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
                 var activeId = _settingsDatabase.ActiveIdentityId ?? -1;
-                foreach (var identity in _identityStore.Query().OrderBy(i => i.Name).ToList())
+                foreach (var identity in _database.Table<Identity>().OrderBy(i => i.Name).ToList())
                 {
                     identity.IsActive = identity.Id == activeId;
                     _identities.Add(identity);
@@ -330,17 +321,17 @@ internal class BrowsingDatabase : IBrowsingDatabase
         {
             case NotifyCollectionChangedAction.Add when e.NewItems != null:
                 foreach (var entity in e.NewItems.Cast<Bookmark>())
-                    entity.Id = _bookmarksStore.Insert(entity);
+                    entity.Id = _database.Insert(entity);
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Bookmark>())
-                    _bookmarksStore.Delete(entity.Id);
+                    _database.Delete(entity.Id);
                 break;
             case NotifyCollectionChangedAction.Replace:
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                foreach (var bookmark in _bookmarksStore.Query().OrderBy(b => b.Title ?? b.Url).ToList())
+                foreach (var bookmark in _database.Table<Bookmark>().OrderBy(b => b.Title ?? b.Url).ToList())
                     _bookmarks.Add(bookmark);
                 break;
             default:

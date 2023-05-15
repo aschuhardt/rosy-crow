@@ -1,10 +1,10 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using CommunityToolkit.Maui.Alerts;
-using LiteDB;
 using Microsoft.Extensions.Logging;
 using RosyCrow.Interfaces;
 using RosyCrow.Services.Fingerprint.Abstractions;
+using SQLite;
 
 namespace RosyCrow.Services.Identity;
 
@@ -13,18 +13,18 @@ internal class IdentityService : IIdentityService
     private readonly IFingerprint _fingerprint;
     private readonly ISettingsDatabase _settingsDatabase;
     private readonly IBrowsingDatabase _browsingDatabase;
-    private readonly ILiteDatabase _liteDatabase;
     private readonly ILogger<IdentityService> _logger;
+    private readonly SQLiteConnection _database;
 
     private X509Certificate2 _activeCertificate;
 
-    public IdentityService(IFingerprint fingerprint, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILiteDatabase liteDatabase, ILogger<IdentityService> logger)
+    public IdentityService(IFingerprint fingerprint, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<IdentityService> logger, SQLiteConnection database)
     {
         _fingerprint = fingerprint;
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
-        _liteDatabase = liteDatabase;
         _logger = logger;
+        _database = database;
     }
 
     public X509Certificate2 ActiveCertificate { get; private set; }
@@ -83,13 +83,8 @@ internal class IdentityService : IIdentityService
                 return null;
             }
 
-            var path = Path.GetTempFileName();
-            _liteDatabase.FileStorage.Download(identity.SemanticKey, path, true);
-
             var certificate =
-                X509Certificate2.CreateFromEncryptedPemFile(path, Encoding.UTF8.GetString(password).ToCharArray());
-
-            File.Delete(path);
+                X509Certificate2.CreateFromEncryptedPemFile(identity.CertificatePath, Encoding.UTF8.GetString(password).ToCharArray());
 
             _logger.LogInformation("Successfully decrypted the certificate for identity {ID} ({Name})", identity.Id, identity.Name);
 

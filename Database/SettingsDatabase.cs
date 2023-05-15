@@ -1,15 +1,15 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using LiteDB;
 using Microsoft.Extensions.Logging;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using SQLite;
 
 namespace RosyCrow.Database;
 
 internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 {
-    private readonly ILiteCollection<Setting> _settingsStore;
+    private readonly SQLiteConnection _database;
     private readonly ILogger<SettingsDatabase> _logger;
 
 
@@ -22,11 +22,12 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private bool? _inlineImages;
     private bool? _strictTofuMode;
 
-    public SettingsDatabase(ILiteDatabase database, ILogger<SettingsDatabase> logger)
+    public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
         _logger = logger;
-        _settingsStore = database.GetCollection<Setting>();
-        _settingsStore.EnsureIndex(s => s.Name, true);
+        _database = database;
+
+        _database.CreateTable<Setting>();
     }
 
     public int? ActiveIdentityId
@@ -150,17 +151,17 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null && !value.HasValue)
-                _settingsStore.Delete(entity.Id);
+                _database.Delete(entity);
             else if (value.HasValue)
             {
                 _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
 
                 entity ??= new Setting { Name = name };
                 entity.BoolValue = value.Value;
-                _settingsStore.Upsert(entity);
+                _database.InsertOrReplace(entity);
             }
         }
         catch (Exception e)
@@ -176,20 +177,18 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null && string.IsNullOrEmpty(value))
-                _settingsStore.Delete(entity.Id);
+                _database.Delete(entity);
             else if (!string.IsNullOrEmpty(value))
             {
                 _logger.LogInformation("Setting {Name} to \"{Value}\"", name, value);
 
                 entity ??= new Setting { Name = name };
                 entity.StringValue = value;
-                _settingsStore.Upsert(entity);
+                _database.InsertOrReplace(entity);
             }
-
-            _settingsStore.Upsert(entity);
         }
         catch (Exception e)
         {
@@ -204,17 +203,17 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null && !value.HasValue)
-                _settingsStore.Delete(entity.Id);
+                _database.Delete(entity);
             else if (value.HasValue)
             {
                 _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
 
                 entity ??= new Setting { Name = name };
                 entity.IntValue = value.Value;
-                _settingsStore.Upsert(entity);
+                _database.InsertOrReplace(entity);
             }
         }
         catch (Exception e)
@@ -230,7 +229,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null)
                 return entity.StringValue;
@@ -239,7 +238,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
                 return null;
 
             entity = new Setting { Name = name, StringValue = defaultValue };
-            _settingsStore.Insert(entity);
+            _database.Insert(entity);
 
             return entity.StringValue;
         }
@@ -257,7 +256,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null)
                 return entity.BoolValue;
@@ -266,7 +265,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
                 return null;
 
             entity = new Setting { Name = name, BoolValue = defaultValue.Value };
-            _settingsStore.Insert(entity);
+            _database.Insert(entity);
 
             return entity.BoolValue;
         }
@@ -284,7 +283,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
 
         try
         {
-            var entity = _settingsStore.FindOne(s => s.Name.Equals(name));
+            var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
 
             if (entity != null)
                 return entity.IntValue;
@@ -293,7 +292,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
                 return null;
 
             entity = new Setting { Name = name, IntValue = defaultValue.Value };
-            _settingsStore.Insert(entity);
+            _database.Insert(entity);
 
             return entity.IntValue;
         }

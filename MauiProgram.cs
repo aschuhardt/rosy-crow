@@ -1,10 +1,10 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui;
-using LiteDB;
 using Opal;
 using Opal.Response;
 using RosyCrow.Database;
 using RosyCrow.Interfaces;
+using RosyCrow.Models;
 using RosyCrow.Services.Cache;
 using RosyCrow.Services.Fingerprint;
 using RosyCrow.Services.Fingerprint.Abstractions;
@@ -14,6 +14,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Formatting.Compact;
+using SQLite;
 
 namespace RosyCrow;
 
@@ -34,8 +35,10 @@ public static class MauiProgram
             })
             .ConfigureEssentials(config => { config.UseVersionTracking(); });
 
+        SQLitePCL.Batteries.Init();
+
         builder.Services
-            .AddSingleton<ILiteDatabase>(_ => new LiteDatabase(Path.Combine(FileSystem.AppDataDirectory, "app.db")))
+            .AddSingleton(_ => new SQLiteConnection(Path.Combine(FileSystem.AppDataDirectory, Constants.DatabaseName), Constants.SQLiteFlags))
             .AddSingleton<ISettingsDatabase, SettingsDatabase>()
             .AddSingleton<IBrowsingDatabase, BrowsingDatabase>()
             .AddSingleton<MainPage>()
@@ -51,7 +54,11 @@ public static class MauiProgram
                 new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();
 
-        var logDirectory = Path.Combine(FileSystem.AppDataDirectory, "logs");
+        var certsDirectory = Path.Combine(FileSystem.AppDataDirectory, Constants.CertificateDirectory);
+        if (!Directory.Exists(certsDirectory))
+            Directory.CreateDirectory(certsDirectory);
+
+        var logDirectory = Path.Combine(FileSystem.AppDataDirectory, Constants.LogDirectory);
         if (!Directory.Exists(logDirectory))
             Directory.CreateDirectory(logDirectory);
 

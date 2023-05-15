@@ -5,7 +5,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
-using LiteDB;
 using Microsoft.Extensions.Logging;
 using Opal.Authentication;
 using RosyCrow.Interfaces;
@@ -27,7 +26,6 @@ public partial class IdentityPage : ContentPage
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly IFingerprint _fingerprint;
     private readonly IIdentityService _identityService;
-    private readonly ILiteDatabase _liteDatabase; // for file storage
     private readonly ISettingsDatabase _settingsDatabase;
     private readonly ILogger<IdentityPage> _logger;
 
@@ -36,12 +34,11 @@ public partial class IdentityPage : ContentPage
     private ObservableCollection<Identity> _identities;
     private ICommand _toggleActive;
 
-    public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint, ILiteDatabase liteDatabase,
+    public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint,
         IIdentityService identityService, ISettingsDatabase settingsDatabase, ILogger<IdentityPage> logger)
     {
         _browsingDatabase = browsingDatabase;
         _fingerprint = fingerprint;
-        _liteDatabase = liteDatabase;
         _identityService = identityService;
         _settingsDatabase = settingsDatabase;
         _logger = logger;
@@ -153,7 +150,8 @@ public partial class IdentityPage : ContentPage
             if (string.IsNullOrEmpty(identity.EncryptedPassword) || new CryptoObjectHelper(identity.SemanticKey).Delete())
             {
                 Identities.Remove(identity);
-                _liteDatabase.FileStorage.Delete(identity.SemanticKey);
+                if (File.Exists(identity.CertificatePath))
+                    File.Delete(identity.CertificatePath);
                 await Toast.Make(Text.IdentityPage_DeleteKey_Identity_deleted).Show();
             }
             else
@@ -176,7 +174,7 @@ public partial class IdentityPage : ContentPage
         if (string.IsNullOrWhiteSpace(name))
             return;
 
-        var key = $"_ident_{KeyReplacePattern.Replace(name, "_").ToLowerInvariant()}_{Guid.NewGuid():N}";
+        var key = $"{KeyReplacePattern.Replace(name, "_").ToLowerInvariant()}_{Guid.NewGuid():N}";
 
         var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(30 * 365), name);
 
@@ -245,9 +243,8 @@ public partial class IdentityPage : ContentPage
             if (password == null)
                 return;
 
-            await using var storage =
-                _liteDatabase.FileStorage.OpenWrite(identity.SemanticKey, $"{identity.SemanticKey}.pem");
-            await using var writer = new StreamWriter(storage);
+            await using var file = File.Create(identity.CertificatePath);
+            await using var writer = new StreamWriter(file);
             await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
             await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY",
                 certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(

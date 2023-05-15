@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using LiteDB;
+using SQLite;
 
 namespace RosyCrow.Models;
 
@@ -8,6 +8,7 @@ public class Identity : INotifyPropertyChanged
 {
     private bool _isActive;
 
+    [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
     public string Name { get; set; }
     public string SemanticKey { get; set; }
@@ -15,7 +16,7 @@ public class Identity : INotifyPropertyChanged
     public string EncryptedPassword { get; set; }
     public string EncryptedPasswordIv { get; set; }
 
-    [BsonIgnore]
+    [Ignore]
     public bool IsActive
     {
         get => _isActive;
@@ -26,6 +27,10 @@ public class Identity : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    [Ignore]
+    public string CertificatePath =>
+        Path.Combine(FileSystem.AppDataDirectory, Constants.CertificateDirectory, $"{SemanticKey}.pem");
 
     public event PropertyChangedEventHandler PropertyChanged;
 

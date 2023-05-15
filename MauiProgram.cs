@@ -32,10 +32,7 @@ public static class MauiProgram
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             })
-            .ConfigureEssentials(config =>
-            {
-                config.UseVersionTracking();
-            });
+            .ConfigureEssentials(config => { config.UseVersionTracking(); });
 
         builder.Services
             .AddSingleton<ILiteDatabase>(_ => new LiteDatabase(Path.Combine(FileSystem.AppDataDirectory, "app.db")))
@@ -50,7 +47,8 @@ public static class MauiProgram
             .AddSingleton<CertificatePage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()
-            .AddTransient<IOpalClient>(services => new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
+            .AddTransient<IOpalClient>(services =>
+                new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();
 
         var logDirectory = Path.Combine(FileSystem.AppDataDirectory, "logs");
@@ -59,7 +57,9 @@ public static class MauiProgram
 
         var logConfig = new LoggerConfiguration()
             .Enrich.WithExceptionDetails()
-            .WriteTo.Async(a => a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"), LogEventLevel.Warning, retainedFileCountLimit: 7))
+            .WriteTo.Async(a =>
+                a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"),
+                    LogEventLevel.Warning, retainedFileCountLimit: 7, rollingInterval: RollingInterval.Day))
             .WriteTo.Debug(LogEventLevel.Debug);
 
         builder.Logging.AddSerilog(logConfig.CreateLogger());

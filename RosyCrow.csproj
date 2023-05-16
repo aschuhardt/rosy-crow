@@ -72,11 +72,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <AndroidResource Remove="Assets\**" />
 	  <AndroidResource Remove="Fingerprint\**" />
+	  <Compile Remove="Assets\**" />
 	  <Compile Remove="Fingerprint\**" />
+	  <EmbeddedResource Remove="Assets\**" />
 	  <EmbeddedResource Remove="Fingerprint\**" />
+	  <MauiCss Remove="Assets\**" />
 	  <MauiCss Remove="Fingerprint\**" />
+	  <MauiXaml Remove="Assets\**" />
 	  <MauiXaml Remove="Fingerprint\**" />
+	  <None Remove="Assets\**" />
 	  <None Remove="Fingerprint\**" />
 	</ItemGroup>
 

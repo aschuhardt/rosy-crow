@@ -1,5 +1,3 @@
-![Rosy Crow Logo](/Resources/Raw/rosy-crow-plain.svg)
-
 # Rosy Crow
 
 [Google Play](https://play.google.com/store/apps/details?id=app.rosy_crow)

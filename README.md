@@ -6,7 +6,7 @@
 
 Rosy Crow is a Gemini client for Android that includes some less-than-common features.
 
-![screenshot-merged](https://github.com/aschuhardt/rosy-crow/assets/13511943/3e34bdf2-418a-4aca-81be-70a5c7d0d9a8)
+![screenshot-merged](https://github.com/aschuhardt/rosy-crow/assets/13511943/662ff925-0f6a-4dda-b8ec-741bc75af96c)
 
 ## Building
 

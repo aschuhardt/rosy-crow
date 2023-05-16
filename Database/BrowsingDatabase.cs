@@ -296,7 +296,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Identity>())
-                    _database.Delete(entity.Id);
+                    _database.Delete(entity);
                 break;
             case NotifyCollectionChangedAction.Replace:
             case NotifyCollectionChangedAction.Move:
@@ -325,7 +325,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Bookmark>())
-                    _database.Delete(entity.Id);
+                    _database.Delete(entity);
                 break;
             case NotifyCollectionChangedAction.Replace:
             case NotifyCollectionChangedAction.Move:

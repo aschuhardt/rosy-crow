@@ -292,7 +292,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         {
             case NotifyCollectionChangedAction.Add when e.NewItems != null:
                 foreach (var entity in e.NewItems.Cast<Identity>())
-                    entity.Id = _database.Insert(entity);
+                    _database.Insert(entity);
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Identity>())
@@ -321,7 +321,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         {
             case NotifyCollectionChangedAction.Add when e.NewItems != null:
                 foreach (var entity in e.NewItems.Cast<Bookmark>())
-                    entity.Id = _database.Insert(entity);
+                    _database.Insert(entity);
                 break;
             case NotifyCollectionChangedAction.Remove when e.OldItems != null:
                 foreach (var entity in e.OldItems.Cast<Bookmark>())

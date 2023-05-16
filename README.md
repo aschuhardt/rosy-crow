@@ -1,7 +1,7 @@
 # Rosy Crow
 
-[![Get it on Google Play](https://github.com/aschuhardt/rosy-crow/assets/13511943/84cfeedd-8fb9-4c93-b7f7-66012d459b69)](https://play.google.com/store/apps/details?id=app.rosy_crow)
-[![fdroid](https://github.com/aschuhardt/rosy-crow/assets/13511943/bd44cfe8-c325-4af3-b2e7-789687d05bbe)](https://rosy-crow.app/fdroid/repo/)
+[![Get it on Google Play](Assets/google-play.png)](https://play.google.com/store/apps/details?id=app.rosy_crow)
+[![fdroid](Assets/f-droid.png)](https://rosy-crow.app/fdroid/repo/)
 
 
 Rosy Crow is a Gemini client for Android that includes some less-than-common features.

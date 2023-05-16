@@ -20,3 +20,5 @@
  | SQLitePCLRaw.provider.sqlite3       | 2.1.4           | Apache-2.0         | https://licenses.nuget.org/Apache-2.0                                | 
  | Xamarin.AndroidX.AppCompat          | 1.5.1.1         | MIT AND Apache-2.0 | https://licenses.nuget.org/MIT%20AND%20Apache-2.0                    | 
  | Xamarin.AndroidX.Biometric          | 1.1.0.11        | MIT AND Apache-2.0 | https://licenses.nuget.org/MIT%20AND%20Apache-2.0                    | 
+ | Sakura CSS                          |                 | MIT                | https://github.com/oxalorg/sakura/blob/master/LICENSE.txt            |
+ | normalize.css                       |                 | MIT                | https://github.com/necolas/normalize.css/blob/master/LICENSE.md      |

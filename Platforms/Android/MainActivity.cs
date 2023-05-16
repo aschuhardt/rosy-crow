@@ -7,7 +7,7 @@ namespace RosyCrow.Platforms.Android;
 [Activity(Theme = "@style/Maui.SplashTheme", MainLauncher = true,
     ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.UiMode |
                            ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.Density)]
-[IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryAppBrowser }, DataScheme = "gemini")]
+[IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault }, DataScheme = "gemini")]
 public class MainActivity : MauiAppCompatActivity
 {
     protected override void OnNewIntent(Intent intent)

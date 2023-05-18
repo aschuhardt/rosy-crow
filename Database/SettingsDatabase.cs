@@ -106,7 +106,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     {
         get
         {
-            _inlineImages ??= GetBoolValue();
+            _inlineImages ??= GetBoolValue(false);
             return _inlineImages.GetValueOrDefault();
         }
         set
@@ -120,7 +120,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     {
         get
         {
-            _strictTofuMode ??= GetBoolValue();
+            _strictTofuMode ??= GetBoolValue(false);
             return _strictTofuMode.GetValueOrDefault();
         }
         set
@@ -134,7 +134,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     {
         get
         {
-            _storeVisited ??= GetBoolValue();
+            _storeVisited ??= GetBoolValue(false);
             return _storeVisited.GetValueOrDefault();
         }
         set

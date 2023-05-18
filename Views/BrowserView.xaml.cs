@@ -293,7 +293,9 @@ public partial class BrowserView : ContentView
             {
                 if (_recentHistory.TryPeek(out var prev))
                 {
-                    Location = prev;
+                    // navigate to the prior page but do 
+                    _location = prev;
+                    Dispatcher.Dispatch(async () => await LoadPage(useCache: true));
                     return true;
                 }
 
@@ -660,7 +662,7 @@ public partial class BrowserView : ContentView
         }
     }
 
-    public async Task LoadPage(bool triggeredByRefresh = false)
+    public async Task LoadPage(bool triggeredByRefresh = false, bool useCache = false)
     {
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
@@ -695,7 +697,7 @@ public partial class BrowserView : ContentView
         {
             do
             {
-                if (!triggeredByRefresh)
+                if (useCache && !triggeredByRefresh)
                 {
                     var cached = await _cache.LoadString(Location, Input);
                     if (!string.IsNullOrEmpty(cached))

@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using Android.Views;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -14,8 +15,8 @@ namespace RosyCrow.Views;
 public partial class MainPage : ContentPage
 {
     private readonly IBrowsingDatabase _browsingDatabase;
-    private readonly ISettingsDatabase _settingsDatabase;
     private readonly ILogger<MainPage> _logger;
+    private readonly ISettingsDatabase _settingsDatabase;
 
     private ICommand _expandMenu;
     private ICommand _findInPage;
@@ -34,9 +35,9 @@ public partial class MainPage : ContentPage
     private ICommand _openSettings;
     private ICommand _print;
     private ICommand _setHomeUrl;
+    private ICommand _showPageCertificate;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
-    private ICommand _showPageCertificate;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -78,6 +79,8 @@ public partial class MainPage : ContentPage
             button.GestureRecognizers.Add(SwipeUpRecognizer);
             button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
         }
+
+        UrlEntry.HandlerChanged += SetupUrlEnterHandling;
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware", (handler, _) =>
         {
@@ -295,6 +298,25 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private void SetupUrlEnterHandling(object sender, EventArgs e)
+    {
+        if (sender is not Entry entry || entry.Handler is not EntryHandler handler)
+            return;
+
+#if ANDROID
+        handler.PlatformView.KeyPress += (_, args) =>
+        {
+            if (args.Event is { KeyCode: Keycode.Enter or Keycode.NumpadEnter, Action: KeyEventActions.Up })
+            {
+                entry.ReturnCommand?.Execute(entry.ReturnCommandParameter);
+                args.Handled = true;
+            }
+
+            args.Handled = false;
+        };
+#endif
+    }
+
     private void PerformNavBarAnimations()
     {
         try
@@ -465,7 +487,6 @@ public partial class MainPage : ContentPage
         {
             if (_browsingDatabase.IsBookmark(Browser.Location, out var bookmark))
             {
-
                 _browsingDatabase.Bookmarks.Remove(bookmark);
                 Browser.SimulateLocationChanged(); // force buttons to update
 
@@ -481,7 +502,7 @@ public partial class MainPage : ContentPage
                     Url = Browser.Location.ToString()
                 });
                 Browser.SimulateLocationChanged(); // force buttons to update
-                
+
                 _logger.LogInformation("Set bookmarked location {URI}", bookmark.Url);
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
@@ -495,7 +516,8 @@ public partial class MainPage : ContentPage
 
     private double GetExpandedMenuHeight()
     {
-        return ExpandableMenu.Sum(e => (double.IsNaN(e.MinimumHeight) ? 0 : e.MinimumHeight) + e.Margin.VerticalThickness);
+        return ExpandableMenu.Sum(e =>
+            (double.IsNaN(e.MinimumHeight) ? 0 : e.MinimumHeight) + e.Margin.VerticalThickness);
     }
 
     private void AddMenuAnimations()

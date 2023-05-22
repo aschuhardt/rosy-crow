@@ -10,10 +10,13 @@
              Title="{x:Static localization:Text.IdentityPage_Title}"
              Appearing="IdentityPage_OnAppearing">
     <NavigationPage.TitleView>
-        <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+        <Grid ColumnDefinitions="*,Auto,Auto" VerticalOptions="Center">
             <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold"
                    Grid.Column="0" />
-            <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0" Command="{Binding GenerateNew}"
+            <ImageButton HorizontalOptions="End" Grid.Column="1" Padding="0,0,8,0" Command="{Binding Import}"
+                         Source="{AppThemeBinding Light=open_dark.png, Dark=open_light.png}"
+                         SemanticProperties.Description="Import" SemanticProperties.Hint="Import new identity"/>
+            <ImageButton HorizontalOptions="End" Grid.Column="2" Padding="0,0,8,0" Command="{Binding GenerateNew}"
                          Source="{AppThemeBinding Light=add_dark.png, Dark=add_light.png}"
                          SemanticProperties.Description="New" SemanticProperties.Hint="Create a new identity"/>
         </Grid>
@@ -22,7 +25,7 @@
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="models:Identity">
                 <VerticalStackLayout Margin="8,0">
-                    <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Grid ColumnDefinitions="Auto,*,Auto,Auto">
                         <CheckBox IsChecked="{Binding IsActive}" Grid.Column="0" IsEnabled="False" SemanticProperties.Description="Active" SemanticProperties.Hint="Controls whether this identity is active">
                             <CheckBox.GestureRecognizers>
                                 <TapGestureRecognizer
@@ -43,9 +46,13 @@
                         </VerticalStackLayout>
                         <Button
                             Grid.Column="2" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
+                            Command="{Binding Export, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
+                            CommandParameter="{Binding Id}" ImageSource="{AppThemeBinding Light=upload_dark.png, Dark=upload_light.png}"
+                            SemanticProperties.Description="Export" SemanticProperties.Hint="Export this identity"/>
+                        <Button
+                            Grid.Column="3" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
-                            CommandParameter="{Binding Id}"                            
-                            ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
+                            CommandParameter="{Binding Id}" ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
                             SemanticProperties.Description="Delete" SemanticProperties.Hint="Delete this identity"/>
                     </Grid>
                     <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"

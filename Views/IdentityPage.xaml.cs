@@ -33,6 +33,8 @@ public partial class IdentityPage : ContentPage
     private ICommand _generateNew;
     private ObservableCollection<Identity> _identities;
     private ICommand _toggleActive;
+    private ICommand _import;
+    private ICommand _export;
 
     public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint,
         IIdentityService identityService, ISettingsDatabase settingsDatabase, ILogger<IdentityPage> logger)
@@ -50,6 +52,8 @@ public partial class IdentityPage : ContentPage
         GenerateNew = new Command(async () => await GenerateNewKey());
         Delete = new Command(async id => await DeleteKey((int)id));
         ToggleActive = new Command(async id => await ToggleActiveKey((int)id));
+        Import = new Command(async () => await ImportKey());
+        Export = new Command(async () => await ExportKey());
     }
 
     public ObservableCollection<Identity> Identities
@@ -96,6 +100,28 @@ public partial class IdentityPage : ContentPage
         }
     }
 
+    public ICommand Import
+    {
+        get => _import;
+        set
+        {
+            if (Equals(value, _import)) return;
+            _import = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand Export
+    {
+        get => _export;
+        set
+        {
+            if (Equals(value, _export)) return;
+            _export = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async Task ToggleActiveKey(int id)
     {
         try
@@ -133,6 +159,16 @@ public partial class IdentityPage : ContentPage
     {
         foreach (var identity in Identities)
             identity.IsActive = false;
+    }
+
+    private async Task ExportKey()
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task ImportKey()
+    {
+        throw new NotImplementedException();
     }
 
     private async Task DeleteKey(int id)

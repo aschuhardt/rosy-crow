@@ -166,6 +166,10 @@
 		<MauiImage Include="Resources\Images\Info\info_light.svg" TintColor="$(IconLightColor)" />
 		<MauiImage Include="Resources\Images\Copy\copy_dark.svg" TintColor="$(IconDarkColor)" />
 		<MauiImage Include="Resources\Images\Copy\copy_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Open\open_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Open\open_light.svg" TintColor="$(IconLightColor)" />
+		<MauiImage Include="Resources\Images\Upload\upload_dark.svg" TintColor="$(IconDarkColor)" />
+		<MauiImage Include="Resources\Images\Upload\upload_light.svg" TintColor="$(IconLightColor)" />
 	</ItemGroup>
 
 	<ItemGroup>

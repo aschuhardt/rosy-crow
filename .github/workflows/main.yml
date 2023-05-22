@@ -52,18 +52,42 @@ jobs:
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
 
-      - name: Upload Android Artifact
+      - name: Upload AAB
         uses: actions/upload-artifact@v2.3.1
         with:
-          name: android-build-${{ github.run_number }}
-          path: bin\Release\net7.0-android33.0\*Signed.a*
+          name: build-aab-${{ github.run_number }}
+          path: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
 
-#       - name: Upload Android Release to Play Store
-#         uses: r0adkll/upload-google-play@v1.1.1
-#         with:
-#           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
-#           packageName: app.rosy-crow
-#           releaseFiles: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-#           track: alpha
-#           mappingFile: bin\Release\net7.0-android33.0\mapping.txt
-#           releaseName: ci-internal-${{ github.run_number }}
+      - name: Upload APK
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: build-apk-${{ github.run_number }}
+          path: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk
+
+      - name: Upload mappings
+        uses: actions/upload-artifact@v2.3.1
+        with:
+          name: build-mappings-${{ github.run_number }}
+          path: bin\Release\net7.0-android33.0\mapping.txt
+ 
+  publish-fdroid:
+    runs-on: ubuntu-latest
+    name: F-Droid Publish
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install F-Droid Tools
+        run: |
+          sudo add-apt-repository ppa:fdroid/fdroidserver
+          sudo apt-get update
+          sudo apt-get install fdroidserver
+          mkdir fdroid/repo
+
+      - name: Download APK
+        uses: actions/download-artifact@v3
+        with:
+          name: build-apk-${{ github.run_number }}
+          path: fdroid/repo/app.rosy_crow-Signed.apk
+
+      - 

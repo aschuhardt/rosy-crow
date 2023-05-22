@@ -69,25 +69,3 @@ jobs:
         with:
           name: build-mappings-${{ github.run_number }}
           path: bin\Release\net7.0-android33.0\mapping.txt
- 
-  publish-fdroid:
-    runs-on: ubuntu-latest
-    name: F-Droid Publish
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Install F-Droid Tools
-        run: |
-          sudo add-apt-repository ppa:fdroid/fdroidserver
-          sudo apt-get update
-          sudo apt-get install fdroidserver
-          mkdir fdroid/repo
-
-      - name: Download APK
-        uses: actions/download-artifact@v3
-        with:
-          name: build-apk-${{ github.run_number }}
-          path: fdroid/repo/app.rosy_crow-Signed.apk
-
-      - 

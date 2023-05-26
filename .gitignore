@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /app.db
 
 fdroid/
+
+*.pem

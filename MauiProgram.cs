@@ -47,6 +47,7 @@ public static class MauiProgram
             .AddSingleton<SettingsPage>()
             .AddSingleton<HistoryPage>()
             .AddSingleton<AboutPage>()
+            .AddSingleton<ExportIdentityPage>()
             .AddSingleton<CertificatePage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()

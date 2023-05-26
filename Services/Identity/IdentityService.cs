@@ -67,7 +67,7 @@ internal class IdentityService : IIdentityService
         }
     }
 
-    private async Task<X509Certificate2> LoadCertificate(Models.Identity identity)
+    public async Task<X509Certificate2> LoadCertificate(Models.Identity identity)
     {
         try
         {

@@ -290,4 +290,43 @@
 	<data name="MainPage_FindInPage" xml:space="preserve">
 		<value>Find in page</value>
 	</data>
+	<data name="ExportIdentityPage_ExportKey_Enter_a_password_or_disable_password_protection" xml:space="preserve">
+		<value>Enter a password or disable password protection</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_Exporting_the_certificate_for_Identity__ID____Name__" xml:space="preserve">
+		<value>Exporting the certificate for Identity {ID} ({Name})</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_The_identity_could_not_be_decrypted" xml:space="preserve">
+		<value>The identity could not be decrypted</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_Failed_to_export_the_certificate" xml:space="preserve">
+		<value>Failed to export the certificate</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_encrypted_to__Path_" xml:space="preserve">
+		<value>Certificate for Identity {ID} exported encrypted to {Path}</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_Password_copied_to_the_clipboard" xml:space="preserve">
+		<value>Password copied to the clipboard</value>
+	</data>
+	<data name="ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_unencrypted_to__Path_" xml:space="preserve">
+		<value>Certificate for Identity {ID} exported unencrypted to {Path}</value>
+	</data>
+	<data name="ExportIdentityPage_Fingerprint" xml:space="preserve">
+		<value>Fingerprint</value>
+	</data>
+	<data name="ExportIdentityPage_Protect" xml:space="preserve">
+		<value>Protect the certificate with a password</value>
+	</data>
+	<data name="ExportIdentityPage_Password" xml:space="preserve">
+		<value>Password</value>
+	</data>
+	<data name="ExportIdentityPage_Alias" xml:space="preserve">
+		<value>Alias</value>
+	</data>
+	<data name="ExportIdentityPage_Title" xml:space="preserve">
+		<value>Export Identity</value>
+	</data>
+	<data name="ExportIdentityPage_Export" xml:space="preserve">
+		<value>Export</value>
+	</data>
 </root>

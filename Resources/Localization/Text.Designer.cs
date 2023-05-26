@@ -290,6 +290,126 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alias.
+        /// </summary>
+        internal static string ExportIdentityPage_Alias {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Alias", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export.
+        /// </summary>
+        internal static string ExportIdentityPage_Export {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Export", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate for Identity {ID} exported encrypted to {Path}.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_encrypted_to__Path_ {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_encrypted_to_" +
+                        "_Path_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate for Identity {ID} exported unencrypted to {Path}.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_unencrypted_to__Path_ {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_unencrypted_t" +
+                        "o__Path_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter a password or disable password protection.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Enter_a_password_or_disable_password_protection {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Enter_a_password_or_disable_password_protection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Exporting the certificate for Identity {ID} ({Name}).
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Exporting_the_certificate_for_Identity__ID____Name__ {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Exporting_the_certificate_for_Identity__ID____Name__" +
+                        "", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to export the certificate.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Failed_to_export_the_certificate {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Failed_to_export_the_certificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password copied to the clipboard.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Password_copied_to_the_clipboard {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Password_copied_to_the_clipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The identity could not be decrypted.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_The_identity_could_not_be_decrypted {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_The_identity_could_not_be_decrypted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fingerprint.
+        /// </summary>
+        internal static string ExportIdentityPage_Fingerprint {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string ExportIdentityPage_Password {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Protect the certificate with a password.
+        /// </summary>
+        internal static string ExportIdentityPage_Protect {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Protect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export Identity.
+        /// </summary>
+        internal static string ExportIdentityPage_Title {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No.
         /// </summary>
         internal static string Global_No {

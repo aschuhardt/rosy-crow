@@ -1,11 +1,14 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using SQLite;
 
 namespace RosyCrow.Models;
 
 public class Identity : INotifyPropertyChanged
 {
+    private static readonly Regex KeyReplacePattern = new("\\W", RegexOptions.Compiled);
+
     private bool _isActive;
 
     [PrimaryKey, AutoIncrement]
@@ -27,6 +30,10 @@ public class Identity : INotifyPropertyChanged
             OnPropertyChanged();
         }
     }
+
+    [Ignore]
+    public string SanitizedName => 
+        KeyReplacePattern.Replace(Name, "_").ToLowerInvariant();
 
     [Ignore]
     public string CertificatePath =>

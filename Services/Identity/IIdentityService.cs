@@ -10,4 +10,5 @@ public interface IIdentityService
     void ClearActiveCertificate();
     Task Activate(Models.Identity identity);
     Task<X509Certificate2> LoadActiveCertificate();
+    Task<X509Certificate2> LoadCertificate(Models.Identity identity);
 }

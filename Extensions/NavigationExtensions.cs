@@ -2,8 +2,11 @@
 
 internal static class NavigationExtensions
 {
-    public static async Task PushPageAsync<T>(this INavigation navigation) where T : ContentPage
+    public static async Task PushPageAsync<T>(this INavigation navigation, Action<T> configure = null)
+        where T : ContentPage
     {
-        await navigation.PushAsync(MauiProgram.Services.GetRequiredService<T>(), true);
+        var page = MauiProgram.Services.GetRequiredService<T>();
+        configure?.Invoke(page);
+        await navigation.PushAsync(page, true);
     }
 }

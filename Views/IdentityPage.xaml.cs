@@ -4,9 +4,12 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
+using Android.App;
+using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using Microsoft.Extensions.Logging;
 using Opal.Authentication;
+using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
@@ -21,8 +24,6 @@ namespace RosyCrow.Views;
 
 public partial class IdentityPage : ContentPage
 {
-    private const int EncryptionIterations = 100;
-    private static readonly Regex KeyReplacePattern = new("\\W", RegexOptions.Compiled);
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly IFingerprint _fingerprint;
     private readonly IIdentityService _identityService;
@@ -53,7 +54,7 @@ public partial class IdentityPage : ContentPage
         Delete = new Command(async id => await DeleteKey((int)id));
         ToggleActive = new Command(async id => await ToggleActiveKey((int)id));
         Import = new Command(async () => await ImportKey());
-        Export = new Command(async () => await ExportKey());
+        Export = new Command(async id => await TryOpeningExportKeyPage((int)id));
     }
 
     public ObservableCollection<Identity> Identities
@@ -161,11 +162,6 @@ public partial class IdentityPage : ContentPage
             identity.IsActive = false;
     }
 
-    private async Task ExportKey()
-    {
-        throw new NotImplementedException();
-    }
-
     private async Task ImportKey()
     {
         throw new NotImplementedException();
@@ -201,6 +197,18 @@ public partial class IdentityPage : ContentPage
         }
     }
 
+    private async Task TryOpeningExportKeyPage(int id)
+    {
+        var identity = _browsingDatabase.Identities.FirstOrDefault(i => i.Id == id);
+        if (identity == null)
+        {
+            await Toast.Make("Cannot export this identity").Show();
+            return;
+        }
+
+        await Navigation.PushPageAsync<ExportIdentityPage>(page => page.Identity = identity);
+    }
+
     private async Task GenerateNewKey()
     {
         var name = await DisplayPromptAsync(Text.IdentityPage_GenerateNewKey_Generate_Identity,
@@ -210,19 +218,19 @@ public partial class IdentityPage : ContentPage
         if (string.IsNullOrWhiteSpace(name))
             return;
 
-        var key = $"{KeyReplacePattern.Replace(name, "_").ToLowerInvariant()}_{Guid.NewGuid():N}";
 
         var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(30 * 365), name);
 
         var identity = new Identity
         {
             Name = name,
-            SemanticKey = key,
             Hash = certificate.Thumbprint
         };
 
+        identity.SemanticKey = $"{identity.SanitizedName}_{Guid.NewGuid():N}";
+
         _logger.LogDebug("Generating a new identity named {Name}", identity.Name);
-        _logger.LogDebug("The new identity's semantic key is {SemanticKey}", key);
+        _logger.LogDebug("The new identity's semantic key is {SemanticKey}", identity.SemanticKey);
 
         try
         {
@@ -235,7 +243,7 @@ public partial class IdentityPage : ContentPage
 
                 var authConfig = new AuthenticationRequestConfiguration(
                     Text.IdentityPage_GenerateNewKey_Secure_the_Identity,
-                    Text.IdentityPage_GenerateNewKey_Authenticate, key)
+                    Text.IdentityPage_GenerateNewKey_Authenticate, identity.SemanticKey)
                 {
                     AllowAlternativeAuthentication = true
                 };
@@ -281,12 +289,7 @@ public partial class IdentityPage : ContentPage
 
             await using var file = File.Create(identity.CertificatePath);
             await using var writer = new StreamWriter(file);
-            await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
-            await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY",
-                certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(
-                    Encoding.UTF8.GetString(password).ToCharArray(),
-                    new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512, EncryptionIterations))));
-            await writer.FlushAsync();
+            await certificate.WriteCertificate(writer, password);
 
             _logger.LogInformation("Stored an encrypted PEM-encoded identity certificate");
         }

@@ -1,0 +1,3 @@
+The files in this directory are modified from their original form by me, and are originally from [Biometric / Fingerprint plugin for Xamarin](https://github.com/smstuebe/xamarin-fingerprint).
+
+These files are distributed under the terms of the Microsoft Public License.  See LICENSE.txt in this directory for a copy of this license, or visit [this page](https://github.com/smstuebe/xamarin-fingerprint/blob/master/LICENSE).

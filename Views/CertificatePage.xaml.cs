@@ -1,5 +1,6 @@
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
+using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 
 // ReSharper disable AsyncVoidLambda
@@ -100,12 +101,6 @@ public partial class CertificatePage : ContentPage
         }
     }
 
-    private static string ConvertFingerprintToFriendlyFormat(string fingerprint)
-    {
-        var buffer = Convert.FromHexString(fingerprint);
-        return BitConverter.ToString(buffer).Replace('-', ' ');
-    }
-
     private async void CertificatePage_OnAppearing(object sender, EventArgs e)
     {
         Host = _mainPage.Browser.Location.Host;
@@ -115,7 +110,7 @@ public partial class CertificatePage : ContentPage
             Host = cert.Host;
             Expiration = cert.Expiration;
             Issuer = cert.Issuer;
-            Fingerprint = ConvertFingerprintToFriendlyFormat(cert.Fingerprint);
+            Fingerprint = cert.Fingerprint.ToFriendlyFingerprint();
         }
         else
             await Navigation.PopAsync();

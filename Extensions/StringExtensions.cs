@@ -31,4 +31,10 @@ internal static class StringExtensions
             ? new Uri($"{GeminiSchemePrefix}{source}")
             : new Uri(source);
     }
+
+    public static string ToFriendlyFingerprint(this string fingerprint)
+    {
+        var buffer = Convert.FromHexString(fingerprint);
+        return BitConverter.ToString(buffer).Replace('-', ' ');
+    }
 }

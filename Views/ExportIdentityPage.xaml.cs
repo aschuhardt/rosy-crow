@@ -72,7 +72,7 @@ public partial class ExportIdentityPage : ContentPage
         {
             if (Equals(value, _identity)) return;
             _identity = value;
-            Fingerprint = ConvertFingerprintToFriendlyFormat(_identity.Hash);
+            Fingerprint = _identity.Hash.ToFriendlyFingerprint();
             Name = _identity.Name;
             OnPropertyChanged();
         }
@@ -146,12 +146,6 @@ public partial class ExportIdentityPage : ContentPage
             _togglePasswordHidden = value;
             OnPropertyChanged();
         }
-    }
-
-    private static string ConvertFingerprintToFriendlyFormat(string fingerprint)
-    {
-        var buffer = Convert.FromHexString(fingerprint);
-        return BitConverter.ToString(buffer).Replace('-', ' ');
     }
 
     private async Task ExportKey()

@@ -22,6 +22,8 @@ public partial class ExportIdentityPage : ContentPage
     private string _fingerprint;
     private ICommand _copyText;
     private string _name;
+    private bool _hidePassword;
+    private ICommand _togglePasswordHidden;
 
     public ExportIdentityPage(IIdentityService identityService, ILogger<ExportIdentityPage> logger)
     {
@@ -33,6 +35,7 @@ public partial class ExportIdentityPage : ContentPage
         BindingContext = this;
 
         Export = new Command(async () => await ExportKey());
+        TogglePasswordHidden = new Command(() => HidePassword = !HidePassword);
         CopyText = new Command(async value =>
         {
             await Clipboard.SetTextAsync((string)value);
@@ -86,6 +89,17 @@ public partial class ExportIdentityPage : ContentPage
         }
     }
 
+    public bool HidePassword
+    {
+        get => _hidePassword;
+        set
+        {
+            if (value == _hidePassword) return;
+            _hidePassword = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool UsePassword
     {
         get => _usePassword;
@@ -119,6 +133,17 @@ public partial class ExportIdentityPage : ContentPage
         {
             if (Equals(value, _export)) return;
             _export = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand TogglePasswordHidden
+    {
+        get => _togglePasswordHidden;
+        set
+        {
+            if (Equals(value, _togglePasswordHidden)) return;
+            _togglePasswordHidden = value;
             OnPropertyChanged();
         }
     }
@@ -189,5 +214,10 @@ public partial class ExportIdentityPage : ContentPage
         {
             await Navigation.PopAsync(true);
         }
+    }
+
+    private void ExportIdentityPage_OnAppearing(object sender, EventArgs e)
+    {
+        HidePassword = true;
     }
 }

@@ -3,12 +3,17 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
              xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
              x:Class="RosyCrow.Views.ExportIdentityPage"
              x:DataType="views:ExportIdentityPage"
-             Title="{x:Static localization:Text.ExportIdentityPage_Title}">
+             Title="{x:Static localization:Text.ExportIdentityPage_Title}"
+             Appearing="ExportIdentityPage_OnAppearing">
     <NavigationPage.TitleView>
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
+    <ContentPage.Resources>
+        <converters:VisibilityButtonImageConverter x:Key="VisibilityButtonImageConverter" />
+    </ContentPage.Resources>
     <VerticalStackLayout Padding="16,8,16,32">
         <Grid ColumnDefinitions="*,Auto,Auto">
             <Label Text="{x:Static localization:Text.ExportIdentityPage_Alias}" VerticalTextAlignment="Center" Grid.Column="0" />
@@ -32,15 +37,25 @@
                 VerticalOptions="Start"
                 Command="{Binding CopyText}" CommandParameter="{Binding Fingerprint}"
                 Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}"
-                SemanticProperties.Description="Copy" SemanticProperties.Hint="Copy the fingerprint" />
+                SemanticProperties.Description="Copy" SemanticProperties.Hint="Copy the fingerprint" x:Name="PasswordVisibleButton" />
         </Grid>
         <Grid ColumnDefinitions="*,Auto">
             <Label Text="{x:Static localization:Text.ExportIdentityPage_Protect}" VerticalTextAlignment="Center" Grid.Column="0" />
             <Switch IsToggled="{Binding UsePassword}" Grid.Column="1" />
         </Grid>
-        <Grid ColumnDefinitions="*,*">
-            <Label Text="{x:Static localization:Text.ExportIdentityPage_Password}" Grid.Column="0" VerticalTextAlignment="Center" IsEnabled="{Binding UsePassword, Mode=OneWay}"></Label>
-            <Entry IsPassword="True" Grid.Column="1"  IsEnabled="{Binding UsePassword, Mode=OneWay}" Text="{Binding Password}" />
+        <Grid ColumnDefinitions="*,*,Auto">
+            <Label
+                Text="{x:Static localization:Text.ExportIdentityPage_Password}" Grid.Column="0"
+                VerticalTextAlignment="Center" IsEnabled="{Binding UsePassword, Mode=OneWay}" />
+            <Entry 
+                IsPassword="{Binding HidePassword}" Grid.Column="1"  
+                IsEnabled="{Binding UsePassword, Mode=OneWay}" Text="{Binding Password}" />
+            <ImageButton 
+                Grid.Column="2" Command="{Binding TogglePasswordHidden}"
+                WidthRequest="24" HeightRequest="24"
+                SemanticProperties.Description="Toggle Visible" SemanticProperties.Hint="Toggle the visibility of the password"
+                Source="{Binding HidePassword, Mode=OneWay, Converter={StaticResource VisibilityButtonImageConverter}}">
+            </ImageButton>
         </Grid>
         <Button Text="{x:Static localization:Text.ExportIdentityPage_Export}" Command="{Binding Export}" />
     </VerticalStackLayout>

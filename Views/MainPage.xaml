@@ -14,7 +14,6 @@
     <ContentPage.Resources>
         <converters:BookmarkButtonImageConverter x:Key="BookmarkButtonImageConverter" />
         <converters:HomeButtonImageConverter x:Key="HomeButtonImageConverter" />
-        <converters:ExpandButtonImageConverter x:Key="ExpandButtonImageConverter" />
     </ContentPage.Resources>
     <AbsoluteLayout>
         <views:BrowserView

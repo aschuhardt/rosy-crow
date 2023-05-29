@@ -53,7 +53,7 @@ public partial class IdentityPage : ContentPage
         GenerateNew = new Command(async () => await GenerateNewKey());
         Delete = new Command(async id => await DeleteKey((int)id));
         ToggleActive = new Command(async id => await ToggleActiveKey((int)id));
-        Import = new Command(async () => await ImportKey());
+        Import = new Command(async () => await Navigation.PushModalPageAsync<ImportIdentityPage>());
         Export = new Command(async id => await TryOpeningExportKeyPage((int)id));
     }
 
@@ -162,11 +162,6 @@ public partial class IdentityPage : ContentPage
             identity.IsActive = false;
     }
 
-    private async Task ImportKey()
-    {
-        throw new NotImplementedException();
-    }
-
     private async Task DeleteKey(int id)
     {
         try
@@ -206,7 +201,13 @@ public partial class IdentityPage : ContentPage
             return;
         }
 
-        await Navigation.PushPageAsync<ExportIdentityPage>(page => page.Identity = identity);
+        await Navigation.PushModalPageAsync<ExportIdentityPage>(page => page.Identity = identity);
+    }
+
+    private async Task<bool> PresentProtectionPrompt()
+    {
+        return await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
+            Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No);
     }
 
     private async Task GenerateNewKey()
@@ -215,93 +216,26 @@ public partial class IdentityPage : ContentPage
             Text.IdentityPage_GenerateNewKey_Prompt,
             maxLength: 400);
 
-        if (string.IsNullOrWhiteSpace(name))
-            return;
-
-
-        var certificate = CertificateHelper.GenerateNew(TimeSpan.FromDays(30 * 365), name);
-
-        var identity = new Identity
+        if (!string.IsNullOrWhiteSpace(name))
         {
-            Name = name,
-            Hash = certificate.Thumbprint
-        };
+            var identity = await _identityService.GenerateNewIdentity(name, PresentProtectionPrompt);
 
-        identity.SemanticKey = $"{identity.SanitizedName}_{Guid.NewGuid():N}";
-
-        _logger.LogDebug("Generating a new identity named {Name}", identity.Name);
-        _logger.LogDebug("The new identity's semantic key is {SemanticKey}", identity.SemanticKey);
-
-        try
-        {
-            if (OperatingSystem.IsAndroidVersionAtLeast(28) &&
-                await CrossFingerprint.Current.IsAvailableAsync(true) &&
-                await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
-                    Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No))
+            if (identity == null)
             {
-                var password = RandomNumberGenerator.GetBytes(32);
-
-                var authConfig = new AuthenticationRequestConfiguration(
-                    Text.IdentityPage_GenerateNewKey_Secure_the_Identity,
-                    Text.IdentityPage_GenerateNewKey_Authenticate, identity.SemanticKey)
-                {
-                    AllowAlternativeAuthentication = true
-                };
-
-                var result = await _fingerprint.EncryptAsync(authConfig, password);
-                if (!result.AuthenticationResult.Authenticated)
-                {
-                    await Toast.Make(Text.IdentityPage_GenerateNewKey_Could_not_protect_the_identity).Show();
-                    return;
-                }
-
-                identity.EncryptedPassword = Convert.ToBase64String(result.Ciphertext);
-                identity.EncryptedPasswordIv = Convert.ToBase64String(result.Iv);
-
-                _logger.LogInformation("Encrypted the password for the new identity using device credentials");
-
-                await StoreCertificate(identity, certificate, password);
-            }
-            else
-            {
-                _logger.LogInformation("The new identity's certificate will not use an encrypted password");
-
-                await StoreCertificate(identity, certificate);
+                _logger.LogInformation("No new identity was generated");
+                return;
             }
 
             Identities.Add(identity);
 
             _logger.LogInformation("Saved the new identity named {Name}", identity.Name);
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while generating a new identity");
-        }
-    }
-
-    private async Task StoreCertificate(Identity identity, X509Certificate2 certificate, byte[] password = null)
-    {
-        try
-        {
-            password ??= await _identityService.DerivePassword(identity);
-            if (password == null)
-                return;
-
-            await using var file = File.Create(identity.CertificatePath);
-            await using var writer = new StreamWriter(file);
-            await certificate.WriteCertificate(writer, password);
-
-            _logger.LogInformation("Stored an encrypted PEM-encoded identity certificate");
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while storing the certificate for an identity ({Name})", identity.Name);
-        }
     }
 
     private void IdentityPage_OnAppearing(object sender, EventArgs e)
     {
         Identities = _browsingDatabase.Identities;
+
         if (_settingsDatabase.ActiveIdentityId.HasValue)
             SetIdentityActiveIndicator(_settingsDatabase.ActiveIdentityId.Value);
         else

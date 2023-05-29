@@ -41,7 +41,7 @@
                             </VerticalStackLayout.GestureRecognizers>
                             <Label FontSize="18" Text="{Binding Name}" LineBreakMode="TailTruncation"
                                    InputTransparent="true" SemanticProperties.Description="Name" />
-                            <Label FontSize="12" Text="{Binding Hash}" LineBreakMode="MiddleTruncation"
+                            <Label FontSize="12" Text="{Binding FriendlyFingerprint}" LineBreakMode="TailTruncation"
                                    InputTransparent="true" SemanticProperties.Description="Fingerprint" />
                         </VerticalStackLayout>
                         <Button

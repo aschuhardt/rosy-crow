@@ -206,7 +206,7 @@ public partial class ExportIdentityPage : ContentPage
         }
         finally
         {
-            await Navigation.PopAsync(true);
+            await Navigation.PopModalAsync(true);
         }
     }
 

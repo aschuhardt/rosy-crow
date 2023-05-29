@@ -9,4 +9,11 @@ internal static class NavigationExtensions
         configure?.Invoke(page);
         await navigation.PushAsync(page, true);
     }
+    public static async Task PushModalPageAsync<T>(this INavigation navigation, Action<T> configure = null)
+        where T : ContentPage
+    {
+        var page = MauiProgram.Services.GetRequiredService<T>();
+        configure?.Invoke(page);
+        await navigation.PushModalAsync(page, true);
+    }
 }

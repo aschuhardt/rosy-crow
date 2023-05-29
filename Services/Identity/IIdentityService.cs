@@ -11,4 +11,8 @@ public interface IIdentityService
     Task Activate(Models.Identity identity);
     Task<X509Certificate2> LoadActiveCertificate();
     Task<X509Certificate2> LoadCertificate(Models.Identity identity);
+    Task<Models.Identity> GenerateNewIdentity(string name, Func<Task<bool>> useDeviceCredentialsPrompt);
+
+    Task<Models.Identity> ImportIdentityCertificate(string name, X509Certificate2 certificate,
+        Func<Task<bool>> useDeviceCredentialsPrompt);
 }

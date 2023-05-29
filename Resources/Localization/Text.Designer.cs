@@ -419,6 +419,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string Global_OK {
+            get {
+                return ResourceManager.GetString("Global_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Yes.
         /// </summary>
         internal static string Global_Yes {
@@ -577,6 +586,156 @@ namespace RosyCrow.Resources.Localization {
         internal static string IdentityPage_Title {
             get {
                 return ResourceManager.GetString("IdentityPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fingerprint.
+        /// </summary>
+        internal static string ImportIdentityPage_Fingerprint {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_Fingerprint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import.
+        /// </summary>
+        internal static string ImportIdentityPage_Import {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to read the certificate file.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportIdentityPage_OnAppearing_Failed_to_read_the_certificate_file {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportIdentityPage_OnAppearing_Failed_to_read_the_certificate_" +
+                        "file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Attempted to load a certificate file that lacks a private key.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_private_key {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_pr" +
+                        "ivate_key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Decryption Failed.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_Decryption_Failed {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Decryption_Failed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Importing a new identity certificate with subject {Subject}.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__Subject_ {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__S" +
+                        "ubject_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Missing Private Key.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_Missing_Private_Key {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Missing_Private_Key", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_OK {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The certificate&apos;s private key could not be decrypted.  The password is likely incorrect..
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_The_certificate_s_private_key_could_not_be_decrypted___The_password_is_likely_incorrect_ {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_The_certificate_s_private_key_could_not_be_decrypted" +
+                        "___The_password_is_likely_incorrect_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The import could not be completed.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_The_import_could_not_be_completed {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_The_import_could_not_be_completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The selected certificate file lacks a private key, and therefore cannot be imported..
+        /// </summary>
+        internal static string ImportIdentityPage_ImportKey_The_selected_certificate_file_lacks_a_private_key__and_therefore_cannot_be_imported_ {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportKey_The_selected_certificate_file_lacks_a_private_key__a" +
+                        "nd_therefore_cannot_be_imported_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password.
+        /// </summary>
+        internal static string ImportIdentityPage_Password {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password protected.
+        /// </summary>
+        internal static string ImportIdentityPage_PasswordProtected {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_PasswordProtected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Do you want to secure the imported identity with your device credentials?.
+        /// </summary>
+        internal static string ImportIdentityPage_PresentProtectionPrompt_Do_you_want_to_secure_the_imported_identity_with_your_device_credentials_ {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_PresentProtectionPrompt_Do_you_want_to_secure_the_imported_ide" +
+                        "ntity_with_your_device_credentials_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Identity.
+        /// </summary>
+        internal static string ImportIdentityPage_PresentProtectionPrompt_Import_Identity {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_PresentProtectionPrompt_Import_Identity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Subject.
+        /// </summary>
+        internal static string ImportIdentityPage_Subject {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_Subject", resourceCulture);
             }
         }
         

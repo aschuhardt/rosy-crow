@@ -329,4 +329,55 @@
 	<data name="ExportIdentityPage_Export" xml:space="preserve">
 		<value>Export</value>
 	</data>
+	<data name="ImportIdentityPage_PresentProtectionPrompt_Import_Identity" xml:space="preserve">
+		<value>Import Identity</value>
+	</data>
+	<data name="ImportIdentityPage_PresentProtectionPrompt_Do_you_want_to_secure_the_imported_identity_with_your_device_credentials_" xml:space="preserve">
+		<value>Do you want to secure the imported identity with your device credentials?</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__Subject_" xml:space="preserve">
+		<value>Importing a new identity certificate with subject {Subject}</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_private_key" xml:space="preserve">
+		<value>Attempted to load a certificate file that lacks a private key</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_Missing_Private_Key" xml:space="preserve">
+		<value>Missing Private Key</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_The_selected_certificate_file_lacks_a_private_key__and_therefore_cannot_be_imported_" xml:space="preserve">
+		<value>The selected certificate file lacks a private key, and therefore cannot be imported.</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_OK" xml:space="preserve">
+		<value>OK</value>
+	</data>
+	<data name="Global_OK" xml:space="preserve">
+		<value>OK</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_The_import_could_not_be_completed" xml:space="preserve">
+		<value>The import could not be completed</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_Decryption_Failed" xml:space="preserve">
+		<value>Decryption Failed</value>
+	</data>
+	<data name="ImportIdentityPage_ImportKey_The_certificate_s_private_key_could_not_be_decrypted___The_password_is_likely_incorrect_" xml:space="preserve">
+		<value>The certificate's private key could not be decrypted.  The password is likely incorrect.</value>
+	</data>
+	<data name="ImportIdentityPage_ImportIdentityPage_OnAppearing_Failed_to_read_the_certificate_file" xml:space="preserve">
+		<value>Failed to read the certificate file</value>
+	</data>
+	<data name="ImportIdentityPage_Subject" xml:space="preserve">
+		<value>Subject</value>
+	</data>
+	<data name="ImportIdentityPage_Fingerprint" xml:space="preserve">
+		<value>Fingerprint</value>
+	</data>
+	<data name="ImportIdentityPage_PasswordProtected" xml:space="preserve">
+		<value>Password protected</value>
+	</data>
+	<data name="ImportIdentityPage_Password" xml:space="preserve">
+		<value>Password</value>
+	</data>
+	<data name="ImportIdentityPage_Import" xml:space="preserve">
+		<value>Import</value>
+	</data>
 </root>

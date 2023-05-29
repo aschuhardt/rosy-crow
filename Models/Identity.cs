@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using RosyCrow.Extensions;
 using SQLite;
 
 namespace RosyCrow.Models;
@@ -34,6 +35,9 @@ public class Identity : INotifyPropertyChanged
     [Ignore]
     public string SanitizedName => 
         KeyReplacePattern.Replace(Name, "_").ToLowerInvariant();
+
+    [Ignore]
+    public string FriendlyFingerprint => Hash.ToFriendlyFingerprint();
 
     [Ignore]
     public string CertificatePath =>

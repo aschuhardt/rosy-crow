@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:RosyCrow.Views"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
+             x:Class="RosyCrow.Views.ImportIdentityPage"
+             x:DataType="views:ImportIdentityPage"
+             Title="Import Identity"
+             Appearing="ImportIdentityPage_OnAppearing"
+             Disappearing="ImportIdentityPage_OnDisappearing">
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
+    </NavigationPage.TitleView>
+    <ContentPage.Resources>
+        <converters:VisibilityButtonImageConverter x:Key="VisibilityButtonImageConverter" />
+    </ContentPage.Resources>
+    <VerticalStackLayout Padding="16,8,16,32">
+        <Grid ColumnDefinitions="*,Auto,Auto">
+            <Label Text="{x:Static localization:Text.ImportIdentityPage_Subject}" VerticalTextAlignment="Start" Grid.Column="0" />
+            <Label
+                Text="{Binding Subject}" FontFamily="monospace"
+                VerticalTextAlignment="Center" Grid.Column="1" MaximumWidthRequest="250"/>
+            <ImageButton
+                Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
+                VerticalOptions="Start"
+                Command="{Binding CopyText}" CommandParameter="{Binding Subject}"
+                Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}"
+                SemanticProperties.Description="Copy" SemanticProperties.Hint="Copy the subject" />
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,12">
+            <Label Text="{x:Static localization:Text.ImportIdentityPage_Fingerprint}" VerticalTextAlignment="Start" Grid.Column="0" />
+            <Label
+                Text="{Binding Fingerprint}" 
+                FontFamily="monospace" MaximumWidthRequest="200" VerticalTextAlignment="Center" Grid.Column="1" />
+            <ImageButton
+                Grid.Column="2" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
+                VerticalOptions="Start"
+                Command="{Binding CopyText}" CommandParameter="{Binding Fingerprint}"
+                Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}"
+                SemanticProperties.Description="Copy" SemanticProperties.Hint="Copy the fingerprint" x:Name="PasswordVisibleButton" />
+        </Grid>
+        <Grid ColumnDefinitions="*,Auto">
+            <Label Text="{x:Static localization:Text.ImportIdentityPage_PasswordProtected}" VerticalTextAlignment="Center" Grid.Column="0" />
+            <Switch IsToggled="{Binding UsePassword}" Grid.Column="1" />
+        </Grid>
+        <Grid ColumnDefinitions="*,*,Auto">
+            <Label
+                Text="{x:Static localization:Text.ImportIdentityPage_Password}" Grid.Column="0"
+                VerticalTextAlignment="Center" IsEnabled="{Binding UsePassword, Mode=OneWay}" />
+            <Entry 
+                IsPassword="{Binding HidePassword}" Grid.Column="1"  
+                IsEnabled="{Binding UsePassword, Mode=OneWay}" Text="{Binding Password}" />
+            <ImageButton 
+                Grid.Column="2" Command="{Binding TogglePasswordHidden}"
+                WidthRequest="24" HeightRequest="24"
+                SemanticProperties.Description="Toggle Visible" SemanticProperties.Hint="Toggle the visibility of the password"
+                Source="{Binding HidePassword, Mode=OneWay, Converter={StaticResource VisibilityButtonImageConverter}}">
+            </ImageButton>
+        </Grid>
+        <Button Text="{x:Static localization:Text.ImportIdentityPage_Import}" Command="{Binding Import}" />
+    </VerticalStackLayout>
+</ContentPage>

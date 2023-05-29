@@ -159,9 +159,15 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
             {
                 _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
 
-                entity ??= new Setting { Name = name };
-                entity.BoolValue = value.Value;
-                _database.InsertOrReplace(entity);
+                if (entity == null)
+                {
+                    _database.Insert(new Setting { Name = name, BoolValue = value.GetValueOrDefault() });
+                }
+                else
+                {
+                    entity.BoolValue = value.GetValueOrDefault();
+                    _database.Update(entity);
+                }
             }
         }
         catch (Exception e)
@@ -185,9 +191,15 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
             {
                 _logger.LogInformation("Setting {Name} to \"{Value}\"", name, value);
 
-                entity ??= new Setting { Name = name };
-                entity.StringValue = value;
-                _database.InsertOrReplace(entity);
+                if (entity == null)
+                {
+                    _database.Insert(new Setting { Name = name, StringValue = value });
+                }
+                else
+                {
+                    entity.StringValue = value;
+                    _database.Update(entity);
+                }
             }
         }
         catch (Exception e)
@@ -209,11 +221,15 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
                 _database.Delete(entity);
             else if (value.HasValue)
             {
-                _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
-
-                entity ??= new Setting { Name = name };
-                entity.IntValue = value.Value;
-                _database.InsertOrReplace(entity);
+                if (entity == null)
+                {
+                    _database.Insert(new Setting { Name = name, IntValue = value.GetValueOrDefault() });
+                }
+                else
+                {
+                    entity.IntValue = value.GetValueOrDefault();
+                    _database.Update(entity);
+                }
             }
         }
         catch (Exception e)

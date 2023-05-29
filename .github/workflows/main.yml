@@ -52,20 +52,11 @@ jobs:
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
 
-      - name: Upload AAB
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v2.3.1
         with:
-          name: build-aab-${{ github.run_number }}
-          path: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v2.3.1
-        with:
-          name: build-apk-${{ github.run_number }}
-          path: bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk
-
-      - name: Upload mappings
-        uses: actions/upload-artifact@v2.3.1
-        with:
-          name: build-mappings-${{ github.run_number }}
-          path: bin\Release\net7.0-android33.0\mapping.txt
+          name: build-${{ github.run_number }}
+          path: |
+            bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
+            bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk
+            bin\Release\net7.0-android33.0\mapping.txt

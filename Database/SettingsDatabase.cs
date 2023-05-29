@@ -230,17 +230,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         try
         {
             var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
-
-            if (entity != null)
-                return entity.StringValue;
-
-            if (string.IsNullOrEmpty(defaultValue))
-                return null;
-
-            entity = new Setting { Name = name, StringValue = defaultValue };
-            _database.Insert(entity);
-
-            return entity.StringValue;
+            return entity?.StringValue ?? defaultValue;
         }
         catch (Exception e)
         {
@@ -257,17 +247,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         try
         {
             var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
-
-            if (entity != null)
-                return entity.BoolValue;
-
-            if (!defaultValue.HasValue)
-                return null;
-
-            entity = new Setting { Name = name, BoolValue = defaultValue.Value };
-            _database.Insert(entity);
-
-            return entity.BoolValue;
+            return entity?.BoolValue ?? defaultValue;
         }
         catch (Exception e)
         {
@@ -284,17 +264,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         try
         {
             var entity = _database.Table<Setting>().FirstOrDefault(s => s.Name == name);
-
-            if (entity != null)
-                return entity.IntValue;
-
-            if (!defaultValue.HasValue)
-                return null;
-
-            entity = new Setting { Name = name, IntValue = defaultValue.Value };
-            _database.Insert(entity);
-
-            return entity.IntValue;
+            return entity?.IntValue ?? defaultValue;
         }
         catch (Exception e)
         {

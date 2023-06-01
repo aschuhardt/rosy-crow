@@ -226,8 +226,6 @@ public partial class IdentityPage : ContentPage
                 return;
             }
 
-            Identities.Add(identity);
-
             _logger.LogInformation("Saved the new identity named {Name}", identity.Name);
         }
     }

@@ -884,6 +884,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Hide menu pull tab.
+        /// </summary>
+        internal static string SettingsPage_HidePullTab {
+            get {
+                return ResourceManager.GetString("SettingsPage_HidePullTab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to History page size.
         /// </summary>
         internal static string SettingsPage_History_page_size {

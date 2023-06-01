@@ -10,4 +10,5 @@ public interface ISettingsDatabase
     int HistoryPageSize { get; set; }
     bool InlineImages { get; set; }
     bool StrictTofuMode { get; set; }
+    bool HidePullTab { get; set; }
 }

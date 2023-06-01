@@ -21,6 +21,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private int? _historyPageSize;
     private bool? _inlineImages;
     private bool? _strictTofuMode;
+    private bool? _hidePullTab;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -126,6 +127,20 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         set
         {
             if (SetField(ref _strictTofuMode, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public bool HidePullTab
+    {
+        get
+        {
+            _hidePullTab ??= GetBoolValue(false);
+            return _hidePullTab.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _hidePullTab, value))
                 SetBoolValue(value);
         }
     }

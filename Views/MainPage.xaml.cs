@@ -38,6 +38,7 @@ public partial class MainPage : ContentPage
     private ICommand _showPageCertificate;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
+    private bool _pullTabVisible;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -298,6 +299,17 @@ public partial class MainPage : ContentPage
         }
     }
 
+    public bool PullTabVisible
+    {
+        get => _pullTabVisible;
+        set
+        {
+            if (value == _pullTabVisible) return;
+            _pullTabVisible = value;
+            OnPropertyChanged();
+        }
+    }
+
     private void SetupUrlEnterHandling(object sender, EventArgs e)
     {
         if (sender is not Entry entry || entry.Handler is not EntryHandler handler)
@@ -324,7 +336,11 @@ public partial class MainPage : ContentPage
             if (IsNavBarVisible)
             {
                 Dispatcher.Dispatch(async () =>
-                    await NavBar.TranslateTo(NavBar.TranslationX, 0));
+                {
+                    await Task.WhenAny(
+                        NavBar.TranslateTo(NavBar.TranslationX, 0),
+                        PullTab.TranslateTo(PullTab.TranslationX, 0));
+                });
             }
             else
             {
@@ -332,7 +348,13 @@ public partial class MainPage : ContentPage
                 if (IsMenuExpanded)
                     IsMenuExpanded = false;
 
-                new Animation(v => NavBar.TranslationY = v, 0, -NavBar.Height * 1.25).Commit(this, "HideNavBar");
+                Dispatcher.Dispatch(async () =>
+                {
+                    //await PullTab.FadeTo(0, 100);
+                    await Task.WhenAny(
+                        PullTab.TranslateTo(PullTab.TranslationX, -(PullTab.Y + PullTab.Height * 1.25)),
+                        NavBar.TranslateTo(NavBar.TranslationX, -NavBar.Height * 1.25));
+                });
             }
         }
         catch (Exception e)
@@ -387,7 +409,9 @@ public partial class MainPage : ContentPage
                 _menuHideAnimation.Commit(this, "HideMenu", length: 150,
                     finished: async (_, _) =>
                     {
-                        await NavBar.FadeTo(0, 100);
+                        await Task.WhenAny(
+                            NavBar.FadeTo(0, 100),
+                            PullTab.FadeTo(0, 100));
                         await Navigation.PushPageAsync<T>();
                     });
             }
@@ -395,7 +419,9 @@ public partial class MainPage : ContentPage
             {
                 Dispatcher.Dispatch(async () =>
                 {
-                    await NavBar.FadeTo(0, 100);
+                    await Task.WhenAny(
+                        NavBar.FadeTo(0, 100),
+                        PullTab.FadeTo(0, 100));
                     await Navigation.PushPageAsync<T>();
                 });
             }
@@ -533,6 +559,7 @@ public partial class MainPage : ContentPage
         {
             AddMenuAnimations();
             Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+            PullTabVisible = !_settingsDatabase.HidePullTab;
         }
         catch (Exception exception)
         {
@@ -547,7 +574,11 @@ public partial class MainPage : ContentPage
             if (!string.IsNullOrWhiteSpace(App.StartupUri))
                 Browser.Location = App.StartupUri.ToGeminiUri();
 
-            await NavBar.FadeTo(1, 100);
+            PullTabVisible = !_settingsDatabase.HidePullTab;
+
+            await Task.WhenAny(
+                NavBar.FadeTo(1, 100),
+                PullTab.FadeTo(1, 100));
 
             if (LoadPageOnAppearing)
             {

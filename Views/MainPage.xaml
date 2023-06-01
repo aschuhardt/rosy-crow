@@ -23,6 +23,27 @@
             AbsoluteLayout.LayoutFlags="All"
             HorizontalOptions="Fill"
             VerticalOptions="Fill" />
+        <Grid
+            x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
+            AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
+            <Border Grid.Column="1" Stroke="Transparent">
+                <Border.Shadow>
+                    <Shadow Brush="{StaticResource Black}" Radius="4" />
+                </Border.Shadow>
+                <Border.StrokeShape>
+                    <RoundRectangle CornerRadius="28" />
+                </Border.StrokeShape>
+                <AbsoluteLayout
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+                    WidthRequest="28" HeightRequest="38">
+                    <ImageButton
+                        Command="{Binding ExpandMenu}" Scale="0.8"
+                        AbsoluteLayout.LayoutBounds="0,6,1,1"
+                        AbsoluteLayout.LayoutFlags="WidthProportional,HeightProportional"
+                        Source="{AppThemeBinding Light=expand_more_dark.png, Dark=expand_more_light.png}" />
+                </AbsoluteLayout>
+            </Border>
+        </Grid>
         <VerticalStackLayout
             x:Name="NavBar" Padding="0,0,0,2"
             AbsoluteLayout.LayoutBounds="0,0,1,AutoSize"
@@ -40,9 +61,9 @@
                     Grid.Column="0"
                     Scale="0.75" IsEnabled="{Binding CanShowHostCertificate, Source={x:Reference Browser}}"
                     Command="{Binding ShowPageCertificate}"
-                    Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}" 
+                    Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}"
                     SemanticProperties.Description="Information"
-                    SemanticProperties.Hint="Display information about the page"/>
+                    SemanticProperties.Hint="Display information about the page" />
                 <!-- <ImageButton -->
                 <!--     Grid.Column="0" -->
                 <!--     Scale="0.75" -->
@@ -58,27 +79,27 @@
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnType="Go" Keyboard="Url" x:Name="UrlEntry"
                         SemanticProperties.Description="URL"
-                        SemanticProperties.Hint="The page's address"/>
+                        SemanticProperties.Hint="The page's address" />
                 </Border>
                 <ImageButton
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                     Command="{Binding ToggleBookmarked}"
-                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}" 
+                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}"
                     SemanticProperties.Description="Bookmark"
-                    SemanticProperties.Hint="Toggle a bookmark for the current page"/>
+                    SemanticProperties.Hint="Toggle a bookmark for the current page" />
                 <controls:BiModalImageButton
                     Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                     Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
                     Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}"
                     SemanticProperties.Description="Home"
-                    SemanticProperties.Hint="Hold to set a home page, tap to navigate to the home page"/>
+                    SemanticProperties.Hint="Hold to set a home page, tap to navigate to the home page" />
                 <ImageButton
                     Scale="0.75" Grid.Column="4" x:Name="FindNextButton"
                     Command="{Binding FindNextInPage}"
                     IsVisible="{Binding HasFindNextQuery, Source={x:Reference Browser}}"
                     Source="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}"
-                    SemanticProperties.Description="Next" 
-                    SemanticProperties.Hint="Find the next occurrence of the text being searched for"/>
+                    SemanticProperties.Description="Next"
+                    SemanticProperties.Hint="Find the next occurrence of the text being searched for" />
             </Grid>
             <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0" IsClippedToBounds="True">
                 <Button Text="{x:Static localization:Text.MainPage_FindInPage}" HorizontalOptions="Fill"
@@ -94,25 +115,28 @@
                 <Button Text="{x:Static localization:Text.MainPage_Menu_History}" HorizontalOptions="Fill"
                         Command="{Binding OpenHistory}"
                         IsEnabled="{Binding IsMenuExpanded}"
-                        SemanticProperties.Hint="Show previously visited pages"/>
+                        SemanticProperties.Hint="Show previously visited pages" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Identity}" HorizontalOptions="Fill"
                         Command="{Binding OpenIdentity}"
                         IsEnabled="{Binding IsMenuExpanded}"
-                        SemanticProperties.Hint="Show identities"/>
+                        SemanticProperties.Hint="Show identities" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Print}" HorizontalOptions="Fill"
                         IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
                         Command="{Binding Print}"
-                        SemanticProperties.Hint="Print this page"/>
+                        SemanticProperties.Hint="Print this page" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Settings}" HorizontalOptions="Fill"
                         Command="{Binding OpenSettings}"
                         IsEnabled="{Binding IsMenuExpanded}"
-                        SemanticProperties.Hint="Show configurable settings"/>
+                        SemanticProperties.Hint="Show configurable settings" />
             </VerticalStackLayout>
             <Image HeightRequest="6" ScaleY="4" ScaleX="10"
                    Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
         </VerticalStackLayout>
+        <!-- <Grid RowDefinitions="*" BackgroundColor="Black" Opacity="0.7"  HeightRequest="300" AbsoluteLayout.LayoutBounds="0,0,1,1"  AbsoluteLayout.LayoutFlags="All"> -->
+        <!--     <Label Grid.Row="0" TextColor="White" FontSize="20" Text="Swipe downward to open the menu." HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill"></Label> -->
+        <!-- </Grid> -->
     </AbsoluteLayout>
 </ContentPage>

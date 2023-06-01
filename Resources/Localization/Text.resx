@@ -380,4 +380,7 @@
 	<data name="ImportIdentityPage_Import" xml:space="preserve">
 		<value>Import</value>
 	</data>
+	<data name="SettingsPage_HidePullTab" xml:space="preserve">
+		<value>Hide menu pull tab</value>
+	</data>
 </root>

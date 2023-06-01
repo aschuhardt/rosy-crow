@@ -133,6 +133,18 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public bool HidePullTab
+    {
+        get => _settingsDatabase?.HidePullTab ?? default;
+        set
+        {
+            if (value == _settingsDatabase.HidePullTab)
+                return;
+            _settingsDatabase.HidePullTab = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool StrictTofuMode
     {
         get => _settingsDatabase?.StrictTofuMode ?? default;

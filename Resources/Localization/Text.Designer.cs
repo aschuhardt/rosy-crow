@@ -88,6 +88,24 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copy URL.
+        /// </summary>
+        internal static string BrowserView_BuildContextMenu_Copy_URL {
+            get {
+                return ResourceManager.GetString("BrowserView_BuildContextMenu_Copy_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Share URL.
+        /// </summary>
+        internal static string BrowserView_BuildContextMenu_Share_URL {
+            get {
+                return ResourceManager.GetString("BrowserView_BuildContextMenu_Share_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy address.
         /// </summary>
         internal static string BrowserView_CreateWebViewContextMenu_Copy_address {

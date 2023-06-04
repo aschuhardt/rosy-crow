@@ -383,4 +383,10 @@
 	<data name="SettingsPage_HidePullTab" xml:space="preserve">
 		<value>Hide menu pull tab</value>
 	</data>
+	<data name="BrowserView_BuildContextMenu_Copy_URL" xml:space="preserve">
+		<value>Copy URL</value>
+	</data>
+	<data name="BrowserView_BuildContextMenu_Share_URL" xml:space="preserve">
+		<value>Share URL</value>
+	</data>
 </root>

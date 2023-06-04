@@ -933,17 +933,17 @@ public partial class BrowserView : ContentView
 
 
 #if ANDROID
-    private void BuildContextMenu(IContextMenu menu, Android.Webkit.WebView view)
+    private static void BuildContextMenu(IMenu menu, Android.Webkit.WebView view)
     {
         var hitTest = view.GetHitTestResult();
 
         if (hitTest.Type is HitTestResult.AnchorType or HitTestResult.SrcAnchorType or HitTestResult.SrcImageAnchorType &&
             !string.IsNullOrWhiteSpace(hitTest.Extra))
         {
-            menu.Add("Copy URL")?.SetOnMenuItemClickListener(
+            menu.Add(Text.BrowserView_BuildContextMenu_Copy_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Clipboard.Default.SetTextAsync(uri)));
-            menu.Add("Share URL")?.SetOnMenuItemClickListener(
+            menu.Add(Text.BrowserView_BuildContextMenu_Share_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Share.Default.RequestAsync(new ShareTextRequest(uri))));
         }

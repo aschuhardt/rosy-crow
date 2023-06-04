@@ -1,6 +1,8 @@
 using System.Text;
 using System.Web;
 using System.Windows.Input;
+using Android.Views;
+using Android.Webkit;
 using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -929,10 +931,32 @@ public partial class BrowserView : ContentView
         ClearMatches?.Invoke(this, EventArgs.Empty);
     }
 
+
+#if ANDROID
+    private void BuildContextMenu(IContextMenu menu, Android.Webkit.WebView view)
+    {
+        var hitTest = view.GetHitTestResult();
+
+        if (hitTest.Type is HitTestResult.AnchorType or HitTestResult.SrcAnchorType or HitTestResult.SrcImageAnchorType &&
+            !string.IsNullOrWhiteSpace(hitTest.Extra))
+        {
+            menu.Add("Copy URL")?.SetOnMenuItemClickListener(
+                new ActionMenuClickHandler<string>(hitTest.Extra,
+                    async uri => await Clipboard.Default.SetTextAsync(uri)));
+            menu.Add("Share URL")?.SetOnMenuItemClickListener(
+                new ActionMenuClickHandler<string>(hitTest.Extra,
+                    async uri => await Share.Default.RequestAsync(new ShareTextRequest(uri))));
+        }
+    }
+#endif
+
     private void PageWebView_OnHandlerChanged(object sender, EventArgs e)
     {
 #if ANDROID
-        var webViewHandler = (sender as WebView)?.Handler as WebViewHandler;
+        var webViewHandler = (sender as Microsoft.Maui.Controls.WebView)?.Handler as WebViewHandler;
+
+        webViewHandler.PlatformView.ContextMenuCreated +=
+            (o, args) => BuildContextMenu(args.Menu, o as Android.Webkit.WebView);
 
         _printService = new AndroidPrintService(webViewHandler.PlatformView);
 

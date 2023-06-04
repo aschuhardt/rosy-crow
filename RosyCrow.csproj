@@ -104,7 +104,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="5.0.0" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="5.2.0" />
 		<PackageReference Include="HtmlAgilityPack" Version="1.11.46" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="7.0.0" />
 		<PackageReference Include="MimeTypes" Version="2.4.1">
@@ -123,10 +123,10 @@
 		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.5.1.1" />
 		<PackageReference Include="Xamarin.AndroidX.Biometric" Version="1.1.0.11" />
 		<PackageReference Include="sqlite-net-pcl" Version="1.9.141-beta" />
-		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.4" />
+		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.5" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.5" />
+		<PackageReference Include="SQLitePCLRaw.provider.dynamic_cdecl" Version="2.1.5" />
+		<PackageReference Include="SQLitePCLRaw.provider.sqlite3" Version="2.1.5" />
 	</ItemGroup>
 
 	<ItemGroup>

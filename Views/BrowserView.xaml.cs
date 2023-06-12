@@ -374,16 +374,10 @@ public partial class BrowserView : ContentView
     {
         try
         {
-            var bucket = uri.Host.ToUpperInvariant();
-            var key = uri.ToString().ToUpperInvariant();
-
-            if (_cache.ResourceExists(bucket, key))
+            var image = new MemoryStream();
+            if (await _cache.TryRead(uri, image))
             {
-                var image = new MemoryStream();
-                await _cache.LoadResource(bucket, key, image);
-
                 _logger.LogDebug("Loaded cached image originally from {URI}", uri);
-
                 return CreateInlineImageDataUrl(image);
             }
         }
@@ -399,9 +393,6 @@ public partial class BrowserView : ContentView
     {
         try
         {
-            var bucket = uri.Host.ToUpperInvariant();
-            var key = uri.ToString().ToUpperInvariant();
-
             for (var i = 0; i < 6; i++)
             {
                 try
@@ -421,10 +412,9 @@ public partial class BrowserView : ContentView
                         }
 
                         image.Seek(0, SeekOrigin.Begin);
-                        await _cache.StoreResource(bucket, key, image);
+                        await _cache.Write(uri, image);
 
-                        _logger.LogInformation("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri,
-                            i + 1);
+                        _logger.LogDebug("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
 
                         return CreateInlineImageDataUrl(image);
                     }
@@ -571,10 +561,10 @@ public partial class BrowserView : ContentView
                 $"<link rel=\"stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
     }
 
-    private string RenderCachedHtml(string html)
+    private string RenderCachedHtml(Stream buffer)
     {
         var document = new HtmlDocument();
-        document.LoadHtml(html);
+        document.Load(buffer);
         var childNodes = document.DocumentNode.ChildNodes;
         PageTitle = (childNodes.FindFirst("h1") ?? childNodes.FindFirst("h2") ?? childNodes.FindFirst("h3"))?.InnerText;
         InjectStylesheet(document.DocumentNode);
@@ -640,7 +630,8 @@ public partial class BrowserView : ContentView
         }
 
         // cache the page prior to injecting the stylesheet
-        await _cache.StoreString(gemtext.Uri, _input, document.DocumentNode.OuterHtml);
+        await using var pageBuffer = new MemoryStream(Encoding.UTF8.GetBytes(document.DocumentNode.OuterHtml));
+        await _cache.Write(gemtext.Uri, pageBuffer);
 
         InjectStylesheet(document.DocumentNode);
 
@@ -701,11 +692,12 @@ public partial class BrowserView : ContentView
             {
                 if (useCache && !triggeredByRefresh)
                 {
-                    var cached = await _cache.LoadString(Location, Input);
-                    if (!string.IsNullOrEmpty(cached))
+                    var cached = new MemoryStream();
+                    if (await _cache.TryRead(Location, cached))
                     {
                         _logger.LogInformation("Loading a cached copy of the page");
 
+                        cached.Seek(0, SeekOrigin.Begin);
                         RenderedHtml = RenderCachedHtml(cached);
                         CanShowHostCertificate = true;
                         RenderUrl = $"{Location.Host}{Location.PathAndQuery}";

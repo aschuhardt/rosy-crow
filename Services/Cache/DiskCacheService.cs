@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿using System.Collections.Immutable;
+using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Extensions.Logging;
@@ -7,55 +8,53 @@ namespace RosyCrow.Services.Cache;
 
 public class DiskCacheService : ICacheService
 {
-    private const string PageCacheDirectory = "pages";
-    private const string ResourceCacheDirectory = "resources";
-
     private readonly ILogger<DiskCacheService> _logger;
+    private DateTimeOffset _lastPruneTime;
+
+    private const int CacheBucketsRetainCount = 2; // the prior 3 hours' buckets
+    private const double CachePruneIntervalMinutes = 30.0;
 
     public DiskCacheService(ILogger<DiskCacheService> logger)
     {
         _logger = logger;
+        _lastPruneTime = DateTimeOffset.MinValue;
+
+        var prunedCount = Prune();
+        if (prunedCount > 0)
+            _logger.LogInformation("{Count} cache buckets pruned upon initialization", prunedCount);
     }
 
-    public async Task<string> LoadString(Uri uri, string query)
+    public async Task<bool> TryRead(Uri uri, Stream destination)
     {
         try
         {
-            var path = GetPathFromUri(uri, query);
+            if (!TryFindCachedByUri(uri, out var path))
+                return false;
 
-            _logger.LogDebug("Cached page file path is {Path}", path);
-
-            var directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
-                Directory.CreateDirectory(directory);
-
-            if (!File.Exists(path))
-            {
-                _logger.LogInformation("Tried to load cached page for {URI} but the file does not exist", uri);
-                return null;
-            }
+            _logger.LogDebug("Cached resource found at {Path}", path);
 
             await using var file = File.OpenRead(path);
             await using var brotli = new BrotliStream(file, CompressionMode.Decompress);
-            using var reader = new StreamReader(brotli);
 
-            _logger.LogInformation("Loading cached page for {URI}", uri);
-            _logger.LogDebug("Cached page is {Size} bytes (compressed)", file.Length);
+            await brotli.CopyToAsync(destination);
 
-            return await reader.ReadToEndAsync();
+            _logger.LogDebug("Read {Compressed} bytes from the cache ({Uncompressed} bytes uncompressed)", file.Length,
+                destination.Length);
+
+            return true;
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception thrown while loading cached page for {URI}", uri);
-            return null;
+            return false;
         }
     }
 
-    public async Task StoreString(Uri uri, string query, string contents)
+    public async Task Write(Uri uri, Stream contents)
     {
         try
         {
-            var path = GetPathFromUri(uri, query);
+            var path = GetCurrentPathFromUri(uri);
 
             _logger.LogDebug("Cached page file path is {Path}", path);
 
@@ -65,12 +64,18 @@ public class DiskCacheService : ICacheService
 
             await using var file = File.Create(path);
             await using var brotli = new BrotliStream(file, CompressionMode.Compress);
-            await using var writer = new StreamWriter(brotli);
 
-            _logger.LogInformation("Caching page for {URI}", uri);
-            _logger.LogDebug("Page is {Length} characters in length", contents.Length);
+            await contents.CopyToAsync(brotli);
 
-            await writer.WriteAsync(contents);
+            _logger.LogDebug("Stored {Compressed} bytes in the cache ({Uncompressed} bytes uncompressed)", file.Length,
+                contents.Length);
+
+            if ((DateTimeOffset.UtcNow - _lastPruneTime).TotalMinutes >= CachePruneIntervalMinutes)
+            {
+                var prunedCount = Prune();
+                if (prunedCount > 0)
+                    _logger.LogInformation("{Count} cache buckets pruned", prunedCount);
+            }
         }
         catch (Exception e)
         {
@@ -78,80 +83,92 @@ public class DiskCacheService : ICacheService
         }
     }
 
-    public async Task StoreResource(string bucket, string key, Stream contents)
+    private int Prune()
     {
-        try
+        _lastPruneTime = DateTimeOffset.UtcNow;
+
+        var buckets = Directory.GetDirectories(GetRootPath());
+
+        if (!buckets.Any())
+            return 0;
+
+        var toKeep = buckets
+            .Where(p => int.TryParse(Path.GetDirectoryName(p), out _)).OrderDescending()
+            .Take(CacheBucketsRetainCount).ToImmutableHashSet();
+
+        var toPrune = buckets.Where(p => !toKeep.Contains(p)).ToList();
+
+        foreach (var bucket in toPrune)
         {
-            var path = GetPathFromKey(bucket, key);
-
-            _logger.LogDebug("Cached image file path is {Path}", path);
-
-            var directory = Path.GetDirectoryName(path);
-            if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
-                Directory.CreateDirectory(directory);
-
-            await using var file = File.Create(path);
-
-            _logger.LogInformation("Caching an image of size {Size}", contents.Length);
-
-            contents.Seek(0, SeekOrigin.Begin);
-            await contents.CopyToAsync(file);
+            _logger.LogDebug("Pruning cache bucket at {Path}", bucket);
+            Directory.Delete(bucket, true);
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while caching image of size {Size}", contents.Length);
-        }
+
+        return toPrune.Count;
     }
 
-    public bool ResourceExists(string bucket, string key)
+    private string GetRootPath()
     {
-        var path = GetPathFromKey(bucket, key);
-        var exists = File.Exists(path);
-
-        if (exists)
-            _logger.LogDebug("Cached image exists at {Path}", path);
-        else
-            _logger.LogDebug("No cached image exists at {Path}", path);
-
-        return exists;
+        return FileSystem.CacheDirectory;
     }
 
-    public async Task LoadResource(string bucket, string key, Stream destination)
+    private bool TryFindCachedByUri(Uri uri, out string path)
     {
-        var path = GetPathFromKey(bucket, key);
+        // happy path: resource exists in the current hourly bucket
+        path = GetCurrentPathFromUri(uri);
 
-        try
+        if (File.Exists(path))
+            return true;
+
+        var key = ComputeUriCachePath(uri);
+        foreach (var bucket in Directory.GetDirectories(GetRootPath()))
         {
-            if (!File.Exists(path))
+            path = Path.Combine(bucket, key);
+
+            if (File.Exists(path))
             {
-                _logger.LogInformation("Tried to load a cached image from {Path} but the file does not exist", path);
-                return;
+                // move this file into the current bucket so we find it more quickly next time
+                var newPath = GetCurrentPathFromUri(uri);
+
+                var directory = Path.GetDirectoryName(newPath);
+                if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                File.Move(path, newPath);
+
+                _logger.LogDebug("Moved cache entry from {OldPath} to {NewPath}", path, newPath);
+
+                path = newPath;
+                return true;
             }
-
-            await using var file = File.OpenRead(path);
-            await file.CopyToAsync(destination);
-
-            _logger.LogInformation("Loaded a cached image of size {Size} from {Path}", destination.Length, path);
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while loading cached image from {Path}", path);
-        }
+
+        _logger.LogDebug("No cache entry was found for {URI}", uri);
+
+        // didn't find it
+        return false;
     }
 
-    private static string GetPathFromKey(string bucket, string key)
+    private string GetCurrentPathFromUri(Uri uri)
     {
-        return Path.Combine(FileSystem.CacheDirectory, ResourceCacheDirectory,
-            Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(bucket))),
-            $"{Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(key)))}.data");
+        return Path.Combine(GetRootPath(), GetHourlyDirectoryName(), ComputeUriCachePath(uri));
     }
 
-    private static string GetPathFromUri(Uri uri, string query)
+    private static string ComputeCachePath(string bucket, string key)
     {
-        var identifier = new StringBuilder(uri.ToString().ToUpperInvariant());
-        if (!string.IsNullOrWhiteSpace(query))
-            identifier.Append(query);
-        return Path.Combine(FileSystem.CacheDirectory, PageCacheDirectory,
-            Convert.ToHexString(MD5.HashData(Encoding.UTF8.GetBytes(uri.ToString().ToUpperInvariant()))));
+        return Path.Combine(
+            Convert.ToHexString(MD5.HashData(Encoding.Default.GetBytes(bucket)))[..8],
+            Convert.ToHexString(MD5.HashData(Encoding.Default.GetBytes(key)))[..12] + ".dat");
+    }
+
+    private static string ComputeUriCachePath(Uri uri)
+    {
+        return ComputeCachePath(uri.Host.ToUpperInvariant(), uri.PathAndQuery);
+    }
+
+    private static string GetHourlyDirectoryName()
+    {
+        var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        return (time - time % 3600).ToString();
     }
 }

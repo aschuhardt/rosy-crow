@@ -35,10 +35,18 @@ public static class MauiProgram
             })
             .ConfigureEssentials(config => { config.UseVersionTracking(); });
 
+        if (VersionTracking.IsFirstLaunchForVersion("1.2.0"))
+        {
+            // caching strategy changed; clear the old cache
+            foreach (var path in Directory.GetDirectories(FileSystem.CacheDirectory))
+                Directory.Delete(path, true);
+        }
+
         SQLitePCL.Batteries.Init();
 
         builder.Services
-            .AddSingleton(_ => new SQLiteConnection(Path.Combine(FileSystem.AppDataDirectory, Constants.DatabaseName), Constants.SQLiteFlags))
+            .AddSingleton(_ => new SQLiteConnection(Path.Combine(FileSystem.AppDataDirectory, Constants.DatabaseName),
+                Constants.SQLiteFlags))
             .AddSingleton<ISettingsDatabase, SettingsDatabase>()
             .AddSingleton<IBrowsingDatabase, BrowsingDatabase>()
             .AddSingleton<MainPage>()

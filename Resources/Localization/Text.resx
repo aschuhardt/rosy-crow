@@ -468,4 +468,7 @@
   <data name="MainPage_NextHint" xml:space="preserve">
 	  <value>Find the next occurrence of the text being searched for</value>
   </data>
+  <data name="MainPage_MainPage_That_address_is_invalid" xml:space="preserve">
+	  <value>That address is invalid</value>
+  </data>
 </root>

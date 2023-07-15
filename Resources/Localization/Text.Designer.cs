@@ -794,6 +794,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to That address is invalid.
+        /// </summary>
+        internal static string MainPage_MainPage_That_address_is_invalid {
+            get {
+                return ResourceManager.GetString("MainPage_MainPage_That_address_is_invalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bookmarks.
         /// </summary>
         internal static string MainPage_Menu_Bookmarks {

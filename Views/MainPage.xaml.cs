@@ -8,7 +8,9 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
+using Button = Microsoft.Maui.Controls.Button;
 using Color = Android.Graphics.Color;
+using Toast = CommunityToolkit.Maui.Alerts.Toast;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -53,10 +55,7 @@ public partial class MainPage : ContentPage
 
         BindingContext = this;
 
-        LoadEnteredUrl = new Command<string>(url =>
-            Browser.Location = url.StartsWith(Constants.InternalScheme)
-                ? new Uri(url)
-                : url.ToGeminiUri());
+        LoadEnteredUrl = new Command<string>(async url => await TryLoadEnteredUrl(url));
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
@@ -117,6 +116,24 @@ public partial class MainPage : ContentPage
 #endif
             });
 
+    }
+
+    private async Task TryLoadEnteredUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            url = $"{Constants.InternalScheme}://default";
+
+        try
+        {
+            Browser.Location = url.StartsWith(Constants.InternalScheme)
+                ? new Uri(url)
+                : url.ToGeminiUri();
+        }
+        catch (UriFormatException)
+        {
+            _logger.LogError("Invalid URL entered: \"{URL}\"", url);
+            await Toast.Make(Text.MainPage_MainPage_That_address_is_invalid).Show();
+        }
     }
 
     public bool LoadPageOnAppearing

@@ -717,6 +717,8 @@ public partial class BrowserView : ContentView
         if (Location == null || Location.Scheme == Constants.InternalScheme)
         {
             await LoadInternalPage(Location?.Host ?? "default");
+            if (Location != null)
+                RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
             IsRefreshing = false;
             _isLoading = false;
             return;

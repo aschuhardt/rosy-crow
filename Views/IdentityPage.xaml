@@ -45,18 +45,16 @@
                                    InputTransparent="true" SemanticProperties.Description="Fingerprint" />
                         </VerticalStackLayout>
                         <Button
-                            Grid.Column="2" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
+                            Grid.Column="2" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
                             Command="{Binding Export, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
                             CommandParameter="{Binding Id}" ImageSource="{AppThemeBinding Light=upload_dark.png, Dark=upload_light.png}"
                             SemanticProperties.Description="Export" SemanticProperties.Hint="Export this identity"/>
                         <Button
-                            Grid.Column="3" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
+                            Grid.Column="3" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:IdentityPage}}}"
                             CommandParameter="{Binding Id}" ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
                             SemanticProperties.Description="Delete" SemanticProperties.Hint="Delete this identity"/>
                     </Grid>
-                    <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
-                               Margin="32,12" />
                 </VerticalStackLayout>
             </DataTemplate>
         </CollectionView.ItemTemplate>

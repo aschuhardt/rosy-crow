@@ -29,7 +29,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         _database.CreateTables<Bookmark, Identity, Visited, HostCertificate>();
 
-        Bookmarks = new ObservableCollection<Bookmark>(_database.Table<Bookmark>().OrderBy(b => b.Url).ToList());
+        Bookmarks = new ObservableCollection<Bookmark>(_database.Table<Bookmark>().OrderBy(b => b.Order).ToList());
         Identities = new ObservableCollection<Identity>(_database.Table<Identity>().OrderBy(i => i.Name).ToList());
 
         var activeIdentityId = _settingsDatabase.ActiveIdentityId ?? -1;
@@ -284,6 +284,18 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         result = default;
         return true;
+    }
+
+    public Task UpdateBookmarkOrder()
+    {
+        return Task.Run(() =>
+        {
+            for (var i = 0; i < _bookmarks.Count; i++)
+                _bookmarks[i].Order = i;
+
+            var affected = _database.UpdateAll(_bookmarks);
+            _logger.LogInformation("{Count} bookmarks re-ordered", affected);
+        });
     }
 
     private void Identities_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)

@@ -17,4 +17,5 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
     void AddVisitedPage(Visited visited);
     bool TryGetHostCertificate(string host, out HostCertificate certificate);
     void AcceptHostCertificate(string host);
+    Task UpdateBookmarkOrder();
 }

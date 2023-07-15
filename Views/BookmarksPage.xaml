@@ -12,7 +12,7 @@
     <NavigationPage.TitleView>
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
-    <CollectionView ItemsSource="{Binding Bookmarks}">
+    <CollectionView ItemsSource="{Binding Bookmarks}" CanReorderItems="true" ReorderCompleted="ReorderableItemsView_OnReorderCompleted">
         <CollectionView.ItemTemplate>
             <DataTemplate x:DataType="models:Bookmark">
                 <VerticalStackLayout Margin="8,0">
@@ -30,15 +30,13 @@
                                    SemanticProperties.Hint="URL" />
                         </VerticalStackLayout>
                         <Button
-                            Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="1.0" VerticalOptions="Center"
+                            Grid.Column="1" HeightRequest="48" WidthRequest="48" Scale="0.75" VerticalOptions="Center"
                             Command="{Binding Delete, Source={RelativeSource Mode=FindAncestor, AncestorType={x:Type views:BookmarksPage}}}"
                             CommandParameter="{Binding Id}"
                             ImageSource="{AppThemeBinding Light=delete_dark.png, Dark=delete_light.png}"
                             SemanticProperties.Description="Delete"
                             SemanticProperties.Hint="Delete the bookmark" />
                     </Grid>
-                    <Rectangle HeightRequest="1" Opacity="0.7" BackgroundColor="{StaticResource Gray400}"
-                               Margin="32,12" />
                 </VerticalStackLayout>
             </DataTemplate>
         </CollectionView.ItemTemplate>

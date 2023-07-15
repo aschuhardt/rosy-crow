@@ -85,4 +85,9 @@ public partial class BookmarksPage : ContentPage
     {
         Bookmarks = _browsingDatabase.Bookmarks;
     }
+
+    private async void ReorderableItemsView_OnReorderCompleted(object sender, EventArgs e)
+    {
+        await _browsingDatabase.UpdateBookmarkOrder();
+    }
 }

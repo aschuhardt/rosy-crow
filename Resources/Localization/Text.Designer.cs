@@ -1019,7 +1019,7 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Show images inline (currently very slow).
+        ///   Looks up a localized string similar to Show images inline (pages will take longer to load).
         /// </summary>
         internal static string SettingsPage_InlineImages {
             get {

@@ -401,7 +401,7 @@ public partial class BrowserView : ContentView
     {
         try
         {
-            for (var i = 0; i < 6; i++)
+            for (var i = 0; i < MaxRequestAttempts; i++)
             {
                 try
                 {

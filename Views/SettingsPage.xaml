@@ -30,13 +30,6 @@
                 <Label Text="{x:Static localization:Text.SettingPage_ConfirmEveryCertificate}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
             </Grid>
-            <Grid ColumnDefinitions="Auto,*,Auto">
-                <Label Text="{x:Static localization:Text.SettingsPage_History_page_size}" Grid.Column="0"
-                       VerticalOptions="Center" />
-                <Label Text="{Binding HistoryPageSize}" Grid.Column="1" HorizontalTextAlignment="Center"
-                       VerticalTextAlignment="Center" />
-                <Stepper Grid.Column="2" Value="{Binding HistoryPageSize}" Minimum="10" Maximum="100" Increment="5" />
-            </Grid>
             <Grid ColumnDefinitions="*,Auto">
                 <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />
                 <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->

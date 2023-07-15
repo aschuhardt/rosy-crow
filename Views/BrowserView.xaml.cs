@@ -405,6 +405,8 @@ public partial class BrowserView : ContentView
             {
                 try
                 {
+                    _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
+
                     if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
                         _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
@@ -683,6 +685,8 @@ public partial class BrowserView : ContentView
                     Location = new UriBuilder(Location) { Query = Input }.Uri;
                 }
 
+                _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
+
                 var response = await _geminiClient.UploadAsync(Location, payload.Size, payload.Token, payload.MimeType, payload.Contents);
 
                 if (await HandleTitanResponse(response, attempts) == ResponseAction.Finished)
@@ -762,6 +766,8 @@ public partial class BrowserView : ContentView
                     _logger.LogInformation("User provided input \"{Input}\"", Input);
                     Location = new UriBuilder(Location) { Query = Input }.Uri;
                 }
+
+                _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
 
                 var response = await _geminiClient.SendRequestAsync(Location);
 

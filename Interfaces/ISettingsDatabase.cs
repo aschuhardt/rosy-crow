@@ -11,4 +11,5 @@ public interface ISettingsDatabase
     bool InlineImages { get; set; }
     bool StrictTofuMode { get; set; }
     bool HidePullTab { get; set; }
+    bool AllowIpv6 { get; set; }
 }

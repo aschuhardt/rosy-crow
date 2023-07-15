@@ -22,6 +22,7 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private bool? _inlineImages;
     private bool? _strictTofuMode;
     private bool? _hidePullTab;
+    private bool? _allowIpv6;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -100,6 +101,20 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         {
             if (SetField(ref _lastVisitedUrl, value))
                 SetStringValue(value);
+        }
+    }
+
+    public bool AllowIpv6
+    {
+        get
+        {
+            _allowIpv6 ??= GetBoolValue(false);
+            return _allowIpv6.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _allowIpv6, value))
+                SetBoolValue(value);
         }
     }
 

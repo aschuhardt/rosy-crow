@@ -19,6 +19,10 @@
                 <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
+                <Label Text="Allow IPv6 requests" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Switch IsToggled="{Binding AllowIPv6}" Grid.Column="1" />
+            </Grid>
+            <Grid ColumnDefinitions="*,Auto">
                 <Label Text="{x:Static localization:Text.SettingsPage_HidePullTab}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding HidePullTab}" Grid.Column="1" />
             </Grid>

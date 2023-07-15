@@ -121,6 +121,19 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public bool AllowIPv6
+    {
+        get => _settingsDatabase.AllowIpv6;
+        set
+        {
+            if (value == _settingsDatabase.AllowIpv6)
+                return;
+
+            _settingsDatabase.AllowIpv6 = value;
+            OnPropertyChanged();
+        }
+    }
+
     public bool InlineImages
     {
         get => _settingsDatabase?.InlineImages ?? default;

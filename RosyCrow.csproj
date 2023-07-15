@@ -29,7 +29,7 @@
 		<!-- <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion> -->
 
 		<IconLightColor>#bcbbba</IconLightColor>
-		<IconDarkColor>#0b1321</IconDarkColor>
+		<IconDarkColor>#484850</IconDarkColor>
 		<AndroidSigningKeyStore>rosy-crow.keystore</AndroidSigningKeyStore>
 	</PropertyGroup>
 

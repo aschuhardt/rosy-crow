@@ -22,6 +22,7 @@ public partial class SettingsPage : ContentPage
     private ICommand _exportLogs;
     private ICommand _copyVersion;
     private string _versionInfo;
+    private ICommand _openWhatsNew;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -33,6 +34,7 @@ public partial class SettingsPage : ContentPage
         BindingContext = this;
 
         OpenAbout = new Command(async () => await Navigation.PushPageAsync<AboutPage>());
+        OpenWhatsNew = new Command(async () => await Navigation.PushPageAsync<WhatsNewPage>());
         ExportLogs = new Command(async () => await ExportErrorLogArchive());
         CopyVersion = new Command(async () =>
         {
@@ -72,6 +74,19 @@ public partial class SettingsPage : ContentPage
         {
             if (Equals(value, _openAbout)) return;
             _openAbout = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand OpenWhatsNew
+    {
+        get => _openWhatsNew;
+        set
+        {
+            if (Equals(value, _openWhatsNew))
+                return;
+
+            _openWhatsNew = value;
             OnPropertyChanged();
         }
     }

@@ -1082,6 +1082,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to What&apos;s New.
+        /// </summary>
+        internal static string SettingsPage_WhatsNew {
+            get {
+                return ResourceManager.GetString("SettingsPage_WhatsNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Upload.
         /// </summary>
         internal static string TitanUploadPage_Title {

@@ -46,6 +46,7 @@
                 SemanticProperties.Description="{x:Static localization:Text.SettingsPage_Preview}"
                 SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_PreviewHint}"/>
             <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
+            <Button Text="{x:Static localization:Text.SettingsPage_WhatsNew}" Command="{Binding OpenWhatsNew}" />
             <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
             <Grid ColumnDefinitions="*,Auto" Margin="8,20">
                 <Label Grid.Column="0" Text="{Binding VersionInfo}" VerticalTextAlignment="Start"

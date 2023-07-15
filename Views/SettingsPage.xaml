@@ -19,7 +19,7 @@
                 <Switch IsToggled="{Binding InlineImages}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Allow IPv6 requests" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="{x:Static localization:Text.SettingsPage_AllowIPv6Requests}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding AllowIPv6}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
@@ -50,19 +50,21 @@
             </Grid>
             <views:BrowserView
                 x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16"
-                SemanticProperties.Description="Preview" SemanticProperties.Hint="An example of a page rendered using the selected theme"/>
+                SemanticProperties.Description="{x:Static localization:Text.SettingsPage_Preview}"
+                SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_PreviewHint}"/>
             <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
             <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />
             <Grid ColumnDefinitions="*,Auto" Margin="8,20">
                 <Label Grid.Column="0" Text="{Binding VersionInfo}" VerticalTextAlignment="Start"
-                       SemanticProperties.Description="Version" SemanticProperties.Hint="The application's version number"/>
+                       SemanticProperties.Description="{x:Static localization:Text.SettingsPage_Version}"
+                       SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_VersionHint}"/>
                 <ImageButton
                     Grid.Column="1" WidthRequest="24" HeightRequest="24" Aspect="AspectFill" Margin="16,0,0,0"
                     VerticalOptions="Start"
                     Command="{Binding CopyVersion}"
                     Source="{AppThemeBinding Light=copy_dark.png, Dark=copy_light.png}"
-                    SemanticProperties.Description="Copy"
-                    SemanticProperties.Hint="Copy the version number"/>
+                    SemanticProperties.Description="{x:Static localization:Text.SettingsPage_CopyVersion}"
+                    SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_CopyVersionHint}"/>
             </Grid>
         </VerticalStackLayout>
     </ScrollView>

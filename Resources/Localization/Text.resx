@@ -405,4 +405,67 @@
   <data name="BrowserView_BuildContextMenu_Share_URL" xml:space="preserve">
     <value>Share URL</value>
   </data>
+  <data name="TitanUploadPage_ToggleVisible" xml:space="preserve">
+	  <value>Toggle visible</value>
+  </data>
+  <data name="TitanUploadPage_ToggleTokenVisibleHint" xml:space="preserve">
+	  <value>Toggle the visibility of the password</value>
+  </data>
+  <data name="TitanUploadPage_Title" xml:space="preserve">
+	  <value>Upload</value>
+  </data>
+  <data name="TitanUploadPage_TokenPlaceholder" xml:space="preserve">
+	  <value>token</value>
+  </data>
+  <data name="TitanUploadPage_UploadText" xml:space="preserve">
+	  <value>Upload Text</value>
+  </data>
+  <data name="TitanUploadPage_UploadFile" xml:space="preserve">
+	  <value>Upload File</value>
+  </data>
+  <data name="SettingsPage_AllowIPv6Requests" xml:space="preserve">
+	  <value>Allow IPv6 requests</value>
+  </data>
+  <data name="SettingsPage_Preview" xml:space="preserve">
+	  <value>Preview</value>
+  </data>
+  <data name="SettingsPage_PreviewHint" xml:space="preserve">
+	  <value>An example of a page rendered using the selected theme</value>
+  </data>
+  <data name="SettingsPage_Version" xml:space="preserve">
+	  <value>Version</value>
+  </data>
+  <data name="SettingsPage_VersionHint" xml:space="preserve">
+	  <value>The application's version number</value>
+  </data>
+  <data name="SettingsPage_CopyVersion" xml:space="preserve">
+	  <value>Copy</value>
+  </data>
+  <data name="SettingsPage_CopyVersionHint" xml:space="preserve">
+	  <value>Copy the version number</value>
+  </data>
+  <data name="MainPage_PageInformation" xml:space="preserve">
+	  <value>Information</value>
+  </data>
+  <data name="MainPage_PageInformationHint" xml:space="preserve">
+	  <value>Display information about the page</value>
+  </data>
+  <data name="MainPage_Bookmark" xml:space="preserve">
+	  <value>Bookmark</value>
+  </data>
+  <data name="MainPage_BookmarkHint" xml:space="preserve">
+	  <value>Toggle a bookmark for the current page</value>
+  </data>
+  <data name="MainPage_Home" xml:space="preserve">
+	  <value>Home</value>
+  </data>
+  <data name="MainPage_HomeHint" xml:space="preserve">
+	  <value>Hold to set a home page, tap to navigate to the home page</value>
+  </data>
+  <data name="MainPage_Next" xml:space="preserve">
+	  <value>Next</value>
+  </data>
+  <data name="MainPage_NextHint" xml:space="preserve">
+	  <value>Find the next occurrence of the text being searched for</value>
+  </data>
 </root>

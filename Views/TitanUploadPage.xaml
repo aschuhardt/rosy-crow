@@ -3,12 +3,10 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
              xmlns:converters="clr-namespace:RosyCrow.Converters"
+             xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              x:Class="RosyCrow.Views.TitanUploadPage"
              x:DataType="views:TitanUploadPage"
-             Title="Upload">
-    <NavigationPage.TitleView>
-        <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
-    </NavigationPage.TitleView>
+             Title="{x:Static localization:Text.TitanUploadPage_Title}">
     <ContentPage.Resources>
         <converters:VisibilityButtonImageConverter x:Key="VisibilityButtonImageConverter" />
     </ContentPage.Resources>
@@ -18,12 +16,12 @@
                 <Grid ColumnDefinitions="*,Auto">
                     <Entry
                         IsPassword="{Binding HideToken}" Grid.Column="0"
-                        Text="{Binding Token}" IsTextPredictionEnabled="False" Placeholder="token" />
+                        Text="{Binding Token}" IsTextPredictionEnabled="False" Placeholder="{x:Static localization:Text.TitanUploadPage_TokenPlaceholder}" />
                     <ImageButton
                         Grid.Column="1" Command="{Binding ToggleTokenHidden}"
                         WidthRequest="24" HeightRequest="24"
-                        SemanticProperties.Description="Toggle Visible"
-                        SemanticProperties.Hint="Toggle the visibility of the password"
+                        SemanticProperties.Description="{x:Static localization:Text.TitanUploadPage_ToggleVisible}"
+                        SemanticProperties.Hint="{x:Static localization:Text.TitanUploadPage_ToggleTokenVisibleHint}"
                         Source="{Binding HideToken, Mode=OneWay, Converter={StaticResource VisibilityButtonImageConverter}}" />
                 </Grid>
             </Border>
@@ -38,9 +36,9 @@
                 WidthRequest="200" HorizontalOptions="End"
                 SelectedItem="{Binding TextMimeType}"
                 ItemsSource="{Binding TextMimeTypeChoices}" HeightRequest="48" />
-            <Button Command="{Binding UploadText}" Text="Upload Text" />
+            <Button Command="{Binding UploadText}" Text="{x:Static localization:Text.TitanUploadPage_UploadText}" />
             <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,16" />
-            <Button Command="{Binding UploadFile}" Text="Upload File" />
+            <Button Command="{Binding UploadFile}" Text="{x:Static localization:Text.TitanUploadPage_UploadFile}" />
         </VerticalStackLayout>
     </Grid>
 </ContentPage>

@@ -749,11 +749,47 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bookmark.
+        /// </summary>
+        internal static string MainPage_Bookmark {
+            get {
+                return ResourceManager.GetString("MainPage_Bookmark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle a bookmark for the current page.
+        /// </summary>
+        internal static string MainPage_BookmarkHint {
+            get {
+                return ResourceManager.GetString("MainPage_BookmarkHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Find in page.
         /// </summary>
         internal static string MainPage_FindInPage {
             get {
                 return ResourceManager.GetString("MainPage_FindInPage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Home.
+        /// </summary>
+        internal static string MainPage_Home {
+            get {
+                return ResourceManager.GetString("MainPage_Home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Hold to set a home page, tap to navigate to the home page.
+        /// </summary>
+        internal static string MainPage_HomeHint {
+            get {
+                return ResourceManager.GetString("MainPage_HomeHint", resourceCulture);
             }
         }
         
@@ -799,6 +835,42 @@ namespace RosyCrow.Resources.Localization {
         internal static string MainPage_Menu_Settings {
             get {
                 return ResourceManager.GetString("MainPage_Menu_Settings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Next.
+        /// </summary>
+        internal static string MainPage_Next {
+            get {
+                return ResourceManager.GetString("MainPage_Next", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find the next occurrence of the text being searched for.
+        /// </summary>
+        internal static string MainPage_NextHint {
+            get {
+                return ResourceManager.GetString("MainPage_NextHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Information.
+        /// </summary>
+        internal static string MainPage_PageInformation {
+            get {
+                return ResourceManager.GetString("MainPage_PageInformation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Display information about the page.
+        /// </summary>
+        internal static string MainPage_PageInformationHint {
+            get {
+                return ResourceManager.GetString("MainPage_PageInformationHint", resourceCulture);
             }
         }
         
@@ -884,6 +956,33 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Allow IPv6 requests.
+        /// </summary>
+        internal static string SettingsPage_AllowIPv6Requests {
+            get {
+                return ResourceManager.GetString("SettingsPage_AllowIPv6Requests", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy.
+        /// </summary>
+        internal static string SettingsPage_CopyVersion {
+            get {
+                return ResourceManager.GetString("SettingsPage_CopyVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy the version number.
+        /// </summary>
+        internal static string SettingsPage_CopyVersionHint {
+            get {
+                return ResourceManager.GetString("SettingsPage_CopyVersionHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Export Error Logs.
         /// </summary>
         internal static string SettingsPage_ExportErrorLogs {
@@ -920,6 +1019,24 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Preview.
+        /// </summary>
+        internal static string SettingsPage_Preview {
+            get {
+                return ResourceManager.GetString("SettingsPage_Preview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An example of a page rendered using the selected theme.
+        /// </summary>
+        internal static string SettingsPage_PreviewHint {
+            get {
+                return ResourceManager.GetString("SettingsPage_PreviewHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Theme.
         /// </summary>
         internal static string SettingsPage_Theme {
@@ -934,6 +1051,78 @@ namespace RosyCrow.Resources.Localization {
         internal static string SettingsPage_Title {
             get {
                 return ResourceManager.GetString("SettingsPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version.
+        /// </summary>
+        internal static string SettingsPage_Version {
+            get {
+                return ResourceManager.GetString("SettingsPage_Version", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The application&apos;s version number.
+        /// </summary>
+        internal static string SettingsPage_VersionHint {
+            get {
+                return ResourceManager.GetString("SettingsPage_VersionHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upload.
+        /// </summary>
+        internal static string TitanUploadPage_Title {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle the visibility of the password.
+        /// </summary>
+        internal static string TitanUploadPage_ToggleTokenVisibleHint {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_ToggleTokenVisibleHint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Toggle visible.
+        /// </summary>
+        internal static string TitanUploadPage_ToggleVisible {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_ToggleVisible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to token.
+        /// </summary>
+        internal static string TitanUploadPage_TokenPlaceholder {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_TokenPlaceholder", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upload File.
+        /// </summary>
+        internal static string TitanUploadPage_UploadFile {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_UploadFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Upload Text.
+        /// </summary>
+        internal static string TitanUploadPage_UploadText {
+            get {
+                return ResourceManager.GetString("TitanUploadPage_UploadText", resourceCulture);
             }
         }
     }

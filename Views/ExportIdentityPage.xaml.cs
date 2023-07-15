@@ -18,7 +18,6 @@ public partial class ExportIdentityPage : ContentPage
     private ICommand _export;
     private Identity _identity;
     private string _password;
-    private bool _usePassword;
     private string _fingerprint;
     private ICommand _copyText;
     private string _name;
@@ -100,21 +99,6 @@ public partial class ExportIdentityPage : ContentPage
         }
     }
 
-    public bool UsePassword
-    {
-        get => _usePassword;
-        set
-        {
-            if (value == _usePassword) return;
-            _usePassword = value;
-
-            if (!_usePassword)
-                Password = string.Empty;
-
-            OnPropertyChanged();
-        }
-    }
-
     public ICommand CopyText
     {
         get => _copyText;
@@ -150,12 +134,6 @@ public partial class ExportIdentityPage : ContentPage
 
     private async Task ExportKey()
     {
-        if (UsePassword && string.IsNullOrEmpty(Password))
-        {
-            await Toast.Make(Text.ExportIdentityPage_ExportKey_Enter_a_password_or_disable_password_protection).Show();
-            return;
-        }
-
         try
         {
             _logger.LogInformation("Exporting the certificate for Identity {ID} ({Name})", Identity.Id, Identity.Name);
@@ -168,7 +146,7 @@ public partial class ExportIdentityPage : ContentPage
                 return;
             }
 
-            var password = UsePassword ? Encoding.UTF8.GetBytes(Password) : null;
+            var password = string.IsNullOrEmpty(Password) ? Encoding.UTF8.GetBytes(Password) : null;
 
             var path = Path.Combine(Path.GetTempPath(),
                 $"{Identity.SanitizedName}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.pem");
@@ -183,11 +161,11 @@ public partial class ExportIdentityPage : ContentPage
                 }
             }
 
-            var mimeType = UsePassword ? "application/pkcs8-encrypted" : "application/pkcs8";
+            var mimeType = password == null ? "application/pkcs8-encrypted" : "application/pkcs8";
 
             await Share.Default.RequestAsync(new ShareFileRequest(Identity.Name, new ReadOnlyFile(path, mimeType)));
 
-            if (UsePassword)
+            if (password != null)
             {
                 _logger.LogInformation("Certificate for Identity {ID} exported encrypted to {Path}", Identity.Id, path);
                 await Clipboard.Default.SetTextAsync(Password);

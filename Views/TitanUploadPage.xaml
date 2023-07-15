@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:RosyCrow.Views"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
+             x:Class="RosyCrow.Views.TitanUploadPage"
+             x:DataType="views:TitanUploadPage"
+             Title="Upload">
+    <NavigationPage.TitleView>
+        <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
+    </NavigationPage.TitleView>
+    <ContentPage.Resources>
+        <converters:VisibilityButtonImageConverter x:Key="VisibilityButtonImageConverter" />
+    </ContentPage.Resources>
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16,8,16,32">
+        <VerticalStackLayout Grid.Row="0">
+            <Border HeightRequest="40">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Entry
+                        IsPassword="{Binding HideToken}" Grid.Column="0"
+                        Text="{Binding Token}" IsTextPredictionEnabled="False" Placeholder="token" />
+                    <ImageButton
+                        Grid.Column="1" Command="{Binding ToggleTokenHidden}"
+                        WidthRequest="24" HeightRequest="24"
+                        SemanticProperties.Description="Toggle Visible"
+                        SemanticProperties.Hint="Toggle the visibility of the password"
+                        Source="{Binding HideToken, Mode=OneWay, Converter={StaticResource VisibilityButtonImageConverter}}" />
+                </Grid>
+            </Border>
+            <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,16" />
+        </VerticalStackLayout>
+        <Border Grid.Row="1">
+            <Editor Text="{Binding TextBody}" AutoSize="TextChanges" VerticalTextAlignment="Start"
+                    VerticalOptions="Fill" />
+        </Border>
+        <VerticalStackLayout Grid.Row="2">
+            <Picker
+                WidthRequest="200" HorizontalOptions="End"
+                SelectedItem="{Binding TextMimeType}"
+                ItemsSource="{Binding TextMimeTypeChoices}" HeightRequest="48" />
+            <Button Command="{Binding UploadText}" Text="Upload Text" />
+            <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,16" />
+            <Button Command="{Binding UploadFile}" Text="Upload File" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

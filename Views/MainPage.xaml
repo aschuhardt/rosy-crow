@@ -26,7 +26,7 @@
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
             AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
-            <Border Grid.Column="1" Stroke="Transparent">
+            <Border Grid.Column="1" Stroke="Transparent" BackgroundColor="Transparent">
                 <Border.Shadow>
                     <Shadow Brush="{StaticResource Black}" Radius="4" />
                 </Border.Shadow>
@@ -64,22 +64,14 @@
                     Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}"
                     SemanticProperties.Description="Information"
                     SemanticProperties.Hint="Display information about the page" />
-                <!-- <ImageButton -->
-                <!--     Grid.Column="0" -->
-                <!--     Scale="0.75" -->
-                <!--     Command="{Binding ToggleMenuExpanded}" -->
-                <!--     Source="{Binding IsMenuExpanded, Converter={StaticResource ExpandButtonImageConverter}}" /> -->
-                <Border Grid.Column="1" StrokeThickness="1">
-                    <Border.StrokeShape>
-                        <RoundRectangle CornerRadius="2.5" />
-                    </Border.StrokeShape>
+                <Border Grid.Column="1" HeightRequest="40">
                     <Entry
                         Text="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
                         ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
                         ReturnType="Go" Keyboard="Url" x:Name="UrlEntry"
                         SemanticProperties.Description="URL"
-                        SemanticProperties.Hint="The page's address" />
+                        SemanticProperties.Hint="The page's address" Placeholder="address" />
                 </Border>
                 <ImageButton
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"

@@ -12,7 +12,7 @@
     <Color x:Key="Gray100">#ffebbc</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
     <Color x:Key="Gray300">#70819d</Color>
-    <Color x:Key="Gray400">#968981</Color>
+    <Color x:Key="Gray400">#bcbbba</Color>
     <Color x:Key="Gray500">#7f7574</Color>
     <Color x:Key="Gray600">#484850</Color>
     <Color x:Key="Gray900">#313848</Color>

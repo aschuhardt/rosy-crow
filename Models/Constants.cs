@@ -11,4 +11,7 @@ internal static class Constants
 
     public const SQLiteOpenFlags SQLiteFlags =
         SQLiteOpenFlags.ReadWrite | SQLiteOpenFlags.Create | SQLiteOpenFlags.SharedCache;
+
+    public const string GeminiScheme = "gemini";
+    public const string TitanScheme = "titan";
 }

@@ -401,20 +401,11 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Password.
+        ///   Looks up a localized string similar to password.
         /// </summary>
         internal static string ExportIdentityPage_Password {
             get {
                 return ResourceManager.GetString("ExportIdentityPage_Password", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Protect the certificate with a password.
-        /// </summary>
-        internal static string ExportIdentityPage_Protect {
-            get {
-                return ResourceManager.GetString("ExportIdentityPage_Protect", resourceCulture);
             }
         }
         

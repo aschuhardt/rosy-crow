@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
@@ -7,6 +8,7 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
+using Color = Android.Graphics.Color;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -34,11 +36,11 @@ public partial class MainPage : ContentPage
     private ICommand _openIdentity;
     private ICommand _openSettings;
     private ICommand _print;
+    private bool _pullTabVisible;
     private ICommand _setHomeUrl;
     private ICommand _showPageCertificate;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
-    private bool _pullTabVisible;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -52,7 +54,9 @@ public partial class MainPage : ContentPage
         BindingContext = this;
 
         LoadEnteredUrl = new Command<string>(url =>
-            Browser.Location = url.StartsWith(Constants.InternalScheme) ? new Uri(url) : url.ToGeminiUri());
+            Browser.Location = url.StartsWith(Constants.InternalScheme)
+                ? new Uri(url)
+                : url.ToGeminiUri());
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
@@ -83,18 +87,36 @@ public partial class MainPage : ContentPage
 
         UrlEntry.HandlerChanged += SetupUrlEnterHandling;
 
-        WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware", (handler, _) =>
-        {
-#if ANDROID
-            handler.PlatformView.ScrollChange += (sender, args) =>
+        WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
+            (handler, _) =>
             {
-                if (args.ScrollY > args.OldScrollY + 5)
-                    IsNavBarVisible = false;
-                else if (args.ScrollY < args.OldScrollY - 20 || args.ScrollY == 0)
-                    IsNavBarVisible = true;
-            };
+#if ANDROID
+                handler.PlatformView.ScrollChange += (sender, args) =>
+                {
+                    if (args.ScrollY > args.OldScrollY + 5)
+                        IsNavBarVisible = false;
+                    else if (args.ScrollY < args.OldScrollY - 20 || args.ScrollY == 0)
+                        IsNavBarVisible = true;
+                };
 #endif
-        });
+            });
+
+        EntryHandler.Mapper.AppendToMapping("HideUnderline",
+            (handler, _) =>
+            {
+#if ANDROID
+                handler.PlatformView.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
+#endif
+            });
+
+        EditorHandler.Mapper.AppendToMapping("HideUnderline",
+            (handler, _) =>
+            {
+#if ANDROID
+                handler.PlatformView.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
+#endif
+            });
+
     }
 
     public bool LoadPageOnAppearing
@@ -103,6 +125,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (value == _loadPageOnAppearing) return;
+
             _loadPageOnAppearing = value;
             OnPropertyChanged();
         }
@@ -114,6 +137,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _openSettings)) return;
+
             _openSettings = value;
             OnPropertyChanged();
         }
@@ -125,6 +149,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _openBookmarks)) return;
+
             _openBookmarks = value;
             OnPropertyChanged();
         }
@@ -136,6 +161,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _openIdentity)) return;
+
             _openIdentity = value;
             OnPropertyChanged();
         }
@@ -147,6 +173,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _openHistory)) return;
+
             _openHistory = value;
             OnPropertyChanged();
         }
@@ -158,8 +185,9 @@ public partial class MainPage : ContentPage
         set
         {
             // don't allow the navbar to be hidden if "Find in page" is active
-            if (value == _isNavBarVisible || (!value && Browser.HasFindNextQuery))
+            if (value == _isNavBarVisible || !value && Browser.HasFindNextQuery)
                 return;
+
             _isNavBarVisible = value;
             OnPropertyChanged();
             PerformNavBarAnimations();
@@ -172,6 +200,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (value == _isMenuExpanded) return;
+
             _isMenuExpanded = value;
             OnPropertyChanged();
             PerformMenuAnimations();
@@ -184,6 +213,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _print)) return;
+
             _print = value;
             OnPropertyChanged();
         }
@@ -195,6 +225,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _toggleMenuExpanded)) return;
+
             _toggleMenuExpanded = value;
             OnPropertyChanged();
         }
@@ -206,6 +237,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _expandMenu)) return;
+
             _expandMenu = value;
             OnPropertyChanged();
         }
@@ -217,6 +249,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _hideMenu)) return;
+
             _hideMenu = value;
             OnPropertyChanged();
         }
@@ -228,6 +261,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _loadEnteredUrl)) return;
+
             _loadEnteredUrl = value;
             OnPropertyChanged();
         }
@@ -239,6 +273,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _toggleBookmarked)) return;
+
             _toggleBookmarked = value;
             OnPropertyChanged();
         }
@@ -250,6 +285,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _setHomeUrl)) return;
+
             _setHomeUrl = value;
             OnPropertyChanged();
         }
@@ -261,6 +297,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _loadHomeUrl)) return;
+
             _loadHomeUrl = value;
             OnPropertyChanged();
         }
@@ -272,6 +309,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _findInPage)) return;
+
             _findInPage = value;
             OnPropertyChanged();
         }
@@ -283,6 +321,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _findNextInPage)) return;
+
             _findNextInPage = value;
             OnPropertyChanged();
         }
@@ -294,6 +333,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (Equals(value, _showPageCertificate)) return;
+
             _showPageCertificate = value;
             OnPropertyChanged();
         }
@@ -305,6 +345,7 @@ public partial class MainPage : ContentPage
         set
         {
             if (value == _pullTabVisible) return;
+
             _pullTabVisible = value;
             OnPropertyChanged();
         }
@@ -406,7 +447,9 @@ public partial class MainPage : ContentPage
             {
                 // collapse and then navigate
                 _isMenuExpanded = false;
-                _menuHideAnimation.Commit(this, "HideMenu", length: 150,
+                _menuHideAnimation.Commit(this,
+                    "HideMenu",
+                    length: 150,
                     finished: async (_, _) =>
                     {
                         await Task.WhenAny(
@@ -475,6 +518,7 @@ public partial class MainPage : ContentPage
         try
         {
             string query;
+
             if (Browser.HasFindNextQuery)
             {
                 query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
@@ -543,12 +587,16 @@ public partial class MainPage : ContentPage
     private double GetExpandedMenuHeight()
     {
         return ExpandableMenu.Sum(e =>
-            (double.IsNaN(e.MinimumHeight) ? 0 : e.MinimumHeight) + e.Margin.VerticalThickness);
+            (double.IsNaN(e.MinimumHeight)
+                ? 0
+                : e.MinimumHeight) + e.Margin.VerticalThickness);
     }
 
     private void AddMenuAnimations()
     {
-        _menuShowAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, 0, GetExpandedMenuHeight(),
+        _menuShowAnimation = new Animation(v => ExpandableMenu.HeightRequest = v,
+            0,
+            GetExpandedMenuHeight(),
             Easing.CubicOut);
         _menuHideAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, GetExpandedMenuHeight(), 0);
     }

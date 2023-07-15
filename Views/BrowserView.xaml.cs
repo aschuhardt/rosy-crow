@@ -3,6 +3,7 @@ using System.Web;
 using System.Windows.Input;
 using Android.Views;
 using Android.Webkit;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -28,6 +29,7 @@ namespace RosyCrow.Views;
 
 public partial class BrowserView : ContentView
 {
+    private const int MaxRequestAttempts = 5;
     private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ICacheService _cache;
@@ -54,6 +56,12 @@ public partial class BrowserView : ContentView
     private string _renderedHtml;
     private string _renderUrl;
     private bool _resetFindNext;
+
+    private enum ResponseAction
+    {
+        Retry,
+        Finished
+    }
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -466,7 +474,7 @@ public partial class BrowserView : ContentView
 
                 _logger.LogDebug("Attempting to render an image preview inline from {URI}", line.Uri);
 
-                if (line.Uri.Scheme == "gemini")
+                if (line.Uri.Scheme == Constants.GeminiScheme)
                 {
                     _logger.LogDebug("The image URI specifies the gemini protocol");
 
@@ -655,10 +663,54 @@ public partial class BrowserView : ContentView
         }
     }
 
+    public async Task Upload(TitanPayload payload)
+    {
+        if (_isLoading)
+            return;
+
+        _isLoading = true;
+
+        if (!IsRefreshing)
+            IsRefreshing = true;
+
+        try
+        {
+            for (var attempts = 0; attempts < MaxRequestAttempts; attempts++)
+            {
+                if (!string.IsNullOrWhiteSpace(Input))
+                {
+                    _logger.LogInformation("User provided input \"{Input}\"", Input);
+                    Location = new UriBuilder(Location) { Query = Input }.Uri;
+                }
+
+                var response = await _geminiClient.UploadAsync(Location, payload.Size, payload.Token, payload.MimeType, payload.Contents);
+
+                if (await HandleTitanResponse(response, attempts) == ResponseAction.Finished)
+                {
+                    _logger.LogInformation("Upload finished after {Attempts} attempt(s)", attempts + 1);
+                    break;
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Exception thrown while navigating to {URI}", Location);
+        }
+
+        IsRefreshing = false;
+        _isLoading = false;
+    }
+
     public async Task LoadPage(bool triggeredByRefresh = false, bool useCache = false)
     {
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
+
+        if (Location.Scheme == Constants.TitanScheme)
+        {
+            await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
+            return;
+        }
 
         CanShowHostCertificate = false;
 
@@ -669,10 +721,6 @@ public partial class BrowserView : ContentView
             _isLoading = false;
             return;
         }
-
-        var finished = false;
-        var remainingAttempts = 5;
-        var attempt = 0;
 
         _isLoading = true;
 
@@ -688,7 +736,7 @@ public partial class BrowserView : ContentView
 
         try
         {
-            do
+            for (var attempts = 0; attempts < MaxRequestAttempts; attempts++)
             {
                 if (useCache && !triggeredByRefresh)
                 {
@@ -706,8 +754,6 @@ public partial class BrowserView : ContentView
                         break;
                     }
                 }
-                else
-                    _logger.LogInformation("User triggered a manual refresh, so the cache will not be checked");
 
                 if (!string.IsNullOrWhiteSpace(Input))
                 {
@@ -715,113 +761,157 @@ public partial class BrowserView : ContentView
                     Location = new UriBuilder(Location) { Query = Input }.Uri;
                 }
 
-                var response = await _geminiClient.SendRequestAsync(Location.ToString());
+                var response = await _geminiClient.SendRequestAsync(Location);
 
                 RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
-
                 _logger.LogInformation("Response was {Response}", response);
 
-                switch (response)
+                if (await HandleGeminiResponse(response, attempts) == ResponseAction.Finished)
                 {
-                    case InputRequiredResponse inputRequired:
-                    {
-                        Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
-                            inputRequired.Message);
-                        if (string.IsNullOrEmpty(Input))
-                        {
-                            _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
-                            finished = true; // if no user-input was provided, then we cannot continue
-                        }
-
-                        break;
-                    }
-                    case ErrorResponse error:
-                    {
-                        if (!error.CanRetry)
-                        {
-                            // Opal has indicated that this request should not be re-sent; bail early
-                            //
-                            // Currently this only happens in the case of invalid or rejected remote
-                            // certificates, where re-sending the request would not make sense
-                            _logger.LogInformation("Error type precludes further re-request attempts");
-                            finished = true;
-                            break;
-                        }
-
-                        _logger.LogInformation("{Attempts} attempts remaining", remainingAttempts);
-
-                        if (remainingAttempts == 1 || !IsRetryAppropriate(error.Status))
-                        {
-                            _logger.LogInformation("No further attempts will be made");
-                            await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message,
-                                Text.BrowserView_LoadPage_OK);
-                            finished = true;
-                        }
-                        else
-                        {
-                            var delayAmount = Convert.ToInt32(Math.Pow(2, attempt) * 100);
-                            _logger.LogInformation("Waiting {Milliseconds}ms before making another attempt",
-                                delayAmount);
-                            await Task.Delay(delayAmount);
-                        }
-
-                        remainingAttempts--;
-                        break;
-                    }
-                    case SuccessfulResponse success:
-                    {
-                        Location = response.Uri;
-
-                        if (success is GemtextResponse gemtext)
-                        {
-                            _logger.LogInformation("Response is a gemtext document");
-
-                            CanShowHostCertificate = true;
-                            RenderedHtml = await RenderGemtextAsHtml(gemtext);
-                            StoreVisitedLocation(Location, false);
-                            CanPrint = _printService != null;
-                        }
-                        else
-                        {
-                            _logger.LogInformation(
-                                "Response is not a gemtext document, so it will be opened externally");
-
-                            StoreVisitedLocation(Location, true);
-
-                            // not gemtext; save as a file
-                            var fileName = response.Uri.Segments.LastOrDefault() ??
-                                           GetDefaultFileNameByMimeType(success.MimeType);
-                            var path = Path.Combine(FileSystem.CacheDirectory, fileName);
-                            await using (var outputFile = File.Create(path))
-                            {
-                                await success.Body.CopyToAsync(outputFile);
-                            }
-
-                            _logger.LogInformation("Opening file {Path}", path);
-
-                            await Launcher.Default.OpenAsync(
-                                new OpenFileRequest(fileName, new ReadOnlyFile(path, success.MimeType)));
-                        }
-
-                        finished = true;
-                        break;
-                    }
+                    _logger.LogInformation("Request finished after {Attempts} attempt(s)", attempts + 1);
+                    break;
                 }
-
-                attempt++;
-            } while (!finished);
+            }
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Exception thrown while navigating to {URI}", Location);
         }
 
-        _logger.LogInformation("Request finished after {Attempts} attempt(s)", attempt);
-
         IsRefreshing = false;
         _isLoading = false;
 
         Input = null;
+    }
+
+    private async Task<ResponseAction> HandleTitanResponse(IGeminiResponse response, int attempt)
+    {
+        switch (response)
+        {
+            case InputRequiredResponse inputRequired:
+            {
+                Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                    inputRequired.Message);
+
+                if (string.IsNullOrEmpty(Input))
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+
+                return ResponseAction.Retry;
+            }
+            case ErrorResponse error:
+            {
+                if (!error.CanRetry)
+                    return ResponseAction.Finished;
+
+                _logger.LogInformation("{Attempts} attempt(s) remaining", MaxRequestAttempts - attempt);
+
+                if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
+                {
+                    _logger.LogInformation("No further attempts will be made");
+                    await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
+                    return ResponseAction.Finished;
+                }
+
+                await Task.Delay(Convert.ToInt32(Math.Pow(2, attempt) * 100));
+
+                return ResponseAction.Retry;
+            }
+            case SuccessfulResponse success:
+            {
+                await HandleSuccessfulResponse(success);
+                return ResponseAction.Finished;
+            }
+            default:
+                return ResponseAction.Retry;
+        }
+    }
+
+    private async Task<ResponseAction> HandleGeminiResponse(IGeminiResponse response, int attempt)
+    {
+        switch (response)
+        {
+            case InputRequiredResponse inputRequired:
+            {
+                Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                    inputRequired.Message);
+
+                if (string.IsNullOrEmpty(Input))
+                {
+                    _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+                }
+
+                return ResponseAction.Retry;
+            }
+            case ErrorResponse error:
+            {
+                if (!error.CanRetry)
+                {
+                    // Opal has indicated that this request should not be re-sent; bail early
+                    //
+                    // Currently this only happens in the case of invalid or rejected remote
+                    // certificates, where re-sending the request would not make sense
+                    return ResponseAction.Finished;
+                }
+
+                _logger.LogInformation("{Attempts} attempt(s) remaining", MaxRequestAttempts - attempt);
+
+                if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
+                {
+                    _logger.LogInformation("No further attempts will be made");
+                    await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
+                        error.Message,
+                        Text.BrowserView_LoadPage_OK);
+                    return ResponseAction.Finished;
+                }
+
+                await Task.Delay(Convert.ToInt32(Math.Pow(2, attempt) * 100));
+
+                return ResponseAction.Retry;
+            }
+            case SuccessfulResponse success:
+            {
+                await HandleSuccessfulResponse(success);
+                return ResponseAction.Finished;
+            }
+            default:
+                return ResponseAction.Retry;
+        }
+    }
+
+    private async Task HandleSuccessfulResponse(SuccessfulResponse response)
+    {
+        Location = response.Uri;
+
+        if (response is GemtextResponse gemtext)
+        {
+            _logger.LogInformation("Response is a gemtext document");
+
+            CanShowHostCertificate = true;
+            RenderedHtml = await RenderGemtextAsHtml(gemtext);
+            StoreVisitedLocation(Location, false);
+            CanPrint = _printService != null;
+        }
+        else
+        {
+            _logger.LogInformation(
+                "Response is not a gemtext document, so it will be opened externally");
+
+            StoreVisitedLocation(Location, true);
+
+            // not gemtext; save as a file
+            var fileName = response.Uri.Segments.LastOrDefault() ??
+                           GetDefaultFileNameByMimeType(response.MimeType);
+            var path = Path.Combine(FileSystem.CacheDirectory, fileName);
+
+            await using (var outputFile = File.Create(path))
+                await response.Body.CopyToAsync(outputFile);
+
+            _logger.LogInformation("Opening file {Path}", path);
+
+            await Launcher.Default.OpenAsync(
+                new OpenFileRequest(fileName, new ReadOnlyFile(path, response.MimeType)));
+        }
     }
 
     private void StoreVisitedLocation(Uri uri, bool isExternal)
@@ -883,7 +973,7 @@ public partial class BrowserView : ContentView
     private async void PageWebView_OnNavigating(object sender, WebNavigatingEventArgs e)
     {
         var uri = e.Url.ToUri();
-        if (!uri.IsAbsoluteUri || uri.Scheme == "gemini")
+        if (!uri.IsAbsoluteUri || uri.Scheme is Constants.GeminiScheme or Constants.TitanScheme or Constants.InternalScheme)
             Location = uri;
         else
             await Launcher.Default.OpenAsync(uri);

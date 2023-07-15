@@ -5,6 +5,8 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
+    <RoundRectangle x:Key="RoundBorderShape" CornerRadius="8"></RoundRectangle>
+
     <Style TargetType="ActivityIndicator">
         <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource White}}" />
     </Style>
@@ -18,9 +20,13 @@
 
     <Style TargetType="Border">
         <Setter Property="Stroke"
-                Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+                Value="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray400}}" />
         <Setter Property="StrokeShape" Value="Rectangle" />
-        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeThickness" Value="2" />
+        <Setter Property="Padding" Value="8,0" />
+        <Setter Property="BackgroundColor"
+                Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray950}}" />
+        <Setter Property="StrokeShape" Value="{StaticResource Key=RoundBorderShape}"></Setter>
     </Style>
 
     <Style TargetType="BoxView">
@@ -131,8 +137,8 @@
         <Setter Property="FontSize" Value="14" />
         <Setter Property="PlaceholderColor"
                 Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
-        <Setter Property="MinimumHeightRequest" Value="44" />
-        <Setter Property="MinimumWidthRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="38" />
+        <Setter Property="MinimumWidthRequest" Value="38" />
         <Setter Property="VisualStateManager.VisualStateGroups">
             <VisualStateGroupList>
                 <VisualStateGroup x:Name="CommonStates">

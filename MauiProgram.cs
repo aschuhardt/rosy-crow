@@ -55,11 +55,12 @@ public static class MauiProgram
             .AddSingleton<SettingsPage>()
             .AddSingleton<HistoryPage>()
             .AddSingleton<AboutPage>()
-            .AddTransient<ExportIdentityPage>()
-            .AddTransient<ImportIdentityPage>()
             .AddSingleton<CertificatePage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()
+            .AddTransient<ExportIdentityPage>()
+            .AddTransient<ImportIdentityPage>()
+            .AddTransient<TitanUploadPage>()
             .AddTransient<IOpalClient>(services =>
                 new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();

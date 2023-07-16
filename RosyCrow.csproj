@@ -11,7 +11,7 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<!-- Display name -->
-		<ApplicationTitle>RosyCrow</ApplicationTitle>
+		<ApplicationTitle>Rosy Crow</ApplicationTitle>
 
 		<!-- App Identifier -->
 		<ApplicationId>app.rosy-crow</ApplicationId>
@@ -47,11 +47,11 @@
 	  <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass>
 	  <TrimMode>link</TrimMode>
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
+	  <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-android33.0|AnyCPU'">
-	  <ApplicationDisplayVersion>1.2.0</ApplicationDisplayVersion>
+	  <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
 	</PropertyGroup>
 
 	<ItemGroup>

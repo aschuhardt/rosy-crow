@@ -623,7 +623,11 @@ public partial class MainPage : ContentPage
         try
         {
             AddMenuAnimations();
-            Browser.Location = _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+
+            Browser.Location = !string.IsNullOrWhiteSpace(App.StartupUri)
+                ? App.StartupUri.ToGeminiUri()
+                : _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+
             PullTabVisible = !_settingsDatabase.HidePullTab;
         }
         catch (Exception exception)

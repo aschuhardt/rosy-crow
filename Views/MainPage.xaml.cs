@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using Android.Content.Res;
 using Android.Views;
+using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
@@ -8,9 +9,7 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
-using Button = Microsoft.Maui.Controls.Button;
 using Color = Android.Graphics.Color;
-using Toast = CommunityToolkit.Maui.Alerts.Toast;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -115,25 +114,6 @@ public partial class MainPage : ContentPage
                 handler.PlatformView.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
 #endif
             });
-
-    }
-
-    private async Task TryLoadEnteredUrl(string url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-            url = $"{Constants.InternalScheme}://default";
-
-        try
-        {
-            Browser.Location = url.StartsWith(Constants.InternalScheme)
-                ? new Uri(url)
-                : url.ToGeminiUri();
-        }
-        catch (UriFormatException)
-        {
-            _logger.LogError("Invalid URL entered: \"{URL}\"", url);
-            await Toast.Make(Text.MainPage_MainPage_That_address_is_invalid).Show();
-        }
     }
 
     public bool LoadPageOnAppearing
@@ -365,6 +345,26 @@ public partial class MainPage : ContentPage
 
             _pullTabVisible = value;
             OnPropertyChanged();
+        }
+    }
+
+    private async Task TryLoadEnteredUrl(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+            url = $"{Constants.InternalScheme}://default";
+
+        UrlEntry.Unfocus();
+
+        try
+        {
+            Browser.Location = url.StartsWith(Constants.InternalScheme)
+                ? new Uri(url)
+                : url.ToGeminiUri();
+        }
+        catch (UriFormatException)
+        {
+            _logger.LogError("Invalid URL entered: \"{URL}\"", url);
+            await Toast.Make(Text.MainPage_MainPage_That_address_is_invalid).Show();
         }
     }
 
@@ -655,5 +655,29 @@ public partial class MainPage : ContentPage
         {
             _logger.LogError(exception, "Exception thrown on MainPage appearing");
         }
+    }
+
+    private async void UrlEntry_OnFocused(object sender, FocusEventArgs e)
+    {
+        await Dispatcher.DispatchAsync(() =>
+        {
+            new Animation
+            {
+                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, 0, NavigationGrid.Width, Easing.CubicInOut) },
+                { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
+            }.Commit(this, "ExpandUrlEntry");
+        });
+    }
+
+    private async void UrlEntry_OnUnfocused(object sender, FocusEventArgs e)
+    {
+        await Dispatcher.DispatchAsync(() =>
+        {
+            new Animation
+            {
+                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, NavigationGrid.Width, 0, Easing.CubicInOut) },
+                { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
+            }.Commit(this, "ShrinkUrlEntry");
+        });
     }
 }

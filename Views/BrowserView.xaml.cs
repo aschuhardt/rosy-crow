@@ -710,12 +710,6 @@ public partial class BrowserView : ContentView
         if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
             return;
 
-        if (Location.Scheme == Constants.TitanScheme)
-        {
-            await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
-            return;
-        }
-
         CanShowHostCertificate = false;
 
         if (Location == null || Location.Scheme == Constants.InternalScheme)
@@ -725,6 +719,12 @@ public partial class BrowserView : ContentView
                 RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
             IsRefreshing = false;
             _isLoading = false;
+            return;
+        }
+
+        if (Location.Scheme == Constants.TitanScheme)
+        {
+            await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
             return;
         }
 

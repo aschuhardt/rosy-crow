@@ -42,6 +42,7 @@ public partial class MainPage : ContentPage
     private ICommand _showPageCertificate;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
+    private bool _whatsNewShown;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -653,6 +654,12 @@ public partial class MainPage : ContentPage
             {
                 LoadPageOnAppearing = false;
                 await Browser.LoadPage();
+            }
+
+            if (!_whatsNewShown && VersionTracking.IsFirstLaunchForCurrentVersion)
+            {
+                await Navigation.PushModalPageAsync<WhatsNewPage>();
+                _whatsNewShown = true;
             }
         }
         catch (Exception exception)

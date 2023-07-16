@@ -45,7 +45,7 @@
 	  <AndroidSigningStorePass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningStorePass>
 	  <AndroidSigningKeyAlias>signing-key</AndroidSigningKeyAlias>
 	  <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass>
-	  <TrimMode>link</TrimMode>
+	  <TrimMode></TrimMode>
 	  <AndroidLinkTool>r8</AndroidLinkTool>
 	  <ApplicationDisplayVersion>1.3.0</ApplicationDisplayVersion>
 	</PropertyGroup>

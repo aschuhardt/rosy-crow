@@ -441,7 +441,12 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            // if the menu is visible, just close it
+            if (UrlEntry.IsFocused)
+            {
+                UrlEntry.Unfocus();
+                return true;
+            }
+
             if (IsMenuExpanded)
             {
                 IsMenuExpanded = false;
@@ -658,7 +663,7 @@ public partial class MainPage : ContentPage
 
             if (!_whatsNewShown && VersionTracking.IsFirstLaunchForCurrentVersion)
             {
-                await Navigation.PushModalPageAsync<WhatsNewPage>();
+                await Navigation.PushPageAsync<WhatsNewPage>();
                 _whatsNewShown = true;
             }
         }
@@ -674,7 +679,7 @@ public partial class MainPage : ContentPage
         {
             new Animation
             {
-                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, 0, NavigationGrid.Width, Easing.CubicInOut) },
+                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, 0, Width, Easing.CubicInOut) },
                 { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
             }.Commit(this, "ExpandUrlEntry");
         });
@@ -686,7 +691,7 @@ public partial class MainPage : ContentPage
         {
             new Animation
             {
-                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, NavigationGrid.Width, 0, Easing.CubicInOut) },
+                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, Width, 0, Easing.CubicInOut) },
                 { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
             }.Commit(this, "ShrinkUrlEntry");
         });

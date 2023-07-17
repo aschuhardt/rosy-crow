@@ -553,7 +553,7 @@ public partial class BrowserView : ContentView
     {
         return line switch
         {
-            EmptyLine => null,
+            EmptyLine => HtmlNode.CreateNode("<br>"),
             HeadingLine headingLine => HtmlNode.CreateNode(
                 $"<h{headingLine.Level}>{HttpUtility.HtmlEncode(headingLine.Text)}</h{headingLine.Level}>"),
             LinkLine linkLine => await RenderLinkLine(linkLine),

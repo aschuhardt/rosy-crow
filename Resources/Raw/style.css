@@ -13,3 +13,14 @@ figure {
 figcaption {
     opacity: 0.8;
 }
+
+p {
+    margin-top: 0.25em!important;
+    margin-bottom: 0.5em!important;
+}
+
+br {
+    content: " ";
+    display: block;
+    margin: 2em;
+}

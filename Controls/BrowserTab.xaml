@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:controls="clr-namespace:RosyCrow.Controls"
+             xmlns:models="clr-namespace:RosyCrow.Models"
+             x:Class="RosyCrow.Controls.BrowserTab"
+             x:DataType="models:Tab"
+             BindingContextChanged="BrowserTab_OnBindingContextChanged">
+    <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
+        <Ellipse
+            x:Name="ButtonShape"
+            AbsoluteLayout.LayoutBounds="0.5,0.5,25,25"
+            AbsoluteLayout.LayoutFlags="PositionProportional"
+            Fill="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <Ellipse.GestureRecognizers>
+                <TapGestureRecognizer Command="{Binding Select, Source={RelativeSource FindAncestor, AncestorType={x:Type controls:BrowserTab}}}" />
+            </Ellipse.GestureRecognizers>
+        </Ellipse>
+        <Label
+            AbsoluteLayout.LayoutBounds="0,0,1,1"
+            AbsoluteLayout.LayoutFlags="All"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            Text="{Binding Label}" InputTransparent="True" />
+    </AbsoluteLayout>
+</ContentView>

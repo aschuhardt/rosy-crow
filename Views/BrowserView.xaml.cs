@@ -15,6 +15,7 @@ using Opal.CallbackArgs;
 using Opal.Document.Line;
 using Opal.Response;
 using Opal.Tofu;
+using RosyCrow.Controls;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -1086,5 +1087,10 @@ public partial class BrowserView : ContentView
 
         refreshViewHandler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4);
 #endif
+    }
+
+    private void TabCollection_OnNewTabRequested(object sender, EventArgs e)
+    {
+        (sender as TabCollection)?.AddTab("rosy-crow://default", char.ConvertFromUtf32(0x1F426));
     }
 }

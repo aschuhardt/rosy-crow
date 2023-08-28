@@ -8,6 +8,10 @@ Rosy Crow is a Gemini client for Android that includes some less-than-common fea
 
 ![screenshots (1)](https://github.com/aschuhardt/rosy-crow/assets/13511943/c42774e3-6b12-4b7b-9fb5-33132e37007d)
 
+## Issues
+
+The issue tracker can be found at gemini://bbs.geminispace.org/s/Rosy-Crow-Issues
+
 ## Building
 
 Rosy Crow is built with .NET MAUI.  Follow [the guidelines provided by Microsoft](https://learn.microsoft.com/en-us/dotnet/maui/get-started/installation?tabs=vswin) in order to set up your environment.

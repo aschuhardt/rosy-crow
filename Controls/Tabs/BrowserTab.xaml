@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                        xmlns:models="clr-namespace:RosyCrow.Models"
+                        xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
+                        xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
+                        x:Class="RosyCrow.Controls.Tabs.BrowserTab"
+                        x:DataType="models:Tab"
+                        BindingContextChanged="BrowserTab_OnBindingContextChanged">
+    <tabs:TabButtonBase.Behaviors>
+        <behaviors:TabButtonBehavior />
+    </tabs:TabButtonBase.Behaviors>
+    <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
+        <Ellipse
+            x:Name="ButtonShape"
+            AbsoluteLayout.LayoutBounds="0.5,0.5,30,30"
+            AbsoluteLayout.LayoutFlags="PositionProportional"
+            Fill="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <Ellipse.Shadow>
+                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="1,1" />
+            </Ellipse.Shadow>
+        </Ellipse>
+        <Label
+            AbsoluteLayout.LayoutBounds="0,0,1,1"
+            AbsoluteLayout.LayoutFlags="All"
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            Text="{Binding Label}" InputTransparent="True" />
+    </AbsoluteLayout>
+</tabs:TabButtonBase>

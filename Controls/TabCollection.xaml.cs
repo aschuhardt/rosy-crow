@@ -72,13 +72,12 @@ public partial class TabCollection : ContentView
 
     public void AddTab(string url, char label)
     {
-        var tab = new Tab(url, label);
-
-        // if this is the first tab, select it
-        if (!_tabs.Any())
+        var tab = new Tab(url, label)
         {
-            SelectTab(tab);
-        }
+            Selected = true
+        };
+
+        SetSelectedTab(tab);
 
         _tabs.Add(tab);
     }
@@ -99,16 +98,14 @@ public partial class TabCollection : ContentView
 
     private void BrowserTab_OnSelected(object sender, Tab selected)
     {
-        SelectTab(selected);
+        SetSelectedTab(selected);
     }
 
-    private void SelectTab(Tab tab)
+    private void SetSelectedTab(Tab tab)
     {
         // deselect the prior
         if (_selected != null)
             _selected.Selected = false;
-
-        tab.Selected = true;
 
         _selected = tab;
         SelectedId = _selected.Id;

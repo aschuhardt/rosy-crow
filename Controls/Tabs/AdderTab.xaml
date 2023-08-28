@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                        xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
+                        xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
+                        x:Class="RosyCrow.Controls.Tabs.AdderTab"
+                        x:DataType="tabs:AdderTab">
+    <tabs:TabButtonBase.Behaviors>
+        <behaviors:TabButtonBehavior />
+    </tabs:TabButtonBase.Behaviors>
+    <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
+        <Ellipse
+            x:Name="ButtonShape"
+            AbsoluteLayout.LayoutBounds="0.5,0.5,30,30"
+            AbsoluteLayout.LayoutFlags="PositionProportional"
+            Fill="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            <Ellipse.Shadow>
+                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="1,1" />
+            </Ellipse.Shadow>
+        </Ellipse>
+        <Image
+            AbsoluteLayout.LayoutBounds="0,0,1,1"
+            AbsoluteLayout.LayoutFlags="All"
+            Aspect="AspectFit"
+            WidthRequest="20"
+            HeightRequest="20"
+            Source="{AppThemeBinding Light=create_tab_dark.png, Dark=create_tab_light.png}" InputTransparent="True" />
+    </AbsoluteLayout>
+</tabs:TabButtonBase>

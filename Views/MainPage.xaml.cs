@@ -1,10 +1,12 @@
-﻿using System.Windows.Input;
+﻿using System.ComponentModel;
+using System.Windows.Input;
 using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
+using RosyCrow.Controls;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -43,6 +45,8 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
+
+    public static readonly BindableProperty BrowserProperty = BindableProperty.Create(nameof(Browser), typeof(BrowserView), typeof(MainPage));
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -86,6 +90,8 @@ public partial class MainPage : ContentPage
 
         UrlEntry.HandlerChanged += SetupUrlEnterHandling;
 
+        Tabs.SelectedViewChanged += (_, _) => Browser = Tabs.SelectedView;
+
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
             (handler, _) =>
             {
@@ -115,6 +121,12 @@ public partial class MainPage : ContentPage
                 handler.PlatformView.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
 #endif
             });
+    }
+
+    public BrowserView Browser
+    {
+        get => (BrowserView)GetValue(BrowserProperty);
+        set => SetValue(BrowserProperty, value);
     }
 
     public bool LoadPageOnAppearing
@@ -646,6 +658,8 @@ public partial class MainPage : ContentPage
     {
         try
         {
+            Browser = Tabs.SelectedView;
+
             if (!string.IsNullOrWhiteSpace(App.StartupUri))
                 Browser.Location = App.StartupUri.ToGeminiUri();
 

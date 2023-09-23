@@ -3,7 +3,7 @@
 public abstract class TabButtonBase : ContentView
 {
     private const double InitialScale = 1.0;
-    private const double LargerScale = 1.2;
+    private const double LargerScale = 1.05;
 
     private readonly Animation _deselectedAnimation;
     private readonly Animation _selectedAnimation;
@@ -30,7 +30,7 @@ public abstract class TabButtonBase : ContentView
 
     public bool Selectable { get; }
 
-    protected void HandleSelectionChanged(bool selected)
+    protected virtual void HandleSelectionChanged(bool selected)
     {
         if (selected)
             _selectedAnimation.Commit(this, nameof(_selectedAnimation), length: 200);

@@ -1,13 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                        xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                        xmlns:models="clr-namespace:RosyCrow.Models"
-                        xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
-                        xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
-                        x:Class="RosyCrow.Controls.Tabs.BrowserTab"
-                        x:DataType="models:Tab"
-                        BindingContextChanged="BrowserTab_OnBindingContextChanged">
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:models="clr-namespace:RosyCrow.Models"
+                    xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
+                    xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
+                    xmlns:converters="clr-namespace:RosyCrow.Converters"
+                    x:Class="RosyCrow.Controls.Tabs.BrowserTab"
+                    x:DataType="models:Tab"
+                    BindingContextChanged="BrowserTab_OnBindingContextChanged">
+    <tabs:TabButtonBase.Resources>
+        <converters:TabButtonFillConverter
+            x:Key="FillConverter"
+            InactiveBrush="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
+            ActiveBrush="{StaticResource Red}" />
+        <ControlTemplate x:Key="PageIconTemplate">
+            <!-- TODO: I have to manually set the BindingContext here because ControlTemplates don't propagate it correctly -->
+            <!-- TODO: https://github.com/dotnet/maui/issues/12470 -->
+            <Label
+                BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                Text="{Binding Label}"/>
+        </ControlTemplate>
+        <ControlTemplate x:Key="DeleteIconTemplate">
+            <Image
+                Aspect="AspectFit"
+                WidthRequest="20"
+                HeightRequest="20"
+                Source="close_light.png" />
+        </ControlTemplate>
+        <converters:TabButtonIconControlConverter
+            x:Key="ButtonIconControlConverter"
+            PageIconTemplate="{StaticResource PageIconTemplate}"
+            DeleteIconTemplate="{StaticResource DeleteIconTemplate}" />
+    </tabs:TabButtonBase.Resources>
     <tabs:TabButtonBase.Behaviors>
         <behaviors:TabButtonBehavior />
     </tabs:TabButtonBase.Behaviors>
@@ -16,16 +43,14 @@
             x:Name="ButtonShape"
             AbsoluteLayout.LayoutBounds="0.5,0.5,30,30"
             AbsoluteLayout.LayoutFlags="PositionProportional"
-            Fill="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
+            Fill="{Binding Selected, Converter={StaticResource FillConverter}}">
             <Ellipse.Shadow>
                 <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="1,1" />
             </Ellipse.Shadow>
         </Ellipse>
-        <Label
+        <ContentView
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
-            HorizontalTextAlignment="Center"
-            VerticalTextAlignment="Center"
-            Text="{Binding Label}" InputTransparent="True" />
+            ControlTemplate="{Binding Selected, Converter={StaticResource ButtonIconControlConverter}}" />
     </AbsoluteLayout>
 </tabs:TabButtonBase>

@@ -212,6 +212,6 @@
 	  </EmbeddedResource>
 	</ItemGroup>
 
-	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadUnhandledDeviceExceptionRosyCrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>
+	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionRosyCrowHideInfoBar="True" XamarinHotReloadUnhandledDeviceExceptionRosyCrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>
 
 </Project>

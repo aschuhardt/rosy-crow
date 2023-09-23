@@ -1,18 +1,16 @@
-using System.ComponentModel;
 using Tab = RosyCrow.Models.Tab;
 
 namespace RosyCrow.Controls.Tabs;
 
 public partial class BrowserTab : TabButtonBase
 {
-    private Tab _tab;
-
     public BrowserTab() : base(true)
     {
         InitializeComponent();
     }
 
-    public event EventHandler<Tab> AfterSelected;
+    public event EventHandler<TabEventArgs> AfterSelected;
+    public event EventHandler<TabEventArgs> RemoveRequested;
 
     private void BrowserTab_OnBindingContextChanged(object sender, EventArgs e)
     {
@@ -21,26 +19,27 @@ public partial class BrowserTab : TabButtonBase
 
         if (BindingContext is not Tab tab)
             throw new InvalidOperationException(
-                $"BrowserTab should only be bound to a Tab; {BindingContext.GetType().Name} was bound instead!");
+                $"BrowserTab should only be bound to a {nameof(Tab)}; {BindingContext.GetType().Name} was bound instead!");
 
-        if (_tab != null)
-            _tab.PropertyChanged -= Tab_PropertyChanged;
+        tab.SelectedChanged = new Command<Tab>(t => HandleSelectionChanged(t.Selected));
 
-        _tab = tab;
-        _tab.PropertyChanged += Tab_PropertyChanged;
-
-        HandleSelectionChanged(_tab.Selected);
-    }
-
-    private void Tab_PropertyChanged(object sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName == nameof(Tab.Selected))
-            HandleSelectionChanged(_tab.Selected);
+        HandleSelectionChanged(tab.Selected);
     }
 
     public override void Tapped()
     {
-        _tab.Selected = true;
-        AfterSelected?.Invoke(this, _tab);
+        // if the button is tapped while selected, then delete it; otherwise, select it
+        if (BindingContext is not Tab tab)
+            return;
+
+        if (!tab.Selected)
+        {
+            tab.Selected = true;
+            AfterSelected?.Invoke(this, new TabEventArgs(tab));
+        }
+        else
+        {
+            RemoveRequested?.Invoke(this, new TabEventArgs(tab));
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using RosyCrow.Models;
 
 namespace RosyCrow.Extensions;
 
@@ -27,6 +28,10 @@ internal static class StringExtensions
 
     public static Uri ToGeminiUri(this string source)
     {
+        // may be rosy-crow://...
+        if (source.StartsWith(Constants.InternalScheme, StringComparison.InvariantCultureIgnoreCase))
+            return new Uri(source);
+
         return !source.StartsWith(GeminiSchemePrefix, StringComparison.OrdinalIgnoreCase)
             ? new Uri($"{GeminiSchemePrefix}{source}")
             : new Uri(source);

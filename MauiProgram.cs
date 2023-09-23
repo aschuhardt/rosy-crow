@@ -62,6 +62,7 @@ public static class MauiProgram
             .AddTransient<ExportIdentityPage>()
             .AddTransient<ImportIdentityPage>()
             .AddTransient<TitanUploadPage>()
+            .AddTransient<BrowserView>()
             .AddTransient<IOpalClient>(services =>
                 new OpalClient(services.GetRequiredService<IBrowsingDatabase>(), RedirectBehavior.Follow))
             .AddTransient<ICacheService, DiskCacheService>();

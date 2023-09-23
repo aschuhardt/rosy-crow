@@ -1,13 +1,25 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Windows.Input;
+using RosyCrow.Views;
+using SQLite;
 
 namespace RosyCrow.Models;
 
 public class Tab : INotifyPropertyChanged
 {
+    private string _label;
     private bool _selected;
 
-    public Tab(string url, char label)
+    private ICommand _selectedChanged;
+
+    public ICommand SelectedChanged
+    {
+        get => _selectedChanged;
+        set => SetField(ref _selectedChanged, value);
+    }
+
+    public Tab(string url, string label)
     {
         Url = url;
         Label = label;
@@ -15,15 +27,28 @@ public class Tab : INotifyPropertyChanged
     }
 
     public string Url { get; set; }
-    public char Label { get; set; }
+
+    public string Label
+    {
+        get => _label;
+        set => SetField(ref _label, value);
+    }
+
     public Guid Id { get; }
     public int Order { get; set; }
 
     public bool Selected
     {
         get => _selected;
-        set => SetField(ref _selected, value);
+        set
+        {
+            if (SetField(ref _selected, value))
+                _selectedChanged?.Execute(this);
+        }
     }
+
+    [Ignore]
+    public BrowserView View { get; set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -40,5 +65,20 @@ public class Tab : INotifyPropertyChanged
         field = value;
         OnPropertyChanged(propertyName);
         return true;
+    }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
+
+    public override bool Equals(object obj)
+    {
+        return obj is Tab otherTab && otherTab.Id.Equals(Id);
+    }
+
+    public override string ToString()
+    {
+        return $"{Id} : {Url} : {Label}";
     }
 }

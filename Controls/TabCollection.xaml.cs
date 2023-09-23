@@ -1,19 +1,19 @@
+﻿using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using RosyCrow.Controls.Tabs;
+using RosyCrow.Extensions;
+using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
 
 namespace RosyCrow.Controls;
 
 public partial class TabCollection : ContentView
 {
-    public static BindableProperty SelectedIdProperty =
-        BindableProperty.Create(nameof(SelectedId), typeof(Guid), typeof(TabCollection));
+    private Tab _selectedTab;
+    private BrowserView _selectedView;
 
-    private Guid _selectedId;
-    private Tab _selected;
     private ObservableCollection<Tab> _tabs;
-
-    public event EventHandler NewTabRequested;
 
     public TabCollection()
     {
@@ -22,37 +22,19 @@ public partial class TabCollection : ContentView
         BindingContext = this;
 
         Tabs = new ObservableCollection<Tab>();
-        Tabs.CollectionChanged += Tabs_CollectionChanged;
+
+        AddDefaultTab();
     }
 
-    private void Tabs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    public BrowserView SelectedView
     {
-        switch (e.Action)
-        {
-            case NotifyCollectionChangedAction.Add:
-                break;
-            case NotifyCollectionChangedAction.Remove:
-                break;
-            case NotifyCollectionChangedAction.Replace:
-                break;
-            case NotifyCollectionChangedAction.Move:
-                break;
-            case NotifyCollectionChangedAction.Reset:
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
-
-    public Guid SelectedId
-    {
-        get => _selectedId;
+        get => _selectedView;
         set
         {
-            if (value.Equals(_selectedId))
-                return;
+            if (Equals(value, _selectedView)) return;
 
-            _selectedId = value;
+            _selectedView = value;
+            SelectedViewChanged?.Invoke(this, EventArgs.Empty);
             OnPropertyChanged();
         }
     }
@@ -70,49 +52,83 @@ public partial class TabCollection : ContentView
         }
     }
 
-    public void AddTab(string url, char label)
+    public event EventHandler SelectedViewChanged;
+
+    private void SelectTab(Tab tab)
+    {
+        SelectedView = tab.View;
+        if (_selectedTab != null)
+            _selectedTab.Selected = false;
+        _selectedTab = tab;
+        tab.Selected = true;
+    }
+
+    public Task AddDefaultTab()
+    {
+        return AddTab("rosy-crow://default", "🐦");
+    }
+
+    public async Task AddTab(string url, string label)
     {
         var tab = new Tab(url, label)
         {
-            Selected = true
+            Selected = true,
+            View = MauiProgram.Services.GetRequiredService<BrowserView>()
         };
 
-        SetSelectedTab(tab);
+        // load HTML templates and store a reference to this container
+        await tab.View.Setup(this);
+
+        tab.View.Location = url.ToGeminiUri();
 
         _tabs.Add(tab);
+
+        SelectTab(tab);
+
+        await UpdateTabOrder();
     }
 
-    public void AddTab(string url, string title)
+    private void BrowserTab_OnSelected(object sender, TabEventArgs e)
     {
-        AddTab(url, title[0]);
+        SelectTab(e.Tab);
     }
 
-    public void UpdateTab(string url, string title)
+    private async void AdderTab_OnTriggered(object sender, EventArgs e)
     {
-        if (_selected == null)
-            throw new InvalidOperationException("Tried to update a tab, but no tab is open");
-
-        _selected.Url = url;
-        _selected.Label = title[0];
+        await AddDefaultTab();
     }
 
-    private void BrowserTab_OnSelected(object sender, Tab selected)
+    private async void TabsCollectionView_OnReorderCompleted(object sender, EventArgs e)
     {
-        SetSelectedTab(selected);
+        await UpdateTabOrder();
     }
 
-    private void SetSelectedTab(Tab tab)
+    private async Task UpdateTabOrder()
     {
-        // deselect the prior
-        if (_selected != null)
-            _selected.Selected = false;
+        for (var i = 0; i < Tabs.Count; i++)
+            Tabs[i].Order = i;
 
-        _selected = tab;
-        SelectedId = _selected.Id;
+        await SaveTabs();
     }
 
-    private void AdderTab_OnTriggered(object sender, EventArgs e)
+    private async Task SaveTabs()
     {
-        NewTabRequested?.Invoke(this, EventArgs.Empty);
+        // var path = Path.Join(FileSystem.CacheDirectory, TabsFileName);
+        // await using var file = File.CreateText(path);
+        // await file.WriteAsync(JsonConvert.SerializeObject(Tabs.ToArray()));
+    }
+
+    private void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
+    {
+        _tabs.Remove(e.Tab);
+
+        if (!Tabs.Any())
+            AddDefaultTab();
+        else
+        {
+            // try to find the tab that is to the left of this one; if there is none, just select the first one
+            var next = Tabs.OrderByDescending(t => t.Order).FirstOrDefault(t => t.Order < e.Tab.Order);
+            SelectTab(next ?? _tabs.First());
+        }
     }
 }

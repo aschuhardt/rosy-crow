@@ -12,17 +12,15 @@
              Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False">
     <ContentPage.Resources>
-        <converters:BookmarkButtonImageConverter x:Key="BookmarkButtonImageConverter" />
         <converters:HomeButtonImageConverter x:Key="HomeButtonImageConverter" />
+        <converters:BookmarkButtonImageConverter x:Key="BookmarkButtonImageConverter" />
     </ContentPage.Resources>
     <AbsoluteLayout>
-        <views:BrowserView
-            x:Name="Browser"
-            x:FieldModifier="public"
+        <ContentView
+            x:Name="CurrentPageView"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
-            HorizontalOptions="Fill"
-            VerticalOptions="Fill" />
+            Content="{Binding Browser}" />
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
             AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
@@ -59,38 +57,38 @@
             <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Padding="0,2,0,0" x:Name="NavigationGrid">
                 <ImageButton
                     Grid.Column="0"
-                    Scale="0.75" IsEnabled="{Binding CanShowHostCertificate, Source={x:Reference Browser}}"
+                    Scale="0.75" IsEnabled="{Binding Browser.CanShowHostCertificate}"
                     Command="{Binding ShowPageCertificate}"
                     Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_PageInformation}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_PageInformationHint}" />
                 <Border Grid.Column="1" HeightRequest="40" x:Name="UrlEntryBorder">
                     <Entry
-                        Text="{Binding RenderUrl, Source={x:Reference Browser}}"
+                        Text="{Binding Browser.RenderUrl}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
-                        ReturnCommandParameter="{Binding RenderUrl, Source={x:Reference Browser}}"
+                        ReturnCommandParameter="{Binding Browser.RenderUrl}"
                         ReturnType="Go" Keyboard="Url" x:Name="UrlEntry"
                         SemanticProperties.Description="URL"
                         SemanticProperties.Hint="The page's address" Placeholder="address"
                         Focused="UrlEntry_OnFocused"
-                        Unfocused="UrlEntry_OnUnfocused"/>
+                        Unfocused="UrlEntry_OnUnfocused" />
                 </Border>
                 <ImageButton
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                     Command="{Binding ToggleBookmarked}"
-                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource BookmarkButtonImageConverter}}"
+                    Source="{Binding Browser.Location, Converter={StaticResource BookmarkButtonImageConverter}}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Bookmark}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_BookmarkHint}" />
                 <controls:BiModalImageButton
                     Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                     Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
-                    Source="{Binding Location, Source={x:Reference Browser}, Converter={StaticResource HomeButtonImageConverter}}"
+                    Source="{Binding Browser.Location, Converter={StaticResource HomeButtonImageConverter}}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Home}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_HomeHint}" />
                 <ImageButton
                     Scale="0.75" Grid.Column="4" x:Name="FindNextButton"
                     Command="{Binding FindNextInPage}"
-                    IsVisible="{Binding HasFindNextQuery, Source={x:Reference Browser}}"
+                    IsVisible="{Binding Browser.HasFindNextQuery}"
                     Source="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Next}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_NextHint}" />
@@ -117,7 +115,7 @@
                         SemanticProperties.Hint="Show identities" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
                 <Button Text="{x:Static localization:Text.MainPage_Menu_Print}" HorizontalOptions="Fill"
-                        IsEnabled="{Binding CanPrint, Source={x:Reference Browser}}"
+                        IsEnabled="{Binding Browser.CanPrint}"
                         Command="{Binding Print}"
                         SemanticProperties.Hint="Print this page" />
                 <Line HeightRequest="1" BackgroundColor="{x:StaticResource Gray500}" Margin="24,0" />
@@ -129,8 +127,10 @@
             <Image HeightRequest="6" ScaleY="4" ScaleX="10"
                    Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
         </VerticalStackLayout>
-        <!-- <Grid RowDefinitions="*" BackgroundColor="Black" Opacity="0.7"  HeightRequest="300" AbsoluteLayout.LayoutBounds="0,0,1,1"  AbsoluteLayout.LayoutFlags="All"> -->
-        <!--     <Label Grid.Row="0" TextColor="White" FontSize="20" Text="Swipe downward to open the menu." HorizontalTextAlignment="Center" VerticalTextAlignment="Center" VerticalOptions="Fill"></Label> -->
-        <!-- </Grid> -->
+        <controls:TabCollection
+            x:Name="Tabs" ZIndex="10"
+            AbsoluteLayout.LayoutBounds="0,0,1,1"
+            AbsoluteLayout.LayoutFlags="All"
+            VerticalOptions="End" />
     </AbsoluteLayout>
 </ContentPage>

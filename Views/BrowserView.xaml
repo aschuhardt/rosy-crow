@@ -3,13 +3,8 @@
 <ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:RosyCrow.Views"
-             xmlns:tab="http://sharpnado.com"
-             xmlns:controls="clr-namespace:RosyCrow.Controls"
              x:DataType="views:BrowserView"
-             x:Class="RosyCrow.Views.BrowserView"
-             Loaded="BrowserView_OnLoaded">
-    <ContentView.Resources>
-    </ContentView.Resources>
+             x:Class="RosyCrow.Views.BrowserView">
     <AbsoluteLayout>
         <RefreshView
             AbsoluteLayout.LayoutBounds="0,0,1,1"
@@ -17,20 +12,14 @@
             IsRefreshing="{Binding IsRefreshing}"
             Command="{Binding Refresh}"
             HandlerChanged="RefreshView_OnHandlerChanged">
-            <!-- <tab:ViewSwitcher x:Name="Switcher" Animate="True"> -->
-                <WebView x:Name="PageWebView" Navigating="PageWebView_OnNavigating"
-                         HandlerChanged="PageWebView_OnHandlerChanged">
-                    <WebView.Source>
-                        <HtmlWebViewSource Html="{Binding RenderedHtml}" />
-                    </WebView.Source>
-                </WebView>
-            <!-- </tab:ViewSwitcher> -->
+            <WebView
+                x:Name="PageWebView"
+                Navigating="PageWebView_OnNavigating"
+                HandlerChanged="PageWebView_OnHandlerChanged">
+                <WebView.Source>
+                    <HtmlWebViewSource Html="{Binding RenderedHtml}" />
+                </WebView.Source>
+            </WebView>
         </RefreshView>
-        <VerticalStackLayout
-            AbsoluteLayout.LayoutBounds="0,0,1,1"
-            AbsoluteLayout.LayoutFlags="All"
-            VerticalOptions="End" ZIndex="10">
-            <controls:TabCollection NewTabRequested="TabCollection_OnNewTabRequested"></controls:TabCollection>
-        </VerticalStackLayout>
     </AbsoluteLayout>
 </ContentView>

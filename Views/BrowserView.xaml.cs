@@ -3,7 +3,6 @@ using System.Web;
 using System.Windows.Input;
 using Android.Views;
 using Android.Webkit;
-using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -15,7 +14,6 @@ using Opal.CallbackArgs;
 using Opal.Document.Line;
 using Opal.Response;
 using Opal.Tofu;
-using RosyCrow.Controls;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -44,7 +42,6 @@ public partial class BrowserView : ContentView
     private bool _canPrint;
     private bool _canShowHostCertificate;
     private string _findNextQuery;
-    private string _htmlTemplate;
     private string _input;
     private bool _isLoading;
     private bool _isPageLoaded;
@@ -56,6 +53,7 @@ public partial class BrowserView : ContentView
     private ICommand _refresh;
     private string _renderedHtml;
     private string _renderUrl;
+    private string _htmlTemplate;
     private bool _resetFindNext;
 
     private enum ResponseAction
@@ -990,26 +988,22 @@ public partial class BrowserView : ContentView
         e.Cancel = true;
     }
 
-    private async Task LoadPageTemplates()
+    private static async Task<string> LoadPageTemplate()
     {
-        if (!string.IsNullOrEmpty(_htmlTemplate))
-            return;
-
         await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
         using var reader = new StreamReader(template);
-        _htmlTemplate = await reader.ReadToEndAsync();
+        return await reader.ReadToEndAsync();
     }
 
-    private async void BrowserView_OnLoaded(object sender, EventArgs e)
+    public async Task Setup(Element parent)
     {
-        await LoadPageTemplates();
-
-        _parentPage = this.FindParentPage();
-
-        if (Location == null)
-            await LoadInternalPage();
-        else
-            await LoadPage();
+        _htmlTemplate = await LoadPageTemplate();
+        _parentPage = this.FindParentPage(parent);
+        //
+        // if (Location == null)
+        //     await LoadInternalPage();
+        // else
+        //     await LoadPage();
     }
 
     protected virtual void OnFindNext()
@@ -1084,13 +1078,9 @@ public partial class BrowserView : ContentView
     {
 #if ANDROID
         var refreshViewHandler = (sender as RefreshView)?.Handler as RefreshViewHandler;
-
-        refreshViewHandler.PlatformView.SetProgressViewOffset(false, 0, (int)Window.Height / 4);
+        // TODO: why this or Window null
+        if (this.GetVisualElementWindow() is Microsoft.Maui.Controls.Window window)
+            refreshViewHandler?.PlatformView.SetProgressViewOffset(false, 0, (int)window.Height / 4);
 #endif
-    }
-
-    private void TabCollection_OnNewTabRequested(object sender, EventArgs e)
-    {
-        (sender as TabCollection)?.AddTab("rosy-crow://default", char.ConvertFromUtf32(0x1F426));
     }
 }

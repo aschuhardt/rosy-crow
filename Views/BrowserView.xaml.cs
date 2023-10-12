@@ -1038,7 +1038,8 @@ public partial class BrowserView : ContentView
     private void PageWebView_OnHandlerChanged(object sender, EventArgs e)
     {
 #if ANDROID
-        var webViewHandler = (sender as Microsoft.Maui.Controls.WebView)?.Handler as WebViewHandler;
+        if ((sender as Microsoft.Maui.Controls.WebView)?.Handler is not WebViewHandler webViewHandler)
+            return;
 
         webViewHandler.PlatformView.ContextMenuCreated +=
             (o, args) => BuildContextMenu(args.Menu, o as Android.Webkit.WebView);

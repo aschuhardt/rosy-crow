@@ -999,11 +999,6 @@ public partial class BrowserView : ContentView
     {
         _htmlTemplate = await LoadPageTemplate();
         _parentPage = this.FindParentPage(parent);
-        //
-        // if (Location == null)
-        //     await LoadInternalPage();
-        // else
-        //     await LoadPage();
     }
 
     protected virtual void OnFindNext()

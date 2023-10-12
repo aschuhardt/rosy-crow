@@ -6,6 +6,7 @@ using RosyCrow.Database;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Services.Cache;
+using RosyCrow.Services.Document;
 using RosyCrow.Services.Fingerprint;
 using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Identity;
@@ -59,6 +60,7 @@ public static class MauiProgram
             .AddSingleton<CertificatePage>()
             .AddSingleton(typeof(IFingerprint), CrossFingerprint.Current)
             .AddSingleton<IIdentityService, IdentityService>()
+            .AddSingleton<IDocumentService, DocumentService>()
             .AddTransient<ExportIdentityPage>()
             .AddTransient<ImportIdentityPage>()
             .AddTransient<TitanUploadPage>()

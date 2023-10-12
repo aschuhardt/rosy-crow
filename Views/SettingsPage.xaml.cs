@@ -212,8 +212,10 @@ public partial class SettingsPage : ContentPage
         using (var reader = new StreamReader(file))
             Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
 
-        SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
+        await ThemePreviewBrowser.Setup(this);
         ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");
+
+        SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
         HistoryPageSize = _settingsDatabase.HistoryPageSize;
         VersionInfo = $"Version {VersionTracking.Default.CurrentVersion}, build {VersionTracking.Default.CurrentBuild}";
     }

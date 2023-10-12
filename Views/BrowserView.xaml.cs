@@ -1078,8 +1078,9 @@ public partial class BrowserView : ContentView
     {
 #if ANDROID
         var refreshViewHandler = (sender as RefreshView)?.Handler as RefreshViewHandler;
-        // TODO: why this or Window null
-        if (this.GetVisualElementWindow() is Microsoft.Maui.Controls.Window window)
+
+        // having to access the window this way is weird and bad, hopefully GetVisualElementWindow() will work one day
+        if (Application.Current != null && Application.Current.Windows.FirstOrDefault() is { } window)
             refreshViewHandler?.PlatformView.SetProgressViewOffset(false, 0, (int)window.Height / 4);
 #endif
     }

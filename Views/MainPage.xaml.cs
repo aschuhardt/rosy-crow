@@ -1,12 +1,10 @@
-﻿using System.ComponentModel;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
-using RosyCrow.Controls;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -19,6 +17,7 @@ namespace RosyCrow.Views;
 
 public partial class MainPage : ContentPage
 {
+    public static readonly BindableProperty BrowserProperty = BindableProperty.Create(nameof(Browser), typeof(BrowserView), typeof(MainPage));
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<MainPage> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
@@ -45,8 +44,6 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
-
-    public static readonly BindableProperty BrowserProperty = BindableProperty.Create(nameof(Browser), typeof(BrowserView), typeof(MainPage));
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -636,12 +633,13 @@ public partial class MainPage : ContentPage
         _menuHideAnimation = new Animation(v => ExpandableMenu.HeightRequest = v, GetExpandedMenuHeight(), 0);
     }
 
-    private void MainPage_OnLoaded(object sender, EventArgs e)
+    private async void MainPage_OnLoaded(object sender, EventArgs e)
     {
         try
         {
             AddMenuAnimations();
 
+            await Tabs.LoadOrAddDefaultTabs();
             Browser.Location = !string.IsNullOrWhiteSpace(App.StartupUri)
                 ? App.StartupUri.ToGeminiUri()
                 : _settingsDatabase.LastVisitedUrl?.ToGeminiUri();

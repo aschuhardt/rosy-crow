@@ -1,3 +1,4 @@
+using RosyCrow.Extensions;
 using RosyCrow.Models;
 
 namespace RosyCrow.Views;
@@ -9,9 +10,9 @@ public partial class WhatsNewPage : ContentPage
 		InitializeComponent();
 	}
 
-    private async void WhatsNewPage_OnAppearing(object sender, EventArgs e)
+    private void WhatsNewPage_OnAppearing(object sender, EventArgs e)
     {
-        await Browser.Setup(this);
+        Browser.ParentPage = this.FindParentPage();
         Browser.Location = new Uri($"{Constants.InternalScheme}://whats-new");
     }
 }

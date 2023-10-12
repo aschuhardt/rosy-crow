@@ -20,7 +20,9 @@ using RosyCrow.Models;
 using RosyCrow.Platforms.Android;
 using RosyCrow.Resources.Localization;
 using RosyCrow.Services.Cache;
+using RosyCrow.Services.Document;
 using RosyCrow.Services.Identity;
+using WebView = Android.Webkit.WebView;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -32,6 +34,7 @@ public partial class BrowserView : ContentView
     private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ICacheService _cache;
+    private readonly IDocumentService _documentService;
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
     private readonly ILogger<BrowserView> _logger;
@@ -48,19 +51,12 @@ public partial class BrowserView : ContentView
     private bool _isRefreshing;
     private Uri _location;
     private string _pageTitle;
-    private ContentPage _parentPage;
     private IPrintService _printService;
     private ICommand _refresh;
     private string _renderedHtml;
     private string _renderUrl;
-    private string _htmlTemplate;
     private bool _resetFindNext;
-
-    private enum ResponseAction
-    {
-        Retry,
-        Finished
-    }
+    private bool _isFirstLoad = true;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -68,12 +64,13 @@ public partial class BrowserView : ContentView
             MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
             MauiProgram.Services.GetRequiredService<IIdentityService>(),
             MauiProgram.Services.GetRequiredService<ICacheService>(),
-            MauiProgram.Services.GetRequiredService<ILogger<BrowserView>>())
+            MauiProgram.Services.GetRequiredService<ILogger<BrowserView>>(),
+            MauiProgram.Services.GetRequiredService<IDocumentService>())
     {
     }
 
     public BrowserView(IOpalClient geminiClient, ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase,
-        IIdentityService identityService, ICacheService cache, ILogger<BrowserView> logger)
+        IIdentityService identityService, ICacheService cache, ILogger<BrowserView> logger, IDocumentService documentService)
     {
         InitializeComponent();
 
@@ -85,6 +82,7 @@ public partial class BrowserView : ContentView
         _identityService = identityService;
         _cache = cache;
         _logger = logger;
+        _documentService = documentService;
         _recentHistory = new Stack<Uri>();
         _parallelRenderWorkload = new List<Task>();
 
@@ -93,7 +91,11 @@ public partial class BrowserView : ContentView
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
         _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
+
+        //LoadEmptyPage();
     }
+
+    public ContentPage ParentPage { get; set; }
 
     public bool CanShowHostCertificate
     {
@@ -101,6 +103,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _canShowHostCertificate) return;
+
             _canShowHostCertificate = value;
             OnPropertyChanged();
         }
@@ -112,6 +115,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (Equals(value, _refresh)) return;
+
             _refresh = value;
             OnPropertyChanged();
         }
@@ -123,6 +127,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _renderedHtml) return;
+
             _renderedHtml = value;
             OnPropertyChanged();
         }
@@ -134,6 +139,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _pageTitle) return;
+
             _pageTitle = value;
             OnPropertyChanged();
         }
@@ -145,6 +151,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _canPrint) return;
+
             _canPrint = value;
             OnPropertyChanged();
         }
@@ -156,6 +163,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _isRefreshing) return;
+
             _isRefreshing = value;
             OnPropertyChanged();
         }
@@ -185,6 +193,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _input) return;
+
             _input = value;
             OnPropertyChanged();
         }
@@ -196,6 +205,7 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _renderUrl) return;
+
             _renderUrl = value;
             OnPropertyChanged();
         }
@@ -207,12 +217,16 @@ public partial class BrowserView : ContentView
         set
         {
             if (value == _isPageLoaded) return;
+
             _isPageLoaded = value;
             OnPropertyChanged();
         }
     }
 
-    public bool HasFindNextQuery => !string.IsNullOrEmpty(FindNextQuery);
+    public bool HasFindNextQuery
+    {
+        get => !string.IsNullOrEmpty(FindNextQuery);
+    }
 
     public string FindNextQuery
     {
@@ -221,21 +235,31 @@ public partial class BrowserView : ContentView
         {
             if (value == _findNextQuery)
                 return;
+
             _findNextQuery = value;
             OnPropertyChanged();
             OnPropertyChanged(nameof(HasFindNextQuery));
         }
     }
 
+    public event EventHandler ReadyToShow;
+
     private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
     {
+        if (ParentPage == null)
+        {
+            _logger.LogWarning("Unable to prompt the user to verify an unrecognized certificate because no ParentPage was set");
+            return;
+        }
+
         await Dispatcher.DispatchAsync(async () =>
-            arg.AcceptAndTrust = await _parentPage.DisplayAlert(
+            arg.AcceptAndTrust = await ParentPage.DisplayAlert(
                 Text.BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate,
                 string.Format(
                     Text
                         .BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__,
-                    arg.Fingerprint), Text.BrowserView_RemoteCertificateUnrecognizedCallback_Yes,
+                    arg.Fingerprint),
+                Text.BrowserView_RemoteCertificateUnrecognizedCallback_Yes,
                 Text.BrowserView_RemoteCertificateUnrecognizedCallback_No));
 
         if (arg.AcceptAndTrust)
@@ -244,6 +268,9 @@ public partial class BrowserView : ContentView
 
     private async Task RemoteCertificateInvalidCallback(RemoteCertificateInvalidArgs arg)
     {
+        if (ParentPage == null)
+            return;
+
         var message = arg.Reason switch
         {
             InvalidCertificateReason.NameMismatch => Text
@@ -262,7 +289,8 @@ public partial class BrowserView : ContentView
         };
 
         await Dispatcher.DispatchAsync(() =>
-            _parentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem, message,
+            ParentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
+                message,
                 Text.BrowserView_RemoteCertificateInvalidCallback_Cancel));
     }
 
@@ -382,6 +410,7 @@ public partial class BrowserView : ContentView
         try
         {
             var image = new MemoryStream();
+
             if (await _cache.TryRead(uri, image))
             {
                 _logger.LogDebug("Loaded cached image originally from {URI}", uri);
@@ -409,14 +438,16 @@ public partial class BrowserView : ContentView
                     if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
                         _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
-                            success.MimeType, uri);
+                            success.MimeType,
+                            uri);
 
                         var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
 
                         if (image == null)
                         {
                             _logger.LogWarning(
-                                "Loaded an image to be inlined from {URI} but failed to create the preview", uri);
+                                "Loaded an image to be inlined from {URI} but failed to create the preview",
+                                uri);
                             break;
                         }
 
@@ -468,6 +499,7 @@ public partial class BrowserView : ContentView
             var fileName = line.Uri.Segments.LastOrDefault()?.Trim('/');
 
             string mimeType = null;
+
             if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out mimeType) &&
                 mimeType.StartsWith("image"))
             {
@@ -480,6 +512,7 @@ public partial class BrowserView : ContentView
                     _logger.LogDebug("The image URI specifies the gemini protocol");
 
                     var cached = await TryLoadCachedImage(line.Uri);
+
                     if (cached != null)
                     {
                         _logger.LogDebug("Loading the image preview from the cache");
@@ -492,6 +525,7 @@ public partial class BrowserView : ContentView
                         _parallelRenderWorkload.Add(Task.Run(async () =>
                         {
                             var source = await FetchAndCacheInlinedImage(line.Uri);
+
                             if (!string.IsNullOrEmpty(source))
                             {
                                 _logger.LogDebug("Successfully created the image preview; rendering that now");
@@ -521,7 +555,8 @@ public partial class BrowserView : ContentView
 
             _logger.LogDebug(
                 "The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
-                line.Uri, mimeType ?? "none");
+                line.Uri,
+                mimeType ?? "none");
             return RenderDefaultLinkLine(line);
         }
         catch (Exception e)
@@ -563,27 +598,17 @@ public partial class BrowserView : ContentView
         };
     }
 
-    private void InjectStylesheet(HtmlNode documentNode)
-    {
-        documentNode.ChildNodes.FindFirst("head")
-            .AppendChild(HtmlNode.CreateNode(
-                $"<link rel=\"stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
-    }
-
     private string RenderCachedHtml(Stream buffer)
     {
-        var document = new HtmlDocument();
-        document.Load(buffer);
+        var document = _documentService.LoadFromBuffer(buffer);
         var childNodes = document.DocumentNode.ChildNodes;
         PageTitle = (childNodes.FindFirst("h1") ?? childNodes.FindFirst("h2") ?? childNodes.FindFirst("h3"))?.InnerText;
-        InjectStylesheet(document.DocumentNode);
         return document.DocumentNode.OuterHtml;
     }
 
     private async Task<string> RenderGemtextAsHtml(GemtextResponse gemtext)
     {
-        var document = new HtmlDocument();
-        document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
+        var document = _documentService.CreateEmptyDocument();
 
         var body = document.DocumentNode.ChildNodes.FindFirst("main");
 
@@ -592,6 +617,7 @@ public partial class BrowserView : ContentView
         HtmlNode preNode = null;
         HtmlNode listNode = null;
         var preText = new StringBuilder();
+
         foreach (var line in gemtext.AsDocument())
             switch (line)
             {
@@ -641,8 +667,6 @@ public partial class BrowserView : ContentView
         // cache the page prior to injecting the stylesheet
         await using var pageBuffer = new MemoryStream(Encoding.UTF8.GetBytes(document.DocumentNode.OuterHtml));
         await _cache.Write(gemtext.Uri, pageBuffer);
-
-        InjectStylesheet(document.DocumentNode);
 
         return document.DocumentNode.OuterHtml;
     }
@@ -706,8 +730,21 @@ public partial class BrowserView : ContentView
 
     public async Task LoadPage(bool triggeredByRefresh = false, bool useCache = false)
     {
-        if (_isLoading || string.IsNullOrEmpty(_htmlTemplate))
+        if (_isLoading)
             return;
+
+        if (_isFirstLoad)
+        {
+            // don't show this view until at least an empty page has been loaded; this
+            // will ensure that the default white background doesn't flash annoyingly
+            // each time a tab is created
+            _isFirstLoad = false;
+            await Dispatcher.DispatchAsync(() =>
+            {
+                LoadEmptyPage();
+                OnReadyToShow();
+            });
+        }
 
         CanShowHostCertificate = false;
 
@@ -746,6 +783,7 @@ public partial class BrowserView : ContentView
                 if (useCache && !triggeredByRefresh)
                 {
                     var cached = new MemoryStream();
+
                     if (await _cache.TryRead(Location, cached))
                     {
                         _logger.LogInformation("Loading a cached copy of the page");
@@ -797,7 +835,13 @@ public partial class BrowserView : ContentView
         {
             case InputRequiredResponse inputRequired:
             {
-                Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                if (ParentPage == null)
+                {
+                    _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
+                    return ResponseAction.Finished;
+                }
+
+                Input = await ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
                 if (string.IsNullOrEmpty(Input))
@@ -815,7 +859,8 @@ public partial class BrowserView : ContentView
                 if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
                     _logger.LogInformation("No further attempts will be made");
-                    await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
+                    if (ParentPage != null)
+                        await ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
                     return ResponseAction.Finished;
                 }
 
@@ -839,7 +884,13 @@ public partial class BrowserView : ContentView
         {
             case InputRequiredResponse inputRequired:
             {
-                Input = await _parentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                if (ParentPage == null)
+                {
+                    _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
+                    return ResponseAction.Finished;
+                }
+
+                Input = await ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
                 if (string.IsNullOrEmpty(Input))
@@ -866,9 +917,19 @@ public partial class BrowserView : ContentView
                 if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
                     _logger.LogInformation("No further attempts will be made");
-                    await _parentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
-                        error.Message,
-                        Text.BrowserView_LoadPage_OK);
+
+                    if (ParentPage == null)
+                    {
+                        return ResponseAction.Finished;
+                    }
+
+                    if (ParentPage != null)
+                    {
+                        await ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
+                            error.Message,
+                            Text.BrowserView_LoadPage_OK);
+                    }
+
                     return ResponseAction.Finished;
                 }
 
@@ -912,7 +973,9 @@ public partial class BrowserView : ContentView
             var path = Path.Combine(FileSystem.CacheDirectory, fileName);
 
             await using (var outputFile = File.Create(path))
+            {
                 await response.Body.CopyToAsync(outputFile);
+            }
 
             _logger.LogInformation("Opening file {Path}", path);
 
@@ -954,11 +1017,7 @@ public partial class BrowserView : ContentView
         {
             _logger.LogInformation("Loading internal page {Name}", name);
 
-            var document = new HtmlDocument();
-            document.DocumentNode.AppendChild(HtmlNode.CreateNode(_htmlTemplate));
-
-            InjectStylesheet(document.DocumentNode);
-
+            var document = _documentService.CreateEmptyDocument();
             var body = document.DocumentNode.ChildNodes.FindFirst("main");
 
             await using (var file = await FileSystem.OpenAppPackageFileAsync($"{name}.html"))
@@ -988,19 +1047,6 @@ public partial class BrowserView : ContentView
         e.Cancel = true;
     }
 
-    private static async Task<string> LoadPageTemplate()
-    {
-        await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
-        using var reader = new StreamReader(template);
-        return await reader.ReadToEndAsync();
-    }
-
-    public async Task Setup(Element parent)
-    {
-        _htmlTemplate = await LoadPageTemplate();
-        _parentPage = this.FindParentPage(parent);
-    }
-
     protected virtual void OnFindNext()
     {
         FindNext?.Invoke(this, EventArgs.Empty);
@@ -1013,7 +1059,7 @@ public partial class BrowserView : ContentView
 
 
 #if ANDROID
-    private static void BuildContextMenu(IMenu menu, Android.Webkit.WebView view)
+    private static void BuildContextMenu(IMenu menu, WebView view)
     {
         var hitTest = view.GetHitTestResult();
 
@@ -1037,7 +1083,7 @@ public partial class BrowserView : ContentView
             return;
 
         webViewHandler.PlatformView.ContextMenuCreated +=
-            (o, args) => BuildContextMenu(args.Menu, o as Android.Webkit.WebView);
+            (o, args) => BuildContextMenu(args.Menu, o as WebView);
 
         _printService = new AndroidPrintService(webViewHandler.PlatformView);
 
@@ -1053,17 +1099,17 @@ public partial class BrowserView : ContentView
 
         webViewHandler.PlatformView.SetFindListener(new CallbackFindListener(count =>
         {
-            if (!_resetFindNext)
+            if (!_resetFindNext || ParentPage == null)
                 return;
 
             if (count == 0)
             {
-                _parentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
+                ParentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
                 FindNextQuery = null;
             }
             else
             {
-                _parentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
+                ParentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
                     ToastDuration.Short);
             }
         }));
@@ -1079,5 +1125,21 @@ public partial class BrowserView : ContentView
         if (Application.Current != null && Application.Current.Windows.FirstOrDefault() is { } window)
             refreshViewHandler?.PlatformView.SetProgressViewOffset(false, 0, (int)window.Height / 4);
 #endif
+    }
+
+    private void LoadEmptyPage()
+    {
+        RenderedHtml = _documentService.CreateEmptyDocument().DocumentNode.OuterHtml;
+    }
+
+    protected virtual void OnReadyToShow()
+    {
+        ReadyToShow?.Invoke(this, EventArgs.Empty);
+    }
+
+    private enum ResponseAction
+    {
+        Retry,
+        Finished
     }
 }

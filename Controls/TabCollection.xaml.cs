@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Collections.ObjectModel;
-using System.Collections.Specialized;
+﻿using System.Collections.ObjectModel;
 using RosyCrow.Controls.Tabs;
 using RosyCrow.Extensions;
 using RosyCrow.Views;
@@ -22,8 +20,6 @@ public partial class TabCollection : ContentView
         BindingContext = this;
 
         Tabs = new ObservableCollection<Tab>();
-
-        AddDefaultTab();
     }
 
     public BrowserView SelectedView
@@ -76,14 +72,11 @@ public partial class TabCollection : ContentView
             View = MauiProgram.Services.GetRequiredService<BrowserView>()
         };
 
-        // load HTML templates and store a reference to this container
-        await tab.View.Setup(this);
-
+        tab.View.ParentPage = this.FindParentPage();
+        tab.View.ReadyToShow += (_, _) => SelectTab(tab);
         tab.View.Location = url.ToGeminiUri();
 
         _tabs.Add(tab);
-
-        SelectTab(tab);
 
         await UpdateTabOrder();
     }
@@ -111,6 +104,11 @@ public partial class TabCollection : ContentView
         await SaveTabs();
     }
 
+    public Task LoadOrAddDefaultTabs()
+    {
+        return AddDefaultTab();
+    }
+
     private async Task SaveTabs()
     {
         // var path = Path.Join(FileSystem.CacheDirectory, TabsFileName);
@@ -118,12 +116,14 @@ public partial class TabCollection : ContentView
         // await file.WriteAsync(JsonConvert.SerializeObject(Tabs.ToArray()));
     }
 
-    private void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
+    private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
     {
         _tabs.Remove(e.Tab);
 
         if (!Tabs.Any())
-            AddDefaultTab();
+        {
+            await AddDefaultTab();
+        }
         else
         {
             // try to find the tab that is to the left of this one; if there is none, just select the first one

@@ -15,7 +15,8 @@
             <WebView
                 x:Name="PageWebView"
                 Navigating="PageWebView_OnNavigating"
-                HandlerChanged="PageWebView_OnHandlerChanged">
+                HandlerChanged="PageWebView_OnHandlerChanged"
+                BackgroundColor="Transparent">
                 <WebView.Source>
                     <HtmlWebViewSource Html="{Binding RenderedHtml}" />
                 </WebView.Source>

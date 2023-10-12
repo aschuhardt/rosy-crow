@@ -7,8 +7,7 @@
              x:Class="RosyCrow.Views.SettingsPage"
              x:DataType="views:SettingsPage"
              Title="{x:Static localization:Text.SettingsPage_Title}"
-             Loaded="SettingsPage_OnLoaded"
-             Disappearing="SettingsPage_OnDisappearing">
+             Loaded="SettingsPage_OnLoaded">
     <NavigationPage.TitleView>
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>

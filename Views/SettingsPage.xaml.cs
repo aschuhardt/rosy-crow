@@ -220,11 +220,7 @@ public partial class SettingsPage : ContentPage
 
     private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)
     {
-        await ThemePreviewBrowser.LoadPage();
-    }
-
-    private void SettingsPage_OnDisappearing(object sender, EventArgs e)
-    {
         _mainPage.LoadPageOnAppearing = true;
+        await ThemePreviewBrowser.LoadPage();
     }
 }

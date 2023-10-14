@@ -11,19 +11,26 @@ public class Tab : INotifyPropertyChanged
     private string _label;
     private bool _selected;
 
+    [PrimaryKey, AutoIncrement]
+    public int Id { get; set; }
+
     private ICommand _selectedChanged;
 
+    [Ignore]
     public ICommand SelectedChanged
     {
         get => _selectedChanged;
         set => SetField(ref _selectedChanged, value);
     }
 
+    public Tab()
+    {
+    }
+
     public Tab(string url, string label)
     {
         Url = url;
         Label = label;
-        Id = Guid.NewGuid();
     }
 
     public string Url { get; set; }
@@ -34,7 +41,6 @@ public class Tab : INotifyPropertyChanged
         set => SetField(ref _label, value);
     }
 
-    public Guid Id { get; }
     public int Order { get; set; }
 
     public bool Selected

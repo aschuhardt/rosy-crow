@@ -9,6 +9,7 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using SQLite;
+using Tab = RosyCrow.Models.Tab;
 
 namespace RosyCrow.Database;
 
@@ -20,6 +21,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     private ObservableCollection<Bookmark> _bookmarks;
     private ObservableCollection<Identity> _identities;
+    private ObservableCollection<Tab> _tabs;
 
     public BrowsingDatabase(ISettingsDatabase settingsDatabase, ILogger<BrowsingDatabase> logger, SQLiteConnection database1)
     {
@@ -27,10 +29,11 @@ internal class BrowsingDatabase : IBrowsingDatabase
         _logger = logger;
         _database = database1;
 
-        _database.CreateTables<Bookmark, Identity, Visited, HostCertificate>();
+        _database.CreateTables<Bookmark, Identity, Visited, HostCertificate, Tab>();
 
         Bookmarks = new ObservableCollection<Bookmark>(_database.Table<Bookmark>().OrderBy(b => b.Order).ToList());
         Identities = new ObservableCollection<Identity>(_database.Table<Identity>().OrderBy(i => i.Name).ToList());
+        Tabs = new ObservableCollection<Tab>(_database.Table<Tab>().OrderBy(t => t.Order).ToList());
 
         var activeIdentityId = _settingsDatabase.ActiveIdentityId ?? -1;
         foreach (var identity in Identities)
@@ -67,6 +70,22 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
             _bookmarks = value;
             _bookmarks.CollectionChanged += Bookmarks_CollectionChanged;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<Tab> Tabs
+    {
+        get => _tabs;
+        set
+        {
+            if (Equals(value, _tabs)) return;
+
+            if (_tabs != null)
+                _tabs.CollectionChanged -= Tabs_CollectionChanged;
+
+            _tabs = value;
+            _tabs.CollectionChanged += Tabs_CollectionChanged;
             OnPropertyChanged();
         }
     }
@@ -186,6 +205,18 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
     }
 
+    public void Update<T>(T obj)
+    {
+        var affected = _database.Update(obj);
+        _logger.LogDebug("Updated {Count} objects of type {Type}", affected, typeof(T).Name);
+    }
+
+    public void UpdateAll<T>(params T[] entities)
+    {
+        var affected = _database.UpdateAll(entities);
+        _logger.LogDebug("Updated {Count} objects of type {Type} (in bulk)", affected, typeof(T).Name);
+    }
+
     public void AcceptHostCertificate(string host)
     {
         if (!TryGetHostCertificate(host, out var cert))
@@ -286,6 +317,18 @@ internal class BrowsingDatabase : IBrowsingDatabase
         return true;
     }
 
+    public Task UpdateTabOrder()
+    {
+        return Task.Run(() =>
+        {
+            for (var i = 0; i < _tabs.Count; i++)
+                _tabs[i].Order = i;
+
+            var affected = _database.UpdateAll(_tabs);
+            _logger.LogInformation("{Count} tabs re-ordered", affected);
+        });
+    }
+
     public Task UpdateBookmarkOrder()
     {
         return Task.Run(() =>
@@ -345,6 +388,30 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Reset:
                 foreach (var bookmark in _database.Table<Bookmark>().OrderBy(b => b.Title ?? b.Url).ToList())
                     _bookmarks.Add(bookmark);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void Tabs_CollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        switch (e.Action)
+        {
+            case NotifyCollectionChangedAction.Add when e.NewItems != null:
+                foreach (var entity in e.NewItems.Cast<Tab>())
+                    _database.Insert(entity);
+                break;
+            case NotifyCollectionChangedAction.Remove when e.OldItems != null:
+                foreach (var entity in e.OldItems.Cast<Tab>())
+                    _database.Delete(entity);
+                break;
+            case NotifyCollectionChangedAction.Replace:
+            case NotifyCollectionChangedAction.Move:
+                throw new NotImplementedException();
+            case NotifyCollectionChangedAction.Reset:
+                foreach (var tab in _database.Table<Tab>().OrderBy(t => t.Order).ToList())
+                    _tabs.Add(tab);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

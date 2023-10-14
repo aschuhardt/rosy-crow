@@ -91,8 +91,6 @@ public partial class BrowserView : ContentView
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
         _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
-
-        //LoadEmptyPage();
     }
 
     public ContentPage ParentPage { get; set; }
@@ -242,8 +240,6 @@ public partial class BrowserView : ContentView
         }
     }
 
-    public event EventHandler ReadyToShow;
-
     private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
     {
         if (ParentPage == null)
@@ -306,8 +302,10 @@ public partial class BrowserView : ContentView
     }
 
     private event EventHandler FindNext;
-
     private event EventHandler ClearMatches;
+
+    public event EventHandler ReadyToShow;
+    public event EventHandler PageLoaded;
 
     public void Print()
     {
@@ -960,6 +958,7 @@ public partial class BrowserView : ContentView
             RenderedHtml = await RenderGemtextAsHtml(gemtext);
             StoreVisitedLocation(Location, false);
             CanPrint = _printService != null;
+            OnPageLoaded();
         }
         else
         {
@@ -1142,5 +1141,10 @@ public partial class BrowserView : ContentView
     {
         Retry,
         Finished
+    }
+
+    protected virtual void OnPageLoaded()
+    {
+        PageLoaded?.Invoke(this, EventArgs.Empty);
     }
 }

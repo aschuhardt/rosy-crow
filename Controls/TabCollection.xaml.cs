@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using RosyCrow.Controls.Tabs;
 using RosyCrow.Extensions;
+using RosyCrow.Interfaces;
 using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
 
@@ -8,18 +9,25 @@ namespace RosyCrow.Controls;
 
 public partial class TabCollection : ContentView
 {
+    private readonly IBrowsingDatabase _browsingDatabase;
+
     private Tab _selectedTab;
     private BrowserView _selectedView;
-
     private ObservableCollection<Tab> _tabs;
 
-    public TabCollection()
+    public TabCollection() : this(MauiProgram.Services.GetRequiredService<IBrowsingDatabase>())
     {
+    }
+
+    public TabCollection(IBrowsingDatabase browsingDatabase)
+    {
+        _browsingDatabase = browsingDatabase;
+
         InitializeComponent();
 
         BindingContext = this;
 
-        Tabs = new ObservableCollection<Tab>();
+        Tabs = _browsingDatabase.Tabs;
     }
 
     public BrowserView SelectedView
@@ -52,11 +60,27 @@ public partial class TabCollection : ContentView
 
     private void SelectTab(Tab tab)
     {
+        if (tab.View == null)
+        {
+            // the tab was just loaded from the database and hasn't been initialized yet
+            InitializeTab(tab);
+
+            // when the tab is ready to be shown, it will raise ReadyToShow which
+            // will call this method again
+            return;
+        }
+
         SelectedView = tab.View;
+
         if (_selectedTab != null)
+        {
             _selectedTab.Selected = false;
+            _browsingDatabase.Update(_selectedTab);
+        }
+
         _selectedTab = tab;
         tab.Selected = true;
+        _browsingDatabase.Update(tab);
     }
 
     public Task AddDefaultTab()
@@ -64,21 +88,33 @@ public partial class TabCollection : ContentView
         return AddTab("rosy-crow://default", "🐦");
     }
 
-    public async Task AddTab(string url, string label)
+    public Task AddTab(string url, string label)
     {
         var tab = new Tab(url, label)
         {
-            Selected = true,
-            View = MauiProgram.Services.GetRequiredService<BrowserView>()
+            Selected = true
         };
 
+        InitializeTab(tab);
+        Tabs.Add(tab);
+
+        return _browsingDatabase.UpdateTabOrder();
+    }
+
+    private void InitializeTab(Tab tab)
+    {
+        tab.View = MauiProgram.Services.GetRequiredService<BrowserView>();
         tab.View.ParentPage = this.FindParentPage();
         tab.View.ReadyToShow += (_, _) => SelectTab(tab);
-        tab.View.Location = url.ToGeminiUri();
+        tab.View.Location = tab.Url.ToGeminiUri();
+        tab.View.PageLoaded += (_, _) => UpdateTabUrl(tab);
+    }
 
-        _tabs.Add(tab);
-
-        await UpdateTabOrder();
+    private static void UpdateTabUrl(Tab tab)
+    {
+        var location = tab.View.Location;
+        tab.Url = location.ToString();
+        tab.Label = location.Host[..1];
     }
 
     private void BrowserTab_OnSelected(object sender, TabEventArgs e)
@@ -91,34 +127,9 @@ public partial class TabCollection : ContentView
         await AddDefaultTab();
     }
 
-    private async void TabsCollectionView_OnReorderCompleted(object sender, EventArgs e)
-    {
-        await UpdateTabOrder();
-    }
-
-    private async Task UpdateTabOrder()
-    {
-        for (var i = 0; i < Tabs.Count; i++)
-            Tabs[i].Order = i;
-
-        await SaveTabs();
-    }
-
-    public Task LoadOrAddDefaultTabs()
-    {
-        return AddDefaultTab();
-    }
-
-    private async Task SaveTabs()
-    {
-        // var path = Path.Join(FileSystem.CacheDirectory, TabsFileName);
-        // await using var file = File.CreateText(path);
-        // await file.WriteAsync(JsonConvert.SerializeObject(Tabs.ToArray()));
-    }
-
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
     {
-        _tabs.Remove(e.Tab);
+        Tabs.Remove(e.Tab);
 
         if (!Tabs.Any())
         {
@@ -130,5 +141,16 @@ public partial class TabCollection : ContentView
             var next = Tabs.OrderByDescending(t => t.Order).FirstOrDefault(t => t.Order < e.Tab.Order);
             SelectTab(next ?? _tabs.First());
         }
+    }
+
+    private async void TabsCollectionView_OnReorderCompleted(object sender, EventArgs e)
+    {
+        await _browsingDatabase.UpdateTabOrder();
+    }
+
+    private void TabCollection_OnLoaded(object sender, EventArgs e)
+    {
+        if (Tabs.FirstOrDefault(t => t.Selected) is { } tab)
+            SelectTab(tab);
     }
 }

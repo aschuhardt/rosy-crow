@@ -649,10 +649,13 @@ public partial class MainPage : ContentPage
         {
             AddMenuAnimations();
 
-            await Tabs.LoadOrAddDefaultTabs();
-            Browser.Location = !string.IsNullOrWhiteSpace(App.StartupUri)
-                ? App.StartupUri.ToGeminiUri()
-                : _settingsDatabase.LastVisitedUrl?.ToGeminiUri();
+            if (!string.IsNullOrWhiteSpace(App.StartupUri))
+            {
+                await Tabs.AddTab(App.StartupUri, App.StartupUri.ToGeminiUri().Host[..1]);
+            }
+
+            if (!Tabs.Tabs.Any())
+                await Tabs.AddDefaultTab();
 
             PullTabVisible = !_settingsDatabase.HidePullTab;
         }

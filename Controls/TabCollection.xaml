@@ -5,7 +5,8 @@
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
              x:Class="RosyCrow.Controls.TabCollection"
-             x:DataType="controls:TabCollection">
+             x:DataType="controls:TabCollection" 
+             Loaded="TabCollection_OnLoaded">
     <ContentView.Resources>
         <DataTemplate x:Key="TabTemplate">
             <tabs:BrowserTab

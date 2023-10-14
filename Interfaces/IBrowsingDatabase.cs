@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Opal.Tofu;
 using RosyCrow.Models;
+using Tab = RosyCrow.Models.Tab;
 
 namespace RosyCrow.Interfaces;
 
@@ -9,6 +10,7 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
 {
     ObservableCollection<Bookmark> Bookmarks { get; set; }
     ObservableCollection<Identity> Identities { get; set; }
+    ObservableCollection<Tab> Tabs { get; set; }
 
     bool IsBookmark(Uri uri, out Bookmark found);
     int ClearVisited();
@@ -18,4 +20,7 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
     bool TryGetHostCertificate(string host, out HostCertificate certificate);
     void AcceptHostCertificate(string host);
     Task UpdateBookmarkOrder();
+    Task UpdateTabOrder();
+    void Update<T>(T obj);
+    void UpdateAll<T>(params T[] entities);
 }

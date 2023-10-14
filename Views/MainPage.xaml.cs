@@ -87,7 +87,7 @@ public partial class MainPage : ContentPage
 
         UrlEntry.HandlerChanged += SetupUrlEnterHandling;
 
-        Tabs.SelectedViewChanged += (_, _) => Browser = Tabs.SelectedView;
+        Tabs.SelectedViewChanged += TabsSelectedViewChanged;
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
             (handler, _) =>
@@ -118,6 +118,14 @@ public partial class MainPage : ContentPage
                 handler.PlatformView.BackgroundTintList = ColorStateList.ValueOf(Color.Transparent);
 #endif
             });
+    }
+
+    private void TabsSelectedViewChanged(object sender, EventArgs e)
+    {
+        Browser = Tabs.SelectedView;
+        IsNavBarVisible = true;
+        if (UrlEntry.IsFocused)
+            UrlEntry.Unfocus();
     }
 
     public BrowserView Browser

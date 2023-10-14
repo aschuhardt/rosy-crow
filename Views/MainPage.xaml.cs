@@ -415,7 +415,8 @@ public partial class MainPage : ContentPage
                 {
                     await Task.WhenAny(
                         NavBar.TranslateTo(NavBar.TranslationX, 0),
-                        PullTab.TranslateTo(PullTab.TranslationX, 0));
+                        PullTab.TranslateTo(PullTab.TranslationX, 0),
+                        Tabs.TranslateTo(Tabs.TranslationX, 0));
                 });
             }
             else
@@ -429,7 +430,8 @@ public partial class MainPage : ContentPage
                     //await PullTab.FadeTo(0, 100);
                     await Task.WhenAny(
                         PullTab.TranslateTo(PullTab.TranslationX, -(PullTab.Y + PullTab.Height * 1.25)),
-                        NavBar.TranslateTo(NavBar.TranslationX, -NavBar.Height * 1.25));
+                        NavBar.TranslateTo(NavBar.TranslationX, -NavBar.Height * 1.25),
+                        Tabs.TranslateTo(Tabs.TranslationX, Tabs.TranslationY + Tabs.Height * 1.25));
                 });
             }
         }

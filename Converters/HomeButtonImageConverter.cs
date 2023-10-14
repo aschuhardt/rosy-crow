@@ -26,7 +26,7 @@ public class HomeButtonImageConverter : IValueConverter
         if (!string.IsNullOrEmpty(_settings.HomeUrl) && values is Uri location)
         {
             var home = _settings.HomeUrl.ToGeminiUri();
-            isHome = location.Host.Equals(home.Host, StringComparison.InvariantCultureIgnoreCase) &&
+            isHome = location.Host.Equals(home.Host, StringComparison.OrdinalIgnoreCase) &&
                      location.PathAndQuery.Equals(home.PathAndQuery);
         }
 

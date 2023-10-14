@@ -29,7 +29,7 @@ internal static class StringExtensions
     public static Uri ToGeminiUri(this string source)
     {
         // may be rosy-crow://...
-        if (source.StartsWith(Constants.InternalScheme, StringComparison.InvariantCultureIgnoreCase))
+        if (source.StartsWith(Constants.InternalScheme, StringComparison.OrdinalIgnoreCase))
             return new Uri(source);
 
         return !source.StartsWith(GeminiSchemePrefix, StringComparison.OrdinalIgnoreCase)

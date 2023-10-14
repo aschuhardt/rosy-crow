@@ -95,7 +95,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         found = _bookmarks.FirstOrDefault(b =>
         {
             var bookmarkUrl = b.Url.ToGeminiUri();
-            return bookmarkUrl.Host.Equals(location.Host, StringComparison.InvariantCultureIgnoreCase) &&
+            return bookmarkUrl.Host.Equals(location.Host, StringComparison.OrdinalIgnoreCase) &&
                    bookmarkUrl.PathAndQuery.Equals(location.PathAndQuery);
         });
 

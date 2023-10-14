@@ -1,4 +1,5 @@
 ﻿using System.Windows.Input;
+using Android.App;
 using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
@@ -8,6 +9,7 @@ using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Platforms.Android;
 using RosyCrow.Resources.Localization;
 using Color = Android.Graphics.Color;
 
@@ -86,7 +88,6 @@ public partial class MainPage : ContentPage
         }
 
         UrlEntry.HandlerChanged += SetupUrlEnterHandling;
-
         Tabs.SelectedViewChanged += TabsSelectedViewChanged;
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
@@ -649,11 +650,6 @@ public partial class MainPage : ContentPage
         {
             AddMenuAnimations();
 
-            if (!string.IsNullOrWhiteSpace(App.StartupUri))
-            {
-                await Tabs.AddTab(App.StartupUri, App.StartupUri.ToGeminiUri().Host[..1]);
-            }
-
             if (!Tabs.Tabs.Any())
                 await Tabs.AddDefaultTab();
 
@@ -670,10 +666,6 @@ public partial class MainPage : ContentPage
         try
         {
             Browser = Tabs.SelectedView;
-
-            if (!string.IsNullOrWhiteSpace(App.StartupUri))
-                Browser.Location = App.StartupUri.ToGeminiUri();
-
             PullTabVisible = !_settingsDatabase.HidePullTab;
 
             await Task.WhenAny(

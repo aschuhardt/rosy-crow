@@ -19,8 +19,8 @@
     <ContentView
       x:Name="CurrentPageView"
       AbsoluteLayout.LayoutBounds="0,0,1,1"
-            AbsoluteLayout.LayoutFlags="All"
-            Content="{Binding Browser}" />
+      AbsoluteLayout.LayoutFlags="All"
+      Content="{Binding Browser}" />
     <Grid
       x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
       AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
@@ -128,9 +128,9 @@
              Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
     </VerticalStackLayout>
     <controls:TabCollection
-      x:Name="Tabs" ZIndex="10"
+      x:Name="Tabs" x:FieldModifier="public"
       AbsoluteLayout.LayoutBounds="0,0,1,1"
       AbsoluteLayout.LayoutFlags="All"
-      VerticalOptions="End" />
+      VerticalOptions="End" ZIndex="10" />
   </AbsoluteLayout>
 </ContentPage>

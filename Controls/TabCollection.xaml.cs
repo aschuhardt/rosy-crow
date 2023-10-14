@@ -58,7 +58,7 @@ public partial class TabCollection : ContentView
 
     public event EventHandler SelectedViewChanged;
 
-    private void SelectTab(Tab tab)
+    public void SelectTab(Tab tab)
     {
         if (tab.View == null)
         {
@@ -86,6 +86,11 @@ public partial class TabCollection : ContentView
     public Task AddDefaultTab()
     {
         return AddTab("rosy-crow://default", "🐦");
+    }
+
+    public Task AddTab(Uri uri)
+    {
+        return AddTab(uri.ToString(), uri.Host[..1]);
     }
 
     public Task AddTab(string url, string label)

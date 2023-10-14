@@ -5,8 +5,8 @@ namespace RosyCrow.Extensions;
 
 internal static class StringExtensions
 {
-    private static readonly Regex _uriPrefixPattern = new ("^[a-zA-Z]+:\\/\\/", RegexOptions.Compiled);
     private const string GeminiSchemePrefix = "gemini://";
+    private static readonly Regex _uriPrefixPattern = new("^[a-zA-Z]+:\\/\\/", RegexOptions.Compiled);
 
     public static Uri ToUri(this string source)
     {
@@ -35,6 +35,31 @@ internal static class StringExtensions
         return !source.StartsWith(GeminiSchemePrefix, StringComparison.OrdinalIgnoreCase)
             ? new Uri($"{GeminiSchemePrefix}{source}")
             : new Uri(source);
+    }
+
+    public static bool AreGeminiUrlsEqual(this string first, Uri second)
+    {
+        return first.ToGeminiUri().AreGeminiUrlsEqual(second);
+
+    }
+
+    public static bool AreGeminiUrlsEqual(this string first, string second)
+    {
+        return first.ToGeminiUri().AreGeminiUrlsEqual(second.ToGeminiUri());
+    }
+
+    public static bool AreGeminiUrlsEqual(this Uri first, string second)
+    {
+        return first.AreGeminiUrlsEqual(second.ToGeminiUri());
+    }
+
+    public static bool AreGeminiUrlsEqual(this Uri first, Uri second)
+    {
+        return Uri.Compare(
+            first, second,
+            UriComponents.HostAndPort | UriComponents.PathAndQuery,
+            UriFormat.Unescaped,
+            StringComparison.OrdinalIgnoreCase) == 0;
     }
 
     public static string ToFriendlyFingerprint(this string fingerprint)

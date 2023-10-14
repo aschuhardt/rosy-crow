@@ -92,13 +92,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public bool IsBookmark(Uri location, out Bookmark found)
     {
-        found = _bookmarks.FirstOrDefault(b =>
-        {
-            var bookmarkUrl = b.Url.ToGeminiUri();
-            return bookmarkUrl.Host.Equals(location.Host, StringComparison.OrdinalIgnoreCase) &&
-                   bookmarkUrl.PathAndQuery.Equals(location.PathAndQuery);
-        });
-
+        found = _bookmarks.FirstOrDefault(b => b.Url.AreGeminiUrlsEqual(location));
         return found != null;
     }
 

@@ -754,6 +754,7 @@ public partial class BrowserView : ContentView
             if (Location != null)
                 RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
             IsRefreshing = false;
+            CanShowHostCertificate = false;
             _isLoading = false;
             return;
         }

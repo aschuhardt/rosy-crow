@@ -431,13 +431,16 @@ public partial class BrowserView : ContentView
             {
                 try
                 {
-                    _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
+                    // don't follow redirects that the user isn't aware of
+                    var client = new OpalClient(new DummyCertificateDatabase(), RedirectBehavior.Ignore)
+                    {
+                        AllowIPv6 = _settingsDatabase.AllowIpv6
+                    };
 
-                    if (await _geminiClient.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
+                    if (await client.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
                         _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
-                            success.MimeType,
-                            uri);
+                            success.MimeType, uri);
 
                         var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
 

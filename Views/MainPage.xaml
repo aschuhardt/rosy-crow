@@ -62,7 +62,7 @@
           Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}"
           SemanticProperties.Description="{x:Static localization:Text.MainPage_PageInformation}"
           SemanticProperties.Hint="{x:Static localization:Text.MainPage_PageInformationHint}" />
-        <Border Grid.Column="1" HeightRequest="40" x:Name="UrlEntryBorder">
+        <Border Grid.Column="1" HeightRequest="48" x:Name="UrlEntryBorder">
           <Entry
             Text="{Binding Browser.RenderUrl}"
             ReturnCommand="{Binding LoadEnteredUrl}"

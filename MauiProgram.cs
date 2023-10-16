@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui;
+using Microsoft.Maui.Controls.Compatibility.Hosting;
 using Opal;
 using Opal.Response;
 using RosyCrow.Database;
@@ -31,8 +32,9 @@ public static class MauiProgram
             .UseMauiCommunityToolkit()
             .ConfigureFonts(fonts =>
             {
-                fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                fonts.AddFont("NotoEmoji-Regular.ttf", "NotoEmoji");
+                fonts.AddFont("NotoSans-Regular.ttf", "NotoSansRegular");
+                fonts.AddFont("NotoSans-Bold.ttf", "NotoSansBold");
             })
             .ConfigureEssentials(config => { config.UseVersionTracking(); });
 

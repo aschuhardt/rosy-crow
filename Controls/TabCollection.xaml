@@ -11,7 +11,10 @@
         <DataTemplate x:Key="TabTemplate">
             <tabs:BrowserTab
                 AfterSelected="BrowserTab_OnSelected"
-                RemoveRequested="BrowserTab_OnRemoveRequested" />
+                RemoveRequested="BrowserTab_OnRemoveRequested"
+                FetchingIcon="BrowserTab_OnFetchingIcon"
+                ResettingIcon="BrowserTab_OnResettingIcon"
+                SettingCustomIcon="BrowserTab_OnSettingCustomIcon"/>
         </DataTemplate>
     </ContentView.Resources>
     <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">

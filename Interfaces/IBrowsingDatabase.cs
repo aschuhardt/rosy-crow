@@ -12,7 +12,8 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
     ObservableCollection<Identity> Identities { get; set; }
     ObservableCollection<Tab> Tabs { get; set; }
 
-    bool IsBookmark(Uri uri, out Bookmark found);
+    bool TryGetBookmark(Uri uri, out Bookmark found);
+    bool TryGetBookmark(string uri, out Bookmark found);
     int ClearVisited();
     int GetVisitedPageCount();
     IEnumerable<Visited> GetVisitedPage(int page, out bool lastPage);
@@ -23,4 +24,6 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
     Task UpdateTabOrder();
     void Update<T>(T obj);
     void UpdateAll<T>(params T[] entities);
+    bool TryGetCapsule(string hostname, out Capsule capsule);
+    void InsertOrReplace<T>(T obj);
 }

@@ -598,7 +598,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            if (_browsingDatabase.IsBookmark(Browser.Location, out var bookmark))
+            if (_browsingDatabase.TryGetBookmark(Browser.Location, out var bookmark))
             {
                 _browsingDatabase.Bookmarks.Remove(bookmark);
                 Browser.SimulateLocationChanged(); // force buttons to update
@@ -649,6 +649,8 @@ public partial class MainPage : ContentPage
         try
         {
             AddMenuAnimations();
+
+            Tabs.ParentPage = this;
 
             if (!Tabs.Tabs.Any())
                 await Tabs.AddDefaultTab();

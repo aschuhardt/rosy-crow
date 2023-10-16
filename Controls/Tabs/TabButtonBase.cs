@@ -1,4 +1,6 @@
-﻿namespace RosyCrow.Controls.Tabs;
+﻿using Microsoft.Maui.Handlers;
+
+namespace RosyCrow.Controls.Tabs;
 
 public abstract class TabButtonBase : ContentView
 {
@@ -26,6 +28,18 @@ public abstract class TabButtonBase : ContentView
                 { 0.5, 1.0, new Animation(v => Scale = v, LargerScale, InitialScale, Easing.CubicInOut) }
             };
         }
+
+        HandlerChanged += TabButtonBase_HandlerChanged;
+    }
+
+    private void TabButtonBase_HandlerChanged(object sender, EventArgs e)
+    {
+        var view = (Handler as ContentViewHandler)?.PlatformView;
+        if (view == null)
+            return;
+
+        view.Clickable = true;
+        view.Click += (_, _) => Tapped();
     }
 
     public bool Selectable { get; }

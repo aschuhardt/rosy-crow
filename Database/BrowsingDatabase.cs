@@ -23,13 +23,20 @@ internal class BrowsingDatabase : IBrowsingDatabase
     private ObservableCollection<Identity> _identities;
     private ObservableCollection<Tab> _tabs;
 
-    public BrowsingDatabase(ISettingsDatabase settingsDatabase, ILogger<BrowsingDatabase> logger, SQLiteConnection database1)
+    public BrowsingDatabase(ISettingsDatabase settingsDatabase, ILogger<BrowsingDatabase> logger, SQLiteConnection database)
     {
         _settingsDatabase = settingsDatabase;
         _logger = logger;
-        _database = database1;
+        _database = database;
 
-        _database.CreateTables<Bookmark, Identity, Visited, HostCertificate, Tab>();
+        _database.CreateTables(
+            CreateFlags.None,
+            typeof(Bookmark),
+            typeof(Identity),
+            typeof(Visited),
+            typeof(HostCertificate),
+            typeof(Tab),
+            typeof(Capsule));
 
         Bookmarks = new ObservableCollection<Bookmark>(_database.Table<Bookmark>().OrderBy(b => b.Order).ToList());
         Identities = new ObservableCollection<Identity>(_database.Table<Identity>().OrderBy(i => i.Name).ToList());
@@ -90,9 +97,15 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
     }
 
-    public bool IsBookmark(Uri location, out Bookmark found)
+    public bool TryGetBookmark(Uri location, out Bookmark found)
     {
         found = _bookmarks.FirstOrDefault(b => b.Url.AreGeminiUrlsEqual(location));
+        return found != null;
+    }
+
+    public bool TryGetBookmark(string uri, out Bookmark found)
+    {
+        found = _bookmarks.FirstOrDefault(b => b.Url.AreGeminiUrlsEqual(uri));
         return found != null;
     }
 
@@ -199,16 +212,28 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
     }
 
+    public void InsertOrReplace<T>(T obj)
+    {
+        var affected = _database.InsertOrReplace(obj, typeof(T));
+        _logger.LogDebug("Inserted or replaced {Count} object of type {Type}", affected, typeof(T).Name);
+    }
+
     public void Update<T>(T obj)
     {
-        var affected = _database.Update(obj);
-        _logger.LogDebug("Updated {Count} objects of type {Type}", affected, typeof(T).Name);
+        var affected = _database.Update(obj, typeof(T));
+        _logger.LogDebug("Updated {Count} object of type {Type}", affected, typeof(T).Name);
     }
 
     public void UpdateAll<T>(params T[] entities)
     {
         var affected = _database.UpdateAll(entities);
         _logger.LogDebug("Updated {Count} objects of type {Type} (in bulk)", affected, typeof(T).Name);
+    }
+
+    public bool TryGetCapsule(string hostname, out Capsule capsule)
+    {
+        capsule = _database.Table<Capsule>().FirstOrDefault(c => c.Host == hostname);
+        return capsule != null;
     }
 
     public void AcceptHostCertificate(string host)

@@ -14,6 +14,7 @@ using Opal.CallbackArgs;
 using Opal.Document.Line;
 using Opal.Response;
 using Opal.Tofu;
+using RosyCrow.Controls.Tabs;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
@@ -46,6 +47,7 @@ public partial class BrowserView : ContentView
     private bool _canShowHostCertificate;
     private string _findNextQuery;
     private string _input;
+    private bool _isFirstLoad = true;
     private bool _isLoading;
     private bool _isPageLoaded;
     private bool _isRefreshing;
@@ -56,7 +58,6 @@ public partial class BrowserView : ContentView
     private string _renderedHtml;
     private string _renderUrl;
     private bool _resetFindNext;
-    private bool _isFirstLoad = true;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -306,6 +307,7 @@ public partial class BrowserView : ContentView
 
     public event EventHandler ReadyToShow;
     public event EventHandler PageLoaded;
+    public event EventHandler<UrlEventArgs> OpeningUrlInNewTab;
 
     public void Print()
     {
@@ -440,7 +442,8 @@ public partial class BrowserView : ContentView
                     if (await client.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
                         _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
-                            success.MimeType, uri);
+                            success.MimeType,
+                            uri);
 
                         var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
 
@@ -1062,7 +1065,7 @@ public partial class BrowserView : ContentView
 
 
 #if ANDROID
-    private static void BuildContextMenu(IMenu menu, WebView view)
+    private void BuildContextMenu(IMenu menu, WebView view)
     {
         var hitTest = view.GetHitTestResult();
 
@@ -1075,6 +1078,9 @@ public partial class BrowserView : ContentView
             menu.Add(Text.BrowserView_BuildContextMenu_Share_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Share.Default.RequestAsync(new ShareTextRequest(uri))));
+            menu.Add("Open in New Tab")?.SetOnMenuItemClickListener(
+                new ActionMenuClickHandler<string>(hitTest.Extra, uri => OnOpeningUrlInNewTab(
+                    new UrlEventArgs(uri.ToGeminiUri()))));
         }
     }
 #endif
@@ -1140,14 +1146,19 @@ public partial class BrowserView : ContentView
         ReadyToShow?.Invoke(this, EventArgs.Empty);
     }
 
+    protected virtual void OnPageLoaded()
+    {
+        PageLoaded?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void OnOpeningUrlInNewTab(UrlEventArgs e)
+    {
+        OpeningUrlInNewTab?.Invoke(this, e);
+    }
+
     private enum ResponseAction
     {
         Retry,
         Finished
-    }
-
-    protected virtual void OnPageLoaded()
-    {
-        PageLoaded?.Invoke(this, EventArgs.Empty);
     }
 }

@@ -3,17 +3,19 @@
 <tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:models="clr-namespace:RosyCrow.Models"
-                    xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
                     xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
                     xmlns:converters="clr-namespace:RosyCrow.Converters"
                     x:Class="RosyCrow.Controls.Tabs.BrowserTab"
                     x:DataType="models:Tab"
-                    BindingContextChanged="BrowserTab_OnBindingContextChanged">
+                    BindingContextChanged="BrowserTab_OnBindingContextChanged"
+                    HandlerChanged="BrowserTab_OnHandlerChanged">
     <tabs:TabButtonBase.Resources>
         <converters:TabButtonFillConverter
             x:Key="FillConverter"
             InactiveBrush="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
             ActiveBrush="{StaticResource Red}" />
+        <converters:TabButtonFontFamilyConverter x:Key="FontConverter" EmojiFamily="NotoEmoji" TextFamily="NotoSansRegular" />
+        <converters:TabButtonLabelMarginConverter x:Key="MarginConverter" EmojiMargin="0" TextMargin="0,-2,0,0" />
         <ControlTemplate x:Key="PageIconTemplate">
             <!-- TODO: I have to manually set the BindingContext here because ControlTemplates don't propagate it correctly -->
             <!-- TODO: https://github.com/dotnet/maui/issues/12470 -->
@@ -21,7 +23,9 @@
                 BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
                 HorizontalTextAlignment="Center"
                 VerticalTextAlignment="Center"
-                Text="{Binding Label}"/>
+                FontSize="16" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
+                Text="{Binding Label}"
+                FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
         </ControlTemplate>
         <ControlTemplate x:Key="DeleteIconTemplate">
             <Image
@@ -35,9 +39,6 @@
             PageIconTemplate="{StaticResource PageIconTemplate}"
             DeleteIconTemplate="{StaticResource DeleteIconTemplate}" />
     </tabs:TabButtonBase.Resources>
-    <tabs:TabButtonBase.Behaviors>
-        <behaviors:TabButtonBehavior />
-    </tabs:TabButtonBase.Behaviors>
     <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
         <Ellipse
             x:Name="ButtonShape"

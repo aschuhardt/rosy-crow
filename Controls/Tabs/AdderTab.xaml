@@ -2,13 +2,9 @@
 
 <tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                         xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                        xmlns:behaviors="clr-namespace:RosyCrow.Behaviors"
                         xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
                         x:Class="RosyCrow.Controls.Tabs.AdderTab"
                         x:DataType="tabs:AdderTab">
-    <tabs:TabButtonBase.Behaviors>
-        <behaviors:TabButtonBehavior />
-    </tabs:TabButtonBase.Behaviors>
     <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
         <Ellipse
             x:Name="ButtonShape"

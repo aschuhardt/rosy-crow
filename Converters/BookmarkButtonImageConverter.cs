@@ -23,7 +23,7 @@ public class BookmarkButtonImageConverter : IValueConverter
     {
         var isBookmark = false;
         if (value is Uri location)
-            isBookmark = _browsingDatabase.IsBookmark(location, out _);
+            isBookmark = _browsingDatabase.TryGetBookmark(location, out _);
 
         return Application.Current!.RequestedTheme switch
         {

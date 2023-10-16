@@ -1,7 +1,15 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Text;
+using CommunityToolkit.Maui.Alerts;
+using Microsoft.Extensions.Logging;
+using Opal;
+using Opal.Response;
+using Opal.Tofu;
 using RosyCrow.Controls.Tabs;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
+using RosyCrow.Models;
 using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
 
@@ -10,18 +18,23 @@ namespace RosyCrow.Controls;
 public partial class TabCollection : ContentView
 {
     private readonly IBrowsingDatabase _browsingDatabase;
+    private readonly ILogger<TabCollection> _logger;
 
     private Tab _selectedTab;
     private BrowserView _selectedView;
     private ObservableCollection<Tab> _tabs;
 
-    public TabCollection() : this(MauiProgram.Services.GetRequiredService<IBrowsingDatabase>())
+    public TabCollection()
+        : this(
+            MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
+            MauiProgram.Services.GetRequiredService<ILogger<TabCollection>>())
     {
     }
 
-    public TabCollection(IBrowsingDatabase browsingDatabase)
+    public TabCollection(IBrowsingDatabase browsingDatabase, ILogger<TabCollection> logger)
     {
         _browsingDatabase = browsingDatabase;
+        _logger = logger;
 
         InitializeComponent();
 
@@ -55,6 +68,8 @@ public partial class TabCollection : ContentView
             OnPropertyChanged();
         }
     }
+
+    public ContentPage ParentPage { get; set; }
 
     public event EventHandler SelectedViewChanged;
 
@@ -95,6 +110,8 @@ public partial class TabCollection : ContentView
 
     public Task AddTab(string url, string label)
     {
+        _logger.LogDebug("Adding a new tab for {URL} with label {Label}", url, label);
+
         var tab = new Tab(url, label)
         {
             Selected = true
@@ -108,18 +125,31 @@ public partial class TabCollection : ContentView
 
     private void InitializeTab(Tab tab)
     {
+        _logger.LogDebug("Initializing a new tab");
         tab.View = MauiProgram.Services.GetRequiredService<BrowserView>();
-        tab.View.ParentPage = this.FindParentPage();
+        tab.View.ParentPage = ParentPage;
         tab.View.ReadyToShow += (_, _) => SelectTab(tab);
         tab.View.Location = tab.Url.ToGeminiUri();
-        tab.View.PageLoaded += (_, _) => UpdateTabUrl(tab);
+        tab.View.PageLoaded += (_, _) => UpdateTabWithPageInfo(tab);
+        tab.View.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
     }
 
-    private static void UpdateTabUrl(Tab tab)
+    private void UpdateTabWithPageInfo(Tab tab, bool useDefaultLabel = false)
     {
-        var location = tab.View.Location;
-        tab.Url = location.ToString();
-        tab.Label = location.Host[..1];
+        var uri = tab.View.Location;
+
+        if (!useDefaultLabel && _browsingDatabase.TryGetCapsule(uri.Host, out var capsule) && !string.IsNullOrEmpty(capsule.Icon))
+        {
+            _logger.LogInformation("Capsule {Host} has a stored icon: {Icon}", uri.Host, capsule.Icon);
+            tab.Label = capsule.Icon;
+        }
+        else
+        {
+            tab.Label = tab.View.PageTitle?[..1] ?? uri.Host[..1].ToUpperInvariant();
+        }
+
+        tab.Url = uri.ToString();
+        _browsingDatabase.Update(tab);
     }
 
     private void BrowserTab_OnSelected(object sender, TabEventArgs e)
@@ -134,6 +164,8 @@ public partial class TabCollection : ContentView
 
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
     {
+        _logger.LogInformation("Removing tab {Url}", e.Tab.Url);
+
         Tabs.Remove(e.Tab);
 
         if (!Tabs.Any())
@@ -157,5 +189,164 @@ public partial class TabCollection : ContentView
     {
         if (Tabs.FirstOrDefault(t => t.Selected) is { } tab)
             SelectTab(tab);
+    }
+
+    private async void BrowserTab_OnFetchingIcon(object sender, TabEventArgs e)
+    {
+        var host = e.Tab?.Url?.ToGeminiUri().Host;
+        if (string.IsNullOrWhiteSpace(host))
+            return;
+
+        try
+        {
+            e.Tab.Label = "…";
+            var label = await FetchFavicon(host);
+
+            if (string.IsNullOrWhiteSpace(label))
+            {
+                await Toast.Make("No icon available").Show();
+                return;
+            }
+
+            // ensure that there is only one text 'element' in the label
+            var info = new StringInfo(label);
+            if (info.LengthInTextElements > 0)
+                label = info.SubstringByTextElements(0, 1);
+
+            e.Tab.Label = label;
+
+            _browsingDatabase.Update(e.Tab);
+
+            if (_browsingDatabase.TryGetCapsule(host, out var capsule))
+            {
+                capsule.Icon = label;
+                _browsingDatabase.Update(capsule);
+            }
+            else
+            {
+                _browsingDatabase.InsertOrReplace(new Capsule
+                {
+                    Host = host,
+                    Icon = label
+                });
+            }
+
+            await Toast.Make("Icon updated").Show();
+        }
+        catch (Exception ex)
+        {
+            await Toast.Make("Failed to fetch the icon due to an error").Show();
+            _logger.LogError(ex, "Failed to fetch or set icon via favicon.txt for {Host}", host);
+        }
+    }
+
+    public async Task<string> FetchFavicon(string host)
+    {
+        try
+        {
+            _logger.LogInformation("Attempting to fetch favicon.txt for {Host}", host);
+
+            // do not follow redirects that the user isn't aware of
+            var client = new OpalClient(new DummyCertificateDatabase(), RedirectBehavior.Ignore);
+            var response = await client.SendRequestAsync($"gemini://{host}/favicon.txt");
+
+            if (response is SuccessfulResponse success && success.Body.CanRead && success.MimeType.StartsWith("text/"))
+            {
+                var buffer = new byte[8];
+                var size = await success.Body.ReadAsync(buffer, 0, buffer.Length);
+                var label = Encoding.UTF8.GetString(buffer, 0, size);
+                if (!string.IsNullOrWhiteSpace(label))
+                    return label;
+            }
+            else if (response is ErrorResponse error)
+            {
+                _logger.LogInformation("Unsuccessful response to request for favicon.txt from {Host}: {Status} {Meta}",
+                    error.Uri,
+                    error.Status,
+                    error.Message);
+            }
+        }
+        catch (TaskCanceledException)
+        {
+            _logger.LogWarning("Timed-out waiting for a request for favicon from {Host}", host);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to fetch favicon for {Host}", host);
+            throw;
+        }
+
+        return null;
+    }
+
+    private async void BrowserTab_OnResettingIcon(object sender, TabEventArgs e)
+    {
+        // this feature will only be displayed in the context menu if
+        // the tab has been initialized (so that we have a title to use) AND if the capsule has a saved icon
+        var host = e.Tab?.View?.Location?.Host;
+        if (string.IsNullOrWhiteSpace(host))
+            return;
+
+        try
+        {
+            if (_browsingDatabase.TryGetCapsule(host, out var capsule))
+            {
+                _logger.LogInformation("Clearing the stored icon for {Host}", capsule.Host);
+
+                capsule.Icon = null;
+                _browsingDatabase.Update(capsule);
+
+                await Toast.Make("The icon has been reset").Show();
+            }
+
+            UpdateTabWithPageInfo(e.Tab, true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reset icon for {Host}", host);
+            throw;
+        }
+    }
+
+    private async void BrowserTab_OnSettingCustomIcon(object sender, TabEventArgs e)
+    {
+        var host = e.Tab?.Url?.ToGeminiUri().Host;
+        if (string.IsNullOrWhiteSpace(host))
+            return;
+
+        _logger.LogInformation("Prompting the user to enter a custom icon for {Host}", host);
+
+        try
+        {
+            var label = await ParentPage.DisplayPromptAsync(
+                "Custom Icon", "Enter what you would like this tab's icon to be.\nOne or two letters or numbers may be entered, or a single emoji character.",
+                maxLength: 2, keyboard: Keyboard.Chat);
+
+            if (string.IsNullOrWhiteSpace(label))
+                return;
+
+            e.Tab.Label = label;
+
+            _browsingDatabase.Update(e.Tab);
+
+            if (_browsingDatabase.TryGetCapsule(host, out var capsule))
+            {
+                capsule.Icon = label;
+                _browsingDatabase.Update(capsule);
+            }
+            else
+            {
+                _browsingDatabase.InsertOrReplace(new Capsule
+                {
+                    Host = host,
+                    Icon = label
+                });
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to reset icon for {Host}", host);
+            throw;
+        }
     }
 }

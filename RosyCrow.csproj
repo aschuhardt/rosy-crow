@@ -212,6 +212,10 @@
 	  </EmbeddedResource>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Behaviors\" />
+	</ItemGroup>
+
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionRosyCrowHideInfoBar="True" XamarinHotReloadUnhandledDeviceExceptionRosyCrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>
 
 </Project>

@@ -212,7 +212,7 @@ public partial class SettingsPage : ContentPage
         using (var reader = new StreamReader(file))
             Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
 
-        ThemePreviewBrowser.ParentPage = this.FindParentPage();
+        ThemePreviewBrowser.ParentPage = this;
         ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");
 
         SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);

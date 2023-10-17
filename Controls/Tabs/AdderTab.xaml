@@ -5,22 +5,21 @@
                         xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
                         x:Class="RosyCrow.Controls.Tabs.AdderTab"
                         x:DataType="tabs:AdderTab">
-    <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
-        <Ellipse
+    <AbsoluteLayout BackgroundColor="Transparent">
+        <Rectangle
             x:Name="ButtonShape"
-            AbsoluteLayout.LayoutBounds="0.5,0.5,30,30"
-            AbsoluteLayout.LayoutFlags="PositionProportional"
-            Fill="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}">
-            <Ellipse.Shadow>
-                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="1,1" />
-            </Ellipse.Shadow>
-        </Ellipse>
+            AbsoluteLayout.LayoutBounds="0,0,48,48"
+            Fill="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}">
+            <Rectangle.Shadow>
+                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="0,-1" />
+            </Rectangle.Shadow>
+        </Rectangle>
         <Image
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
             Aspect="AspectFit"
-            WidthRequest="20"
-            HeightRequest="20"
-            Source="{AppThemeBinding Light=create_tab_dark.png, Dark=create_tab_light.png}" InputTransparent="True" />
+            WidthRequest="32"
+            HeightRequest="32"
+            Source="{AppThemeBinding Light=create_tab_light.png, Dark=create_tab_dark.png}" InputTransparent="True" />
     </AbsoluteLayout>
 </tabs:TabButtonBase>

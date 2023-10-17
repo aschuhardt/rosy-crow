@@ -5,7 +5,7 @@
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
              x:Class="RosyCrow.Controls.TabCollection"
-             x:DataType="controls:TabCollection" 
+             x:DataType="controls:TabCollection"
              Loaded="TabCollection_OnLoaded">
     <ContentView.Resources>
         <DataTemplate x:Key="TabTemplate">
@@ -14,19 +14,22 @@
                 RemoveRequested="BrowserTab_OnRemoveRequested"
                 FetchingIcon="BrowserTab_OnFetchingIcon"
                 ResettingIcon="BrowserTab_OnResettingIcon"
-                SettingCustomIcon="BrowserTab_OnSettingCustomIcon"/>
+                SettingCustomIcon="BrowserTab_OnSettingCustomIcon" />
         </DataTemplate>
     </ContentView.Resources>
-    <ScrollView HorizontalScrollBarVisibility="Never" Orientation="Horizontal">
-        <HorizontalStackLayout HorizontalOptions="Start">
-            <CollectionView
-                HeightRequest="50"
-                ItemsLayout="HorizontalList"
-                CanReorderItems="True"
-                ItemsSource="{Binding Tabs}"
-                ItemTemplate="{StaticResource TabTemplate}"
-                ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
-            <tabs:AdderTab Triggered="AdderTab_OnTriggered" />
-        </HorizontalStackLayout>
-    </ScrollView>
+    <Grid RowDefinitions="*,Auto">
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+            <ScrollView 
+                Grid.Column="0" HorizontalScrollBarVisibility="Never"
+                Orientation="Horizontal" FlowDirection="RightToLeft">
+                <CollectionView
+                    ItemsLayout="HorizontalList"
+                    CanReorderItems="True"
+                    ItemsSource="{Binding Tabs}"
+                    ItemTemplate="{StaticResource TabTemplate}"
+                    ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
+            </ScrollView>
+            <tabs:AdderTab Grid.Column="1" Triggered="AdderTab_OnTriggered" />
+        </Grid>
+    </Grid>
 </ContentView>

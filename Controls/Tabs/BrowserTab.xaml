@@ -23,15 +23,15 @@
                 BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
                 HorizontalTextAlignment="Center"
                 VerticalTextAlignment="Center"
-                FontSize="16" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
+                FontSize="24" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
                 Text="{Binding Label}"
                 FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
         </ControlTemplate>
         <ControlTemplate x:Key="DeleteIconTemplate">
             <Image
                 Aspect="AspectFit"
-                WidthRequest="20"
-                HeightRequest="20"
+                WidthRequest="32"
+                HeightRequest="32"
                 Source="close_light.png" />
         </ControlTemplate>
         <converters:TabButtonIconControlConverter
@@ -39,16 +39,15 @@
             PageIconTemplate="{StaticResource PageIconTemplate}"
             DeleteIconTemplate="{StaticResource DeleteIconTemplate}" />
     </tabs:TabButtonBase.Resources>
-    <AbsoluteLayout BackgroundColor="Transparent" Margin="7,0">
-        <Ellipse
+    <AbsoluteLayout BackgroundColor="Transparent">
+        <Rectangle
             x:Name="ButtonShape"
-            AbsoluteLayout.LayoutBounds="0.5,0.5,30,30"
-            AbsoluteLayout.LayoutFlags="PositionProportional"
+            AbsoluteLayout.LayoutBounds="0,0,48,48"
             Fill="{Binding Selected, Converter={StaticResource FillConverter}}">
-            <Ellipse.Shadow>
-                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="1,1" />
-            </Ellipse.Shadow>
-        </Ellipse>
+            <Rectangle.Shadow>
+                <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="0,-1" />
+            </Rectangle.Shadow>
+        </Rectangle>
         <ContentView
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"

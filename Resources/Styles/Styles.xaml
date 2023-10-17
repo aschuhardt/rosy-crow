@@ -456,7 +456,7 @@
     </Style>
 
     <Style TargetType="CollectionView">
-        <Setter Property="Margin" Value="0,8" />
+        <!-- <Setter Property="Margin" Value="0,8" /> -->
     </Style>
 
 </ResourceDictionary>

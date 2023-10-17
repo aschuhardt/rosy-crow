@@ -7,7 +7,7 @@ using SQLite;
 
 namespace RosyCrow.Database;
 
-internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
+internal class SettingsDatabase : ISettingsDatabase
 {
     private readonly SQLiteConnection _database;
     private readonly ILogger<SettingsDatabase> _logger;
@@ -23,6 +23,8 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
     private bool? _strictTofuMode;
     private bool? _hidePullTab;
     private bool? _allowIpv6;
+    private TabSide? _tabSide;
+    private bool? _tabsEnabled;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -114,6 +116,39 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
         set
         {
             if (SetField(ref _allowIpv6, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public TabSide TabSide
+    {
+        get
+        {
+            if (_tabSide == null)
+            {
+                var value = GetIntValue((int)TabSide.Right).GetValueOrDefault();
+                _tabSide = (TabSide)value;
+            }
+
+            return _tabSide.Value;
+        }
+        set
+        {
+            if (SetField(ref _tabSide, value))
+                SetIntValue((int)value);
+        }
+    }
+
+    public bool TabsEnabled
+    {
+        get
+        {
+            _tabsEnabled ??= GetBoolValue(true);
+            return _tabsEnabled.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _tabsEnabled, value))
                 SetBoolValue(value);
         }
     }
@@ -301,7 +336,6 @@ internal class SettingsDatabase : ISettingsDatabase, INotifyPropertyChanged
             return defaultValue;
         }
     }
-
     private int? GetIntValue(int? defaultValue = null, [CallerMemberName] string name = null)
     {
         if (name == null)

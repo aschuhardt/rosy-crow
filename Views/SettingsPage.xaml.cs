@@ -23,6 +23,8 @@ public partial class SettingsPage : ContentPage
     private ICommand _copyVersion;
     private string _versionInfo;
     private ICommand _openWhatsNew;
+    private TabSide _tabSide;
+    private bool _tabsEnabled;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -41,6 +43,32 @@ public partial class SettingsPage : ContentPage
             await Clipboard.SetTextAsync(VersionInfo);
             await Toast.Make("Copied").Show();
         });
+    }
+
+    public bool TabsEnabled
+    {
+        get => _tabsEnabled;
+        set
+        {
+            if (value == _tabsEnabled) return;
+
+            _tabsEnabled = value;
+            _settingsDatabase.TabsEnabled = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public TabSide TabSide
+    {
+        get => _tabSide;
+        set
+        {
+            if (value == _tabSide) return;
+
+            _tabSide = value;
+            _settingsDatabase.TabSide = value;
+            OnPropertyChanged();
+        }
     }
 
     public IList<ThemeChoice> Choices
@@ -218,6 +246,8 @@ public partial class SettingsPage : ContentPage
         SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
         HistoryPageSize = _settingsDatabase.HistoryPageSize;
         VersionInfo = $"Version {VersionTracking.Default.CurrentVersion}, build {VersionTracking.Default.CurrentBuild}";
+        TabSide = _settingsDatabase.TabSide;
+        TabsEnabled = _settingsDatabase.TabsEnabled;
     }
 
     private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)

@@ -5,7 +5,7 @@ namespace RosyCrow.Controls.Tabs;
 public abstract class TabButtonBase : ContentView
 {
     private const double InitialScale = 1.0;
-    private const double LargerScale = 1.05;
+    private const double LargerScale = 1.2;
 
     private readonly Animation _deselectedAnimation;
     private readonly Animation _selectedAnimation;

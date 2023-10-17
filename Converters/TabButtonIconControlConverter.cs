@@ -4,22 +4,22 @@ namespace RosyCrow.Converters;
 
 public class TabButtonIconControlConverter : BindableObject, IValueConverter
 {
-    public static BindableProperty DeleteIconTemplateProperty =
-        BindableProperty.Create(nameof(DeleteIconTemplate), typeof(ControlTemplate), typeof(TabButtonIconControlConverter));
+    public static BindableProperty SelectedIconTemplateProperty =
+        BindableProperty.Create(nameof(SelectedIconTemplate), typeof(ControlTemplate), typeof(TabButtonIconControlConverter));
 
-    public static BindableProperty PageIconTemplateProperty =
-        BindableProperty.Create(nameof(PageIconTemplate), typeof(ControlTemplate), typeof(TabButtonIconControlConverter));
+    public static BindableProperty UnselectedIconTemplateProperty =
+        BindableProperty.Create(nameof(UnselectedIconTemplate), typeof(ControlTemplate), typeof(TabButtonIconControlConverter));
 
-    public ControlTemplate PageIconTemplate
+    public ControlTemplate UnselectedIconTemplate
     {
-        get => (ControlTemplate)GetValue(PageIconTemplateProperty);
-        set => SetValue(PageIconTemplateProperty, value);
+        get => (ControlTemplate)GetValue(UnselectedIconTemplateProperty);
+        set => SetValue(UnselectedIconTemplateProperty, value);
     }
 
-    public ControlTemplate DeleteIconTemplate
+    public ControlTemplate SelectedIconTemplate
     {
-        get => (ControlTemplate)GetValue(DeleteIconTemplateProperty);
-        set => SetValue(DeleteIconTemplateProperty, value);
+        get => (ControlTemplate)GetValue(SelectedIconTemplateProperty);
+        set => SetValue(SelectedIconTemplateProperty, value);
     }
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
@@ -27,7 +27,7 @@ public class TabButtonIconControlConverter : BindableObject, IValueConverter
         if (value is not bool selected)
             throw new InvalidOperationException();
 
-        return selected ? DeleteIconTemplate : PageIconTemplate;
+        return selected ? SelectedIconTemplate : UnselectedIconTemplate;
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

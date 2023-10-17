@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
              x:Class="RosyCrow.Controls.TabCollection"
              x:DataType="controls:TabCollection"
              Loaded="TabCollection_OnLoaded">
@@ -16,20 +17,48 @@
                 ResettingIcon="BrowserTab_OnResettingIcon"
                 SettingCustomIcon="BrowserTab_OnSettingCustomIcon" />
         </DataTemplate>
+        <ControlTemplate x:Key="RightSideTabContainer">
+            <Grid RowDefinitions="*,Auto">
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                    <ScrollView
+                        Grid.Column="0" HorizontalScrollBarVisibility="Never"
+                        Orientation="Horizontal" FlowDirection="RightToLeft">
+                        <CollectionView
+                            ItemsLayout="HorizontalList"
+                            CanReorderItems="True"
+                            BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                            ItemsSource="{Binding Tabs}"
+                            ItemTemplate="{StaticResource TabTemplate}"
+                            ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
+                    </ScrollView>
+                    <tabs:AdderTab Grid.Column="1" Triggered="AdderTab_OnTriggered" />
+                </Grid>
+            </Grid>
+        </ControlTemplate>
+        <ControlTemplate x:Key="LeftSideTabContainer">
+            <Grid RowDefinitions="*,Auto">
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+                    <tabs:AdderTab Grid.Column="0" Triggered="AdderTab_OnTriggered" />
+                    <ScrollView
+                        Grid.Column="1" HorizontalScrollBarVisibility="Never"
+                        Orientation="Horizontal" FlowDirection="LeftToRight">
+                        <CollectionView
+                            ItemsLayout="HorizontalList"
+                            CanReorderItems="True"
+                            BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                            ItemsSource="{Binding Tabs}"
+                            ItemTemplate="{StaticResource TabTemplate}"
+                            ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
+                    </ScrollView>
+                </Grid>
+            </Grid>
+        </ControlTemplate>
+        <converters:TabContainerConverter
+            x:Key="ContainerConverter"
+            LeftSideTemplate="{StaticResource LeftSideTabContainer}"
+            RightSideTemplate="{StaticResource RightSideTabContainer}" />
     </ContentView.Resources>
-    <Grid RowDefinitions="*,Auto">
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-            <ScrollView 
-                Grid.Column="0" HorizontalScrollBarVisibility="Never"
-                Orientation="Horizontal" FlowDirection="RightToLeft">
-                <CollectionView
-                    ItemsLayout="HorizontalList"
-                    CanReorderItems="True"
-                    ItemsSource="{Binding Tabs}"
-                    ItemTemplate="{StaticResource TabTemplate}"
-                    ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
-            </ScrollView>
-            <tabs:AdderTab Grid.Column="1" Triggered="AdderTab_OnTriggered" />
-        </Grid>
-    </Grid>
+    <ContentView
+        IsVisible="{Binding TabsEnabled}"
+        ControlTemplate="{Binding TabSide, Converter={StaticResource ContainerConverter}}" />
 </ContentView>

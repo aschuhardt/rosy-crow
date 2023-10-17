@@ -1,6 +1,9 @@
-﻿namespace RosyCrow.Interfaces;
+﻿using System.ComponentModel;
+using RosyCrow.Models;
 
-public interface ISettingsDatabase
+namespace RosyCrow.Interfaces;
+
+public interface ISettingsDatabase : INotifyPropertyChanged
 {
     string HomeUrl { get; set; }
     string LastVisitedUrl { get; set; }
@@ -12,4 +15,6 @@ public interface ISettingsDatabase
     bool StrictTofuMode { get; set; }
     bool HidePullTab { get; set; }
     bool AllowIpv6 { get; set; }
+    TabSide TabSide { get; set; }
+    bool TabsEnabled { get; set; }
 }

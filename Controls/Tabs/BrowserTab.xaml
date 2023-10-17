@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!-- TODO: I have to manually set the BindingContext in ControlTemplates because ControlTemplates don't propagate it correctly -->
+<!-- TODO: https://github.com/dotnet/maui/issues/12470 -->
+
 <tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:models="clr-namespace:RosyCrow.Models"
@@ -8,17 +11,16 @@
                     x:Class="RosyCrow.Controls.Tabs.BrowserTab"
                     x:DataType="models:Tab"
                     BindingContextChanged="BrowserTab_OnBindingContextChanged"
-                    HandlerChanged="BrowserTab_OnHandlerChanged">
+                    HandlerChanged="BrowserTab_OnHandlerChanged"
+                    FlowDirection="LeftToRight">
     <tabs:TabButtonBase.Resources>
         <converters:TabButtonFillConverter
             x:Key="FillConverter"
             InactiveBrush="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-            ActiveBrush="{StaticResource Red}" />
+            ActiveBrush="{AppThemeBinding Light={StaticResource Green200}, Dark={StaticResource Green300}}"/>
         <converters:TabButtonFontFamilyConverter x:Key="FontConverter" EmojiFamily="NotoEmoji" TextFamily="NotoSansRegular" />
         <converters:TabButtonLabelMarginConverter x:Key="MarginConverter" EmojiMargin="0" TextMargin="0,-2,0,0" />
-        <ControlTemplate x:Key="PageIconTemplate">
-            <!-- TODO: I have to manually set the BindingContext here because ControlTemplates don't propagate it correctly -->
-            <!-- TODO: https://github.com/dotnet/maui/issues/12470 -->
+        <ControlTemplate x:Key="UnselectedIconTemplate">
             <Label
                 BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
                 HorizontalTextAlignment="Center"
@@ -27,17 +29,24 @@
                 Text="{Binding Label}"
                 FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
         </ControlTemplate>
-        <ControlTemplate x:Key="DeleteIconTemplate">
-            <Image
-                Aspect="AspectFit"
-                WidthRequest="32"
-                HeightRequest="32"
-                Source="close_light.png" />
+        <ControlTemplate x:Key="SelectedIconTemplate">
+            <Label
+                BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                HorizontalTextAlignment="Center"
+                VerticalTextAlignment="Center"
+                FontSize="24" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
+                Text="{Binding Label}"
+                FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
+            <!-- <Image -->
+            <!--     Aspect="AspectFit" -->
+            <!--     WidthRequest="32" -->
+            <!--     HeightRequest="32" -->
+            <!--     Source="close_light.png" /> -->
         </ControlTemplate>
         <converters:TabButtonIconControlConverter
             x:Key="ButtonIconControlConverter"
-            PageIconTemplate="{StaticResource PageIconTemplate}"
-            DeleteIconTemplate="{StaticResource DeleteIconTemplate}" />
+            UnselectedIconTemplate="{StaticResource UnselectedIconTemplate}"
+            SelectedIconTemplate="{StaticResource SelectedIconTemplate}" />
     </tabs:TabButtonBase.Resources>
     <AbsoluteLayout BackgroundColor="Transparent">
         <Rectangle

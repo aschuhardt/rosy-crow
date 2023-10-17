@@ -19,28 +19,74 @@ public partial class TabCollection : ContentView
 {
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<TabCollection> _logger;
+    private readonly ISettingsDatabase _settingsDatabase;
 
     private Tab _selectedTab;
     private BrowserView _selectedView;
     private ObservableCollection<Tab> _tabs;
+    private bool _tabsEnabled;
+    private TabSide _tabSide;
 
     public TabCollection()
         : this(
             MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
-            MauiProgram.Services.GetRequiredService<ILogger<TabCollection>>())
+            MauiProgram.Services.GetRequiredService<ILogger<TabCollection>>(),
+            MauiProgram.Services.GetRequiredService<ISettingsDatabase>())
     {
     }
 
-    public TabCollection(IBrowsingDatabase browsingDatabase, ILogger<TabCollection> logger)
+    public TabCollection(IBrowsingDatabase browsingDatabase, ILogger<TabCollection> logger, ISettingsDatabase settingsDatabase)
     {
         _browsingDatabase = browsingDatabase;
         _logger = logger;
+
+        _settingsDatabase = settingsDatabase;
+        _settingsDatabase.PropertyChanged += OnSettingsChanged;
 
         InitializeComponent();
 
         BindingContext = this;
 
         Tabs = _browsingDatabase.Tabs;
+        TabSide = _settingsDatabase.TabSide;
+        TabsEnabled = _settingsDatabase.TabsEnabled;
+    }
+
+    private void OnSettingsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ISettingsDatabase.TabSide):
+                TabSide = _settingsDatabase.TabSide;
+                break;
+            case nameof(ISettingsDatabase.TabsEnabled):
+                TabsEnabled = _settingsDatabase.TabsEnabled;
+                break;
+        }
+    }
+
+    public TabSide TabSide
+    {
+        get => _tabSide;
+        set
+        {
+            if (value == _tabSide) return;
+
+            _tabSide = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool TabsEnabled
+    {
+        get => _tabsEnabled;
+        set
+        {
+            if (value == _tabsEnabled) return;
+
+            _tabsEnabled = value;
+            OnPropertyChanged();
+        }
     }
 
     public BrowserView SelectedView
@@ -70,6 +116,12 @@ public partial class TabCollection : ContentView
     }
 
     public ContentPage ParentPage { get; set; }
+
+    protected override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        Handler?.UpdateValue(nameof(Content));
+    }
 
     public event EventHandler SelectedViewChanged;
 
@@ -199,7 +251,6 @@ public partial class TabCollection : ContentView
 
         try
         {
-            e.Tab.Label = "…";
             var label = await FetchFavicon(host);
 
             if (string.IsNullOrWhiteSpace(label))
@@ -319,8 +370,10 @@ public partial class TabCollection : ContentView
         try
         {
             var label = await ParentPage.DisplayPromptAsync(
-                "Custom Icon", "Enter what you would like this tab's icon to be.\nOne or two letters or numbers may be entered, or a single emoji character.",
-                maxLength: 2, keyboard: Keyboard.Chat);
+                "Custom Icon",
+                "Enter what you would like this tab's icon to be.\nOne or two letters or numbers may be entered, or a single emoji character.",
+                maxLength: 2,
+                keyboard: Keyboard.Chat);
 
             if (string.IsNullOrWhiteSpace(label))
                 return;

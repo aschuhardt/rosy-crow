@@ -116,6 +116,8 @@ public partial class BrowserTab : TabButtonBase
         }
 
         menu.Add("Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
+
+        menu.Add("Close")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
     }
 #endif
 

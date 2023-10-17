@@ -10,6 +10,10 @@
     <Color x:Key="White">#eaeef2</Color>
     <Color x:Key="Black">#0b1321</Color>
     <Color x:Key="Red">#792F2D</Color>
+    <Color x:Key="Green100">#467173</Color>
+    <Color x:Key="Green200">#2E595B</Color>
+    <Color x:Key="Green300">#0E3638</Color>
+    <Color x:Key="Green400">#032324</Color>
     <Color x:Key="Gray100">#ffebbc</Color>
     <Color x:Key="Gray200">#C8C8C8</Color>
     <Color x:Key="Gray300">#70819d</Color>

@@ -61,10 +61,6 @@ public partial class BrowserTab : TabButtonBase
             tab.Selected = true;
             AfterSelected?.Invoke(this, new TabEventArgs(tab));
         }
-        else
-        {
-            RemoveRequested?.Invoke(this, new TabEventArgs(tab));
-        }
     }
 
 #if ANDROID
@@ -77,7 +73,10 @@ public partial class BrowserTab : TabButtonBase
             return;
 
         var url = tab.Url.ToGeminiUri();
-        menu.SetHeaderTitle(url.Host);
+        menu.SetHeaderTitle(tab.Label.IsEmoji() ? url.Host : $"{tab.Label} {url.Host}");
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(28))
+            menu.SetGroupDividerEnabled(true);
 
         if (url.Scheme != Constants.InternalScheme)
         {
@@ -116,8 +115,8 @@ public partial class BrowserTab : TabButtonBase
         }
 
         menu.Add("Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
-
-        menu.Add("Close")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
+        menu.Add(1, IMenu.None, IMenu.None, "Close")?
+            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
     }
 #endif
 

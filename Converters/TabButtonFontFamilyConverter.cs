@@ -1,12 +1,10 @@
 ﻿using System.Globalization;
-using Kotlin.Text;
+using RosyCrow.Extensions;
 
 namespace RosyCrow.Converters;
 
 internal class TabButtonFontFamilyConverter : BindableObject, IValueConverter
 {
-    private static readonly Regex _emojiPattern = new(@"\p{So}|\p{Cs}\p{Cs}(\p{Cf}\p{Cs}\p{Cs})*");
-
     public static BindableProperty EmojiFamilyProperty =
         BindableProperty.Create(nameof(EmojiFamily), typeof(string), typeof(TabButtonFontFamilyConverter));
 
@@ -27,7 +25,7 @@ internal class TabButtonFontFamilyConverter : BindableObject, IValueConverter
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        if (value is string label && _emojiPattern.Matches(label))
+        if (value is string label && label.IsEmoji())
             return EmojiFamily;
 
         return TextFamily;

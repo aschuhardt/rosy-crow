@@ -7,6 +7,12 @@ internal static class StringExtensions
 {
     private const string GeminiSchemePrefix = "gemini://";
     private static readonly Regex _uriPrefixPattern = new("^[a-zA-Z]+:\\/\\/", RegexOptions.Compiled);
+    private static readonly Regex _emojiPattern = new(@"\p{So}|\p{Cs}\p{Cs}(\p{Cf}\p{Cs}\p{Cs})*");
+
+    public static bool IsEmoji(this string source)
+    {
+        return _emojiPattern.IsMatch(source);
+    }
 
     public static Uri ToUri(this string source)
     {

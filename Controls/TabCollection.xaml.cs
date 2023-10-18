@@ -12,6 +12,7 @@ using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
+// ReSharper disable AsyncVoidLambda
 
 namespace RosyCrow.Controls;
 
@@ -26,6 +27,7 @@ public partial class TabCollection : ContentView
     private ObservableCollection<Tab> _tabs;
     private bool _tabsEnabled;
     private TabSide _tabSide;
+    private bool _isReordering;
 
     public TabCollection()
         : this(
@@ -102,6 +104,20 @@ public partial class TabCollection : ContentView
         }
     }
 
+    public bool IsReordering
+    {
+        get => _isReordering;
+        set
+        {
+            if (value == _isReordering) return;
+
+            _isReordering = value;
+            foreach (var tab in Tabs)
+                tab.HandleReordering?.Execute(_isReordering);
+            OnPropertyChanged();
+        }
+    }
+
     public ObservableCollection<Tab> Tabs
     {
         get => _tabs;
@@ -127,7 +143,10 @@ public partial class TabCollection : ContentView
 
     public void SelectTab(Tab tab)
     {
-        if (tab.View == null)
+        if (IsReordering)
+            IsReordering = false;
+
+        if (tab.Browser == null)
         {
             // the tab was just loaded from the database and hasn't been initialized yet
             InitializeTab(tab);
@@ -137,7 +156,7 @@ public partial class TabCollection : ContentView
             return;
         }
 
-        SelectedView = tab.View;
+        SelectedView = tab.Browser;
 
         if (_selectedTab != null)
         {
@@ -178,17 +197,17 @@ public partial class TabCollection : ContentView
     private void InitializeTab(Tab tab)
     {
         _logger.LogDebug("Initializing a new tab");
-        tab.View = MauiProgram.Services.GetRequiredService<BrowserView>();
-        tab.View.ParentPage = ParentPage;
-        tab.View.ReadyToShow += (_, _) => SelectTab(tab);
-        tab.View.Location = tab.Url.ToGeminiUri();
-        tab.View.PageLoaded += (_, _) => UpdateTabWithPageInfo(tab);
-        tab.View.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
+        tab.Browser = MauiProgram.Services.GetRequiredService<BrowserView>();
+        tab.Browser.ParentPage = ParentPage;
+        tab.Browser.ReadyToShow += (_, _) => SelectTab(tab);
+        tab.Browser.Location = tab.Url.ToGeminiUri();
+        tab.Browser.PageLoaded += (_, _) => UpdateTabWithPageInfo(tab);
+        tab.Browser.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
     }
 
     private void UpdateTabWithPageInfo(Tab tab, bool useDefaultLabel = false)
     {
-        var uri = tab.View.Location;
+        var uri = tab.Browser.Location;
 
         if (!useDefaultLabel && _browsingDatabase.TryGetCapsule(uri.Host, out var capsule) && !string.IsNullOrEmpty(capsule.Icon))
         {
@@ -197,7 +216,7 @@ public partial class TabCollection : ContentView
         }
         else
         {
-            tab.Label = tab.View.PageTitle?[..1] ?? uri.Host[..1].ToUpperInvariant();
+            tab.Label = tab.Browser.PageTitle?[..1] ?? uri.Host[..1].ToUpperInvariant();
         }
 
         tab.Url = uri.ToString();
@@ -212,6 +231,13 @@ public partial class TabCollection : ContentView
     private async void AdderTab_OnTriggered(object sender, EventArgs e)
     {
         await AddDefaultTab();
+
+        if (sender is AdderTab adder)
+        {
+            adder.IsEnabled = false;
+            await Task.Delay(200);
+            adder.IsEnabled = true;
+        }
     }
 
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
@@ -334,7 +360,7 @@ public partial class TabCollection : ContentView
     {
         // this feature will only be displayed in the context menu if
         // the tab has been initialized (so that we have a title to use) AND if the capsule has a saved icon
-        var host = e.Tab?.View?.Location?.Host;
+        var host = e.Tab?.Browser?.Location?.Host;
         if (string.IsNullOrWhiteSpace(host))
             return;
 
@@ -401,5 +427,11 @@ public partial class TabCollection : ContentView
             _logger.LogError(ex, "Failed to reset icon for {Host}", host);
             throw;
         }
+    }
+
+    private async void BrowserTab_OnReorderingRequested(object sender, EventArgs e)
+    {
+        await Toast.Make("Go back or select a tab when finished").Show();
+        IsReordering = true;
     }
 }

@@ -473,6 +473,12 @@ public partial class MainPage : ContentPage
                 return true;
             }
 
+            if (Tabs.IsReordering)
+            {
+                Tabs.IsReordering = false;
+                return true;
+            }
+
             return Browser.GoBack();
         }
         catch (Exception e)
@@ -694,6 +700,9 @@ public partial class MainPage : ContentPage
 
     private async void UrlEntry_OnFocused(object sender, FocusEventArgs e)
     {
+        if (Tabs.IsReordering)
+            Tabs.IsReordering = false;
+
         await Dispatcher.DispatchAsync(() =>
         {
             new Animation
@@ -714,5 +723,11 @@ public partial class MainPage : ContentPage
                 { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
             }.Commit(this, "ShrinkUrlEntry");
         });
+    }
+
+    private void CurrentPageView_OnFocused(object sender, FocusEventArgs e)
+    {
+        if (Tabs.IsReordering)
+            Tabs.IsReordering = false;
     }
 }

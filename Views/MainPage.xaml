@@ -20,8 +20,9 @@
       x:Name="CurrentPageView"
       AbsoluteLayout.LayoutBounds="0,0,1,1"
       AbsoluteLayout.LayoutFlags="All"
-      Content="{Binding Browser}" />
-    <Grid
+      Content="{Binding Browser}" Focused="CurrentPageView_OnFocused">
+    </ContentView>
+      <Grid
       x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
       AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
       <Border Grid.Column="1" Stroke="Transparent" BackgroundColor="Transparent">

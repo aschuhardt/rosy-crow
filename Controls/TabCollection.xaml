@@ -5,47 +5,59 @@
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
              xmlns:converters="clr-namespace:RosyCrow.Converters"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             xmlns:models="clr-namespace:RosyCrow.Models"
              x:Class="RosyCrow.Controls.TabCollection"
              x:DataType="controls:TabCollection"
              Loaded="TabCollection_OnLoaded">
     <ContentView.Resources>
+        <toolkit:InvertedBoolConverter x:Key="Inverted" />
         <DataTemplate x:Key="TabTemplate">
             <tabs:BrowserTab
+                x:DataType="models:Tab"
                 AfterSelected="BrowserTab_OnSelected"
                 RemoveRequested="BrowserTab_OnRemoveRequested"
                 FetchingIcon="BrowserTab_OnFetchingIcon"
                 ResettingIcon="BrowserTab_OnResettingIcon"
-                SettingCustomIcon="BrowserTab_OnSettingCustomIcon" />
+                SettingCustomIcon="BrowserTab_OnSettingCustomIcon"
+                ReorderingRequested="BrowserTab_OnReorderingRequested" 
+                ReorderingCommand="{Binding HandleReordering, Mode=OneWayToSource}"/>
         </DataTemplate>
         <ControlTemplate x:Key="RightSideTabContainer">
-            <Grid RowDefinitions="*,Auto">
+            <Grid RowDefinitions="*,Auto" 
+                BindingContext="{Binding Source={RelativeSource FindAncestor, AncestorType={x:Type controls:TabCollection}}}">
                 <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
                     <ScrollView
                         Grid.Column="0" HorizontalScrollBarVisibility="Never"
                         Orientation="Horizontal" FlowDirection="RightToLeft">
                         <CollectionView
                             ItemsLayout="HorizontalList"
-                            CanReorderItems="True"
-                            BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                            CanReorderItems="{Binding IsReordering}"
                             ItemsSource="{Binding Tabs}"
                             ItemTemplate="{StaticResource TabTemplate}"
                             ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
                     </ScrollView>
-                    <tabs:AdderTab Grid.Column="1" Triggered="AdderTab_OnTriggered" />
+                    <tabs:AdderTab
+                        Grid.Column="1"
+                        IsEnabled="{Binding IsReordering, Converter={StaticResource Inverted}}"
+                        Triggered="AdderTab_OnTriggered" />
                 </Grid>
             </Grid>
         </ControlTemplate>
         <ControlTemplate x:Key="LeftSideTabContainer">
-            <Grid RowDefinitions="*,Auto">
+            <Grid RowDefinitions="*,Auto"
+                BindingContext="{Binding Source={RelativeSource FindAncestor, AncestorType={x:Type controls:TabCollection}}}">
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-                    <tabs:AdderTab Grid.Column="0" Triggered="AdderTab_OnTriggered" />
+                    <tabs:AdderTab
+                        Grid.Column="0"
+                        IsEnabled="{Binding IsReordering, Converter={StaticResource Inverted}}"
+                        Triggered="AdderTab_OnTriggered" />
                     <ScrollView
                         Grid.Column="1" HorizontalScrollBarVisibility="Never"
                         Orientation="Horizontal" FlowDirection="LeftToRight">
                         <CollectionView
                             ItemsLayout="HorizontalList"
-                            CanReorderItems="True"
-                            BindingContext="{Binding BindingContext, Source={RelativeSource TemplatedParent}}"
+                            CanReorderItems="{Binding IsReordering}"
                             ItemsSource="{Binding Tabs}"
                             ItemTemplate="{StaticResource TabTemplate}"
                             ReorderCompleted="TabsCollectionView_OnReorderCompleted" />

@@ -14,14 +14,8 @@ public class Tab : INotifyPropertyChanged
     [PrimaryKey, AutoIncrement]
     public int Id { get; set; }
 
-    private ICommand _selectedChanged;
-
     [Ignore]
-    public ICommand SelectedChanged
-    {
-        get => _selectedChanged;
-        set => SetField(ref _selectedChanged, value);
-    }
+    public ICommand HandleReordering { get; set; }
 
     public Tab()
     {
@@ -46,15 +40,11 @@ public class Tab : INotifyPropertyChanged
     public bool Selected
     {
         get => _selected;
-        set
-        {
-            if (SetField(ref _selected, value))
-                _selectedChanged?.Execute(this);
-        }
+        set => SetField(ref _selected, value);
     }
 
     [Ignore]
-    public BrowserView View { get; set; }
+    public BrowserView Browser { get; set; }
 
     public event PropertyChangedEventHandler PropertyChanged;
 

@@ -94,6 +94,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Remove="Resources\Fonts\LICENSE.md" />
 		<None Remove="Resources\Raw\about.html" />
 		<None Remove="resources\raw\default.html" />
 		<None Remove="Resources\Raw\preview.html" />

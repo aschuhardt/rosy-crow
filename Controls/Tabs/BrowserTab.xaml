@@ -1,71 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<tabs:TabButtonBase xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:models="clr-namespace:RosyCrow.Models"
-                    xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
-                    xmlns:converters="clr-namespace:RosyCrow.Converters"
-                    xmlns:controls="clr-namespace:RosyCrow.Controls"
-                    x:Class="RosyCrow.Controls.Tabs.BrowserTab"
-                    x:DataType="models:Tab"
-                    HandlerChanged="BrowserTab_OnHandlerChanged"
-                    FlowDirection="LeftToRight">
-    <tabs:TabButtonBase.Resources>
+
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:models="clr-namespace:RosyCrow.Models"
+             xmlns:converters="clr-namespace:RosyCrow.Converters"
+             xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
+             x:Class="RosyCrow.Controls.Tabs.BrowserTab"
+             x:DataType="models:Tab"
+             FlowDirection="LeftToRight">
+    <ContentView.Resources>
         <converters:TabButtonFillConverter
             x:Key="FillConverter"
             InactiveBrush="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray600}}"
-            ActiveBrush="{AppThemeBinding Light={StaticResource Green200}, Dark={StaticResource Green300}}"/>
-        <converters:TabButtonFontFamilyConverter x:Key="FontConverter" EmojiFamily="NotoEmoji" TextFamily="NotoSansRegular" />
+            ActiveBrush="{AppThemeBinding Light={StaticResource Green200}, Dark={StaticResource Green300}}" />
+        <converters:TabButtonFontFamilyConverter x:Key="FontConverter" EmojiFamily="NotoEmoji"
+                                                 TextFamily="NotoSansRegular" />
         <converters:TabButtonLabelMarginConverter x:Key="MarginConverter" EmojiMargin="0" TextMargin="0,-2,0,0" />
-        <ControlTemplate x:Key="UnselectedIconTemplate">
-            <Label
-                x:Name="IconLabel"
-                BindingContext="{Binding Source={RelativeSource AncestorType={x:Type models:Tab}}}"
-                HorizontalTextAlignment="Center"
-                VerticalTextAlignment="Center"
-                FontSize="28" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
-                Text="{Binding Label}"
-                FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
-        </ControlTemplate>
-        <ControlTemplate x:Key="SelectedIconTemplate">
-            <Label
-                x:Name="IconLabel"
-                BindingContext="{Binding Source={RelativeSource AncestorType={x:Type models:Tab}}}"
-                HorizontalTextAlignment="Center"
-                VerticalTextAlignment="Center"
-                FontSize="28" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
-                Text="{Binding Label}"
-                FontFamily="{Binding Label, Converter={StaticResource FontConverter}}"/>
-        </ControlTemplate>
-        <converters:TabButtonIconControlConverter
-            x:Key="ButtonIconControlConverter"
-            UnselectedIconTemplate="{StaticResource UnselectedIconTemplate}"
-            SelectedIconTemplate="{StaticResource SelectedIconTemplate}" />
-    </tabs:TabButtonBase.Resources>
-    <AbsoluteLayout BackgroundColor="Transparent">
-        <Rectangle
-            x:Name="ButtonShape"
-            AbsoluteLayout.LayoutBounds="0,0,64,64"
-            StrokeThickness="1"
-            Stroke="{Binding Selected, Converter={StaticResource FillConverter}}"
-            Fill="{Binding Selected, Converter={StaticResource FillConverter}}">
-            <Rectangle.Shadow>
+    </ContentView.Resources>
+    <AbsoluteLayout>
+        <Button
+            x:Name="SelectButton"
+            WidthRequest="50"
+            HeightRequest="50"
+            Margin="0"
+            CornerRadius="0"
+            Command="{Binding Tapped, Source={RelativeSource AncestorType={x:Type tabs:BrowserTab}}}"
+            Background="{Binding Selected, Converter={StaticResource FillConverter}}"
+            HandlerChanged="SelectButton_OnHandlerChanged">
+            <Button.Shadow>
                 <Shadow Brush="Black" Radius="4" Opacity="0.8" Offset="0,-1" />
-            </Rectangle.Shadow>
-        </Rectangle>
-        <controls:TemplateContainer
-            x:TypeArguments="Label" x:Name="IconTemplate"
-            Child="{Binding IconLabel, Mode=OneWayToSource, Source={RelativeSource AncestorType={x:Type tabs:BrowserTab}}}"
-            ChildName="IconLabel"
+            </Button.Shadow>
+        </Button>
+        <Label
+            x:Name="IconLabel"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
-            ControlTemplate="{Binding Selected, Converter={StaticResource ButtonIconControlConverter}}" />
-        <Image 
+            HorizontalTextAlignment="Center"
+            VerticalTextAlignment="Center"
+            FontSize="28" Margin="{Binding Label, Converter={StaticResource MarginConverter}}"
+            Text="{Binding Label}"
+            FontFamily="{Binding Label, Converter={StaticResource FontConverter}}" />
+        <Image
             x:Name="DragIndicator"
             AbsoluteLayout.LayoutBounds="1.0,0.5,32,32"
+            AbsoluteLayout.LayoutFlags="PositionProportional"
             Margin="0,0,-8,0"
             AnchorY="16" AnchorX="16"
-            AbsoluteLayout.LayoutFlags="PositionProportional"
             Opacity="0"
-            Source="{AppThemeBinding Light=drag_indicator_dark.png, Dark=drag_indicator_light.png}"></Image>
+            Source="{AppThemeBinding Light=drag_indicator_dark.png, Dark=drag_indicator_light.png}" />
     </AbsoluteLayout>
-</tabs:TabButtonBase>
+</ContentView>

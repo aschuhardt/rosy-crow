@@ -4,12 +4,7 @@ namespace RosyCrow.Converters;
 
 public class VisibilityButtonImageConverter : IValueConverter
 {
-    private readonly ImageSourceConverter _imageSourceConverter;
-
-    public VisibilityButtonImageConverter()
-    {
-        _imageSourceConverter = new ImageSourceConverter();
-    }
+    private readonly ImageSourceConverter _imageSourceConverter = new();
 
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {

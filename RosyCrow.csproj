@@ -156,9 +156,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Controls\Tabs\AdderTab.xaml">
-	    <Generator>MSBuild:Compile</Generator>
-	  </MauiXaml>
 	  <MauiXaml Update="Controls\Tabs\BrowserTab.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

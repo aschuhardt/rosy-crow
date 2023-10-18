@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Windows.Input;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
@@ -14,15 +15,15 @@ using Tab = RosyCrow.Models.Tab;
 
 namespace RosyCrow.Controls.Tabs;
 
-public partial class BrowserTab : TabButtonBase
+public partial class BrowserTab : ContentView
 {
     public static readonly BindableProperty ReorderingCommandProperty =
         BindableProperty.Create(nameof(ReorderingCommand), typeof(ICommand), typeof(BrowserTab));
 
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<BrowserTab> _logger;
-    private Label _iconLabel;
     private bool _isReordering;
+    private ICommand _tapped;
 
     public BrowserTab() : this(MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
         MauiProgram.Services.GetRequiredService<ILogger<BrowserTab>>())
@@ -37,16 +38,17 @@ public partial class BrowserTab : TabButtonBase
         InitializeComponent();
 
         ReorderingCommand = new Command<bool>(HandleReordering);
+        Tapped = new Command(Select);
     }
 
-    public Label IconLabel
+    public ICommand Tapped
     {
-        get => _iconLabel;
+        get => _tapped;
         set
         {
-            if (Equals(value, _iconLabel)) return;
+            if (Equals(value, _tapped)) return;
 
-            _iconLabel = value;
+            _tapped = value;
             OnPropertyChanged();
         }
     }
@@ -86,7 +88,7 @@ public partial class BrowserTab : TabButtonBase
     public event EventHandler<TabEventArgs> SettingCustomIcon;
     public event EventHandler ReorderingRequested;
 
-    public override void Tapped()
+    private void Select()
     {
         // if the button is tapped while selected, then delete it; otherwise, select it
         if (BindingContext is not Tab tab)
@@ -161,14 +163,15 @@ public partial class BrowserTab : TabButtonBase
     }
 #endif
 
-    private void BrowserTab_OnHandlerChanged(object sender, EventArgs e)
+    private void SelectButton_OnHandlerChanged(object sender, EventArgs e)
     {
 #if ANDROID
-        var view = (Handler as ContentViewHandler)?.PlatformView;
+        var view = (SelectButton.Handler as ButtonHandler)?.PlatformView;
         if (view == null)
             return;
 
         view.ContextMenuCreated += (_, arg) => BuildContextMenu(arg.Menu);
 #endif
+
     }
 }

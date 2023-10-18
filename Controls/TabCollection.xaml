@@ -5,13 +5,11 @@
              xmlns:controls="clr-namespace:RosyCrow.Controls"
              xmlns:tabs="clr-namespace:RosyCrow.Controls.Tabs"
              xmlns:converters="clr-namespace:RosyCrow.Converters"
-             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              xmlns:models="clr-namespace:RosyCrow.Models"
              x:Class="RosyCrow.Controls.TabCollection"
              x:DataType="controls:TabCollection"
              Loaded="TabCollection_OnLoaded">
     <ContentView.Resources>
-        <toolkit:InvertedBoolConverter x:Key="Inverted" />
         <DataTemplate x:Key="TabTemplate">
             <tabs:BrowserTab
                 x:DataType="models:Tab"
@@ -20,57 +18,36 @@
                 FetchingIcon="BrowserTab_OnFetchingIcon"
                 ResettingIcon="BrowserTab_OnResettingIcon"
                 SettingCustomIcon="BrowserTab_OnSettingCustomIcon"
-                ReorderingRequested="BrowserTab_OnReorderingRequested" 
-                ReorderingCommand="{Binding HandleReordering, Mode=OneWayToSource}"/>
+                ReorderingRequested="BrowserTab_OnReorderingRequested"
+                ReorderingCommand="{Binding HandleReordering, Mode=OneWayToSource}" />
         </DataTemplate>
-        <ControlTemplate x:Key="RightSideTabContainer">
-            <Grid RowDefinitions="*,Auto" 
-                BindingContext="{Binding Source={RelativeSource FindAncestor, AncestorType={x:Type controls:TabCollection}}}">
-                <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-                    <ScrollView
-                        Grid.Column="0" HorizontalScrollBarVisibility="Never"
-                        Orientation="Horizontal" FlowDirection="RightToLeft">
-                        <CollectionView
-                            ItemsLayout="HorizontalList"
-                            CanReorderItems="{Binding IsReordering}"
-                            ItemsSource="{Binding Tabs}"
-                            ItemTemplate="{StaticResource TabTemplate}"
-                            ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
-                    </ScrollView>
-                    <tabs:AdderTab
-                        Grid.Column="1"
-                        IsEnabled="{Binding IsReordering, Converter={StaticResource Inverted}}"
-                        Triggered="AdderTab_OnTriggered" />
-                </Grid>
-            </Grid>
-        </ControlTemplate>
-        <ControlTemplate x:Key="LeftSideTabContainer">
-            <Grid RowDefinitions="*,Auto"
-                BindingContext="{Binding Source={RelativeSource FindAncestor, AncestorType={x:Type controls:TabCollection}}}">
-                <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
-                    <tabs:AdderTab
-                        Grid.Column="0"
-                        IsEnabled="{Binding IsReordering, Converter={StaticResource Inverted}}"
-                        Triggered="AdderTab_OnTriggered" />
-                    <ScrollView
-                        Grid.Column="1" HorizontalScrollBarVisibility="Never"
-                        Orientation="Horizontal" FlowDirection="LeftToRight">
-                        <CollectionView
-                            ItemsLayout="HorizontalList"
-                            CanReorderItems="{Binding IsReordering}"
-                            ItemsSource="{Binding Tabs}"
-                            ItemTemplate="{StaticResource TabTemplate}"
-                            ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
-                    </ScrollView>
-                </Grid>
-            </Grid>
-        </ControlTemplate>
-        <converters:TabContainerConverter
-            x:Key="ContainerConverter"
-            LeftSideTemplate="{StaticResource LeftSideTabContainer}"
-            RightSideTemplate="{StaticResource RightSideTabContainer}" />
+        <converters:TabAddNewAlignmentConverter x:Key="AlignmentConverter" />
+        <converters:TabsFlowDirectionConverter x:Key="FlowDirectionConverter" />
     </ContentView.Resources>
-    <ContentView
-        IsVisible="{Binding TabsEnabled}"
-        ControlTemplate="{Binding TabSide, Converter={StaticResource ContainerConverter}}" />
+    <Grid RowDefinitions="*,Auto,Auto">
+        <Button
+            Grid.Row="1"
+            HorizontalOptions="{Binding TabSide, Converter={StaticResource AlignmentConverter}}"
+            Command="{Binding AddNewTab}"
+            Margin="6,0,6,-20"
+            CornerRadius="24"
+            ZIndex="20"
+            BackgroundColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray900}}"
+            ImageSource="{AppThemeBinding Light=create_tab_dark.png, Dark=create_tab_light.png}">
+            <Button.Shadow>
+                <Shadow Brush="Black" Offset="-1,1" Radius="0.4" />
+            </Button.Shadow>
+        </Button>
+        <ScrollView
+            Grid.Row="2"
+            Orientation="Horizontal" 
+            FlowDirection="{Binding TabSide, Converter={StaticResource FlowDirectionConverter}}">
+            <CollectionView
+                ItemsLayout="HorizontalList"
+                CanReorderItems="{Binding IsReordering}"
+                ItemsSource="{Binding Tabs}"
+                ItemTemplate="{StaticResource TabTemplate}"
+                ReorderCompleted="TabsCollectionView_OnReorderCompleted" />
+        </ScrollView>
+    </Grid>
 </ContentView>

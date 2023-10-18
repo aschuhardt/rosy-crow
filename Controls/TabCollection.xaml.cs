@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Text;
+using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
 using Microsoft.Extensions.Logging;
 using Opal;
@@ -28,6 +29,7 @@ public partial class TabCollection : ContentView
     private bool _tabsEnabled;
     private TabSide _tabSide;
     private bool _isReordering;
+    private ICommand _addNewTab;
 
     public TabCollection()
         : this(
@@ -52,6 +54,7 @@ public partial class TabCollection : ContentView
         Tabs = _browsingDatabase.Tabs;
         TabSide = _settingsDatabase.TabSide;
         TabsEnabled = _settingsDatabase.TabsEnabled;
+        AddNewTab = new Command(async () => await AddDefaultTab(), () => !IsReordering);
     }
 
     private void OnSettingsChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -100,6 +103,18 @@ public partial class TabCollection : ContentView
 
             _selectedView = value;
             SelectedViewChanged?.Invoke(this, EventArgs.Empty);
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand AddNewTab
+    {
+        get => _addNewTab;
+        set
+        {
+            if (Equals(value, _addNewTab)) return;
+
+            _addNewTab = value;
             OnPropertyChanged();
         }
     }
@@ -227,19 +242,6 @@ public partial class TabCollection : ContentView
     {
         SelectTab(e.Tab);
     }
-
-    private async void AdderTab_OnTriggered(object sender, EventArgs e)
-    {
-        await AddDefaultTab();
-
-        if (sender is AdderTab adder)
-        {
-            adder.IsEnabled = false;
-            await Task.Delay(200);
-            adder.IsEnabled = true;
-        }
-    }
-
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
     {
         _logger.LogInformation("Removing tab {Url}", e.Tab.Url);

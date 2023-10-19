@@ -2,6 +2,8 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Storage;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
@@ -13,18 +15,19 @@ namespace RosyCrow.Views;
 
 public partial class SettingsPage : ContentPage
 {
+    private readonly ILogger<SettingsPage> _logger;
     private readonly MainPage _mainPage;
     private readonly ISettingsDatabase _settingsDatabase;
 
     private IList<ThemeChoice> _choices;
-    private ThemeChoice _selectedTheme;
-    private ICommand _openAbout;
-    private ICommand _exportLogs;
     private ICommand _copyVersion;
-    private string _versionInfo;
+    private ICommand _exportLogs;
+    private ICommand _openAbout;
     private ICommand _openWhatsNew;
-    private TabSide _tabSide;
+    private ThemeChoice _selectedTheme;
     private bool _tabsEnabled;
+    private TabSide _tabSide;
+    private string _versionInfo;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
     {
@@ -77,6 +80,7 @@ public partial class SettingsPage : ContentPage
         set
         {
             if (Equals(value, _choices)) return;
+
             _choices = value;
             OnPropertyChanged();
         }
@@ -89,6 +93,7 @@ public partial class SettingsPage : ContentPage
         {
             if (Equals(value, _selectedTheme))
                 return;
+
             _selectedTheme = value;
             _settingsDatabase.Theme = value.File;
             OnPropertyChanged();
@@ -101,6 +106,7 @@ public partial class SettingsPage : ContentPage
         set
         {
             if (Equals(value, _openAbout)) return;
+
             _openAbout = value;
             OnPropertyChanged();
         }
@@ -125,6 +131,7 @@ public partial class SettingsPage : ContentPage
         set
         {
             if (value == _versionInfo) return;
+
             _versionInfo = value;
             OnPropertyChanged();
         }
@@ -136,6 +143,7 @@ public partial class SettingsPage : ContentPage
         set
         {
             if (Equals(value, _copyVersion)) return;
+
             _copyVersion = value;
             OnPropertyChanged();
         }
@@ -147,6 +155,7 @@ public partial class SettingsPage : ContentPage
         set
         {
             if (Equals(value, _exportLogs)) return;
+
             _exportLogs = value;
             OnPropertyChanged();
         }
@@ -159,6 +168,7 @@ public partial class SettingsPage : ContentPage
         {
             if (value == _settingsDatabase.HistoryPageSize)
                 return;
+
             _settingsDatabase.HistoryPageSize = value;
             OnPropertyChanged();
         }
@@ -184,6 +194,7 @@ public partial class SettingsPage : ContentPage
         {
             if (value == _settingsDatabase.InlineImages)
                 return;
+
             _settingsDatabase.InlineImages = value;
             OnPropertyChanged();
         }
@@ -196,6 +207,7 @@ public partial class SettingsPage : ContentPage
         {
             if (value == _settingsDatabase.HidePullTab)
                 return;
+
             _settingsDatabase.HidePullTab = value;
             OnPropertyChanged();
         }
@@ -208,6 +220,7 @@ public partial class SettingsPage : ContentPage
         {
             if (value == _settingsDatabase.StrictTofuMode)
                 return;
+
             _settingsDatabase.StrictTofuMode = value;
             OnPropertyChanged();
         }
@@ -215,20 +228,52 @@ public partial class SettingsPage : ContentPage
 
     private async Task ExportErrorLogArchive()
     {
+        // storage permission doesn't apply starting in 33
+        if (!OperatingSystem.IsAndroidVersionAtLeast(33) &&
+            await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
+        {
+            _logger.LogInformation("Requesting permission to write to external storage");
+
+            var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+            if (status != PermissionStatus.Granted && Permissions.ShouldShowRationale<Permissions.StorageWrite>())
+            {
+                await DisplayAlert("Lacking Permission",
+                    "Logs cannot be exported unless Rosy Crow has permission to write to you device's storage.\n\nTry again after you've granted the app permission to do so.",
+                    "OK");
+                return;
+            }
+        }
+
         var logsDir = Path.Combine(FileSystem.AppDataDirectory, "logs");
+
         if (!Directory.Exists(logsDir) || !Directory.GetFiles(logsDir).Any())
         {
             await Toast.Make("There are no error logs to export").Show();
             return;
         }
 
-        var path = Path.Combine(Path.GetTempPath(), $"rosycrow_logs_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.tar.gz");
-        await using var file = File.OpenWrite(path);
-        await using var gzip = new GZipStream(file, CompressionLevel.Optimal);
-        await TarFile.CreateFromDirectoryAsync(logsDir, gzip, false);
-        // await Launcher.Default.OpenAsync(new OpenFileRequest("Rosy Crow Logs", new ReadOnlyFile(path, "application/gzip")));
+        FileSaverResult result;
 
-        await Share.Default.RequestAsync(new ShareFileRequest("Share error logs", new ShareFile(path, "application/gzip")));
+        await using (var buffer = new MemoryStream())
+        {
+            await using var gzip = new GZipStream(buffer, CompressionLevel.Optimal);
+            await TarFile.CreateFromDirectoryAsync(logsDir, gzip, false);
+
+            buffer.Seek(0, SeekOrigin.Begin);
+            result = await FileSaver.Default.SaveAsync($"rosycrow_logs_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.tar.gz",
+                buffer,
+                CancellationToken.None);
+        }
+
+        if (result.IsSuccessful)
+        {
+            _logger.LogInformation("Exported log archive to {Path}", result.FilePath);
+        }
+        else
+        {
+            await Toast.Make("Could not save archive").Show();
+        }
     }
 
     private async void SettingsPage_OnLoaded(object sender, EventArgs e)
@@ -238,7 +283,9 @@ public partial class SettingsPage : ContentPage
 
         await using (var file = await FileSystem.OpenAppPackageFileAsync("themes.json"))
         using (var reader = new StreamReader(file))
+        {
             Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
+        }
 
         ThemePreviewBrowser.ParentPage = this;
         ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");

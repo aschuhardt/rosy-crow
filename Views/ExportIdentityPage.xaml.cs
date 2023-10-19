@@ -1,6 +1,7 @@
 using System.Text;
 using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
+using CommunityToolkit.Maui.Storage;
 using Microsoft.Extensions.Logging;
 using RosyCrow.Extensions;
 using RosyCrow.Models;
@@ -15,13 +16,13 @@ public partial class ExportIdentityPage : ContentPage
 {
     private readonly IIdentityService _identityService;
     private readonly ILogger<ExportIdentityPage> _logger;
-    private ICommand _export;
-    private Identity _identity;
-    private string _password;
-    private string _fingerprint;
     private ICommand _copyText;
-    private string _name;
+    private ICommand _export;
+    private string _fingerprint;
     private bool _hidePassword;
+    private Identity _identity;
+    private string _name;
+    private string _password;
     private ICommand _togglePasswordHidden;
 
     public ExportIdentityPage(IIdentityService identityService, ILogger<ExportIdentityPage> logger)
@@ -48,6 +49,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (value == _fingerprint) return;
+
             _fingerprint = value;
             OnPropertyChanged();
         }
@@ -59,6 +61,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (value == _name) return;
+
             _name = value;
             OnPropertyChanged();
         }
@@ -70,6 +73,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (Equals(value, _identity)) return;
+
             _identity = value;
             Fingerprint = _identity.Hash.ToFriendlyFingerprint();
             Name = _identity.Name;
@@ -83,6 +87,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (value == _password) return;
+
             _password = value;
             OnPropertyChanged();
         }
@@ -94,6 +99,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (value == _hidePassword) return;
+
             _hidePassword = value;
             OnPropertyChanged();
         }
@@ -105,6 +111,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (Equals(value, _copyText)) return;
+
             _copyText = value;
             OnPropertyChanged();
         }
@@ -116,6 +123,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (Equals(value, _export)) return;
+
             _export = value;
             OnPropertyChanged();
         }
@@ -127,6 +135,7 @@ public partial class ExportIdentityPage : ContentPage
         set
         {
             if (Equals(value, _togglePasswordHidden)) return;
+
             _togglePasswordHidden = value;
             OnPropertyChanged();
         }
@@ -146,36 +155,57 @@ public partial class ExportIdentityPage : ContentPage
                 return;
             }
 
-            var password = string.IsNullOrEmpty(Password) ? Encoding.UTF8.GetBytes(Password) : null;
+            var password = !string.IsNullOrEmpty(Password) ? Encoding.UTF8.GetBytes(Password) : null;
 
-            var path = Path.Combine(Path.GetTempPath(),
-                $"{Identity.SanitizedName}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.pem");
-
-            await using (var file = File.Create(path))
-            await using (var writer = new StreamWriter(file))
+            // storage permission doesn't apply starting in 33
+            if (!OperatingSystem.IsAndroidVersionAtLeast(33) &&
+                await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                if (!await cert.WriteCertificate(writer, password))
+                _logger.LogInformation("Requesting permission to write to external storage");
+
+                var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+                if (status != PermissionStatus.Granted && Permissions.ShouldShowRationale<Permissions.StorageWrite>())
                 {
-                    await Toast.Make(Text.ExportIdentityPage_ExportKey_Failed_to_export_the_certificate).Show();
+                    await DisplayAlert("Lacking Permission",
+                        "Identities cannot be exported unless Rosy Crow has permission to write to you device's storage.\n\nTry again after you've granted the app permission to do so.",
+                        "OK");
                     return;
                 }
             }
 
-            var mimeType = password == null ? "application/pkcs8-encrypted" : "application/pkcs8";
+            FileSaverResult result;
 
-            await Share.Default.RequestAsync(new ShareFileRequest(Identity.Name, new ReadOnlyFile(path, mimeType)));
-
-            if (password != null)
+            await using (var buffer = new MemoryStream())
             {
-                _logger.LogInformation("Certificate for Identity {ID} exported encrypted to {Path}", Identity.Id, path);
-                await Clipboard.Default.SetTextAsync(Password);
-                await Toast.Make("Password copied to the clipboard").Show();
-                Password = string.Empty;
+                await using (var writer = new StreamWriter(buffer, leaveOpen: true))
+                {
+                    await cert.WriteCertificate(writer, password);
+                }
+
+                buffer.Seek(0, SeekOrigin.Begin);
+                result = await FileSaver.Default.SaveAsync($"{Identity.SanitizedName}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.pem",
+                    buffer,
+                    CancellationToken.None);
+            }
+
+            if (result.IsSuccessful)
+            {
+                if (password != null)
+                {
+                    _logger.LogInformation("Certificate for Identity {ID} exported encrypted to {Path}", Identity.Id, result.FilePath);
+                    await Clipboard.Default.SetTextAsync(Password);
+                    await Toast.Make("Password copied to the clipboard").Show();
+                    Password = string.Empty;
+                }
+                else
+                {
+                    _logger.LogInformation("Certificate for Identity {ID} exported unencrypted to {Path}", Identity.Id, result.FilePath);
+                }
             }
             else
             {
-                _logger.LogInformation("Certificate for Identity {ID} exported unencrypted to {Path}", Identity.Id,
-                    path);
+                await Toast.Make("Could not save the file").Show();
             }
         }
         catch (Exception e)

@@ -87,6 +87,9 @@ public partial class BrowserTab : ContentView
     public event EventHandler<TabCapsuleEventArgs> ResettingIcon;
     public event EventHandler<TabEventArgs> SettingCustomIcon;
     public event EventHandler ReorderingRequested;
+    public event EventHandler RemoveAllRequested;
+    public event EventHandler ImportRequested;
+    public event EventHandler ExportRequested;
 
     private void Select()
     {
@@ -156,8 +159,21 @@ public partial class BrowserTab : ContentView
         }
 
         menu.Add("Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
-        menu.Add("Arrange")?
+
+        var allMenu = menu.AddSubMenu("All Tabs");
+
+        if (OperatingSystem.IsAndroidVersionAtLeast(28))
+            allMenu?.SetGroupDividerEnabled(true);
+
+        allMenu?.Add("Import")?
+            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ImportRequested?.Invoke(this, EventArgs.Empty)));
+        allMenu?.Add("Export")?
+            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ExportRequested?.Invoke(this, EventArgs.Empty)));
+        allMenu?.Add(1, IMenu.None, IMenu.None, "Close All")?
+            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveAllRequested?.Invoke(this, EventArgs.Empty)));
+        allMenu?.Add(2, IMenu.None, IMenu.None, "Arrange")?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ReorderingRequested?.Invoke(this, EventArgs.Empty)));
+
         menu.Add(1, IMenu.None, IMenu.None, "Close")?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
     }

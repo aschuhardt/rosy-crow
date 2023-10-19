@@ -19,7 +19,10 @@
                 ResettingIcon="BrowserTab_OnResettingIcon"
                 SettingCustomIcon="BrowserTab_OnSettingCustomIcon"
                 ReorderingRequested="BrowserTab_OnReorderingRequested"
-                ReorderingCommand="{Binding HandleReordering, Mode=OneWayToSource}" />
+                ReorderingCommand="{Binding HandleReordering, Mode=OneWayToSource}"
+                RemoveAllRequested="BrowserTab_OnRemoveAllRequested"
+                ImportRequested="BrowserTab_OnImportRequested"
+                ExportRequested="BrowserTab_OnExportRequested" />
         </DataTemplate>
         <converters:TabAddNewAlignmentConverter x:Key="AlignmentConverter" />
         <converters:TabsFlowDirectionConverter x:Key="FlowDirectionConverter" />

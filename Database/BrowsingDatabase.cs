@@ -376,13 +376,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                var activeId = _settingsDatabase.ActiveIdentityId ?? -1;
-                foreach (var identity in _database.Table<Identity>().OrderBy(i => i.Name).ToList())
-                {
-                    identity.IsActive = identity.Id == activeId;
-                    _identities.Add(identity);
-                }
-
+                var count = _database.DeleteAll<Identity>();
+                _logger.LogInformation("Deleted {Count} identities", count);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -405,8 +400,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                foreach (var bookmark in _database.Table<Bookmark>().OrderBy(b => b.Title ?? b.Url).ToList())
-                    _bookmarks.Add(bookmark);
+                var count = _database.DeleteAll<Bookmark>();
+                _logger.LogInformation("Deleted {Count} bookmarks", count);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -429,8 +424,8 @@ internal class BrowsingDatabase : IBrowsingDatabase
             case NotifyCollectionChangedAction.Move:
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
-                foreach (var tab in _database.Table<Tab>().OrderBy(t => t.Order).ToList())
-                    _tabs.Add(tab);
+                var count = _database.DeleteAll<Tab>();
+                _logger.LogInformation("Deleted {Count} tabs", count);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

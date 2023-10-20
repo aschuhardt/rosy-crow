@@ -216,11 +216,24 @@ public partial class TabCollection : ContentView
         return _browsingDatabase.UpdateTabOrder();
     }
 
-    private Task ImportTabs(IEnumerable<Tab> tabs)
+    public Task ImportTabs(IEnumerable<Tab> tabs)
     {
         foreach (var tab in tabs)
         {
-            tab.Selected = false;
+            if (string.IsNullOrWhiteSpace(tab.Label))
+            {
+                tab.Label = tab.Url.ToGeminiUri().Host[..1];
+            }
+            else
+            {
+                var info = new StringInfo(tab.Label);
+                if (info.LengthInTextElements > 1)
+                {
+                    _logger.LogDebug("Truncating an imported tab's label (initially length {Length})", info.LengthInTextElements);
+                    tab.Label = info.SubstringByTextElements(0, 1);
+                }    
+            }
+
             Tabs.Add(tab);
         }
 
@@ -489,24 +502,6 @@ public partial class TabCollection : ContentView
             if (imported.Length == 0)
             {
                 await Toast.Make("There are no tabs to import").Show();
-            }
-
-            // sanitize incoming tab labels
-            foreach (var tab in imported)
-            {
-                if (string.IsNullOrWhiteSpace(tab.Icon))
-                {
-                    tab.Icon = tab.Url.ToGeminiUri().Host[..1];
-                    continue;
-                }
-
-                var info = new StringInfo(tab.Icon);
-
-                if (info.LengthInTextElements > 1)
-                {
-                    _logger.LogDebug("Truncating an imported tab's label (initially length {Length}", info.LengthInTextElements);
-                    tab.Icon = info.SubstringByTextElements(0, 1);
-                }
             }
 
             await ImportTabs(imported.Select(t => new Tab

@@ -1,16 +1,26 @@
-using RosyCrow.Models;
+using RosyCrow.Services.Document;
 
 namespace RosyCrow.Views;
 
 public partial class AboutPage : ContentPage
 {
-	public AboutPage()
-	{
-		InitializeComponent();
-	}
+    private readonly IDocumentService _documentService;
 
-    private void AboutPage_OnAppearing(object sender, EventArgs e)
+    public AboutPage(IDocumentService documentService)
     {
-        Browser.Location = new Uri($"{Constants.InternalScheme}://about");
+        _documentService = documentService;
+        InitializeComponent();
+    }
+
+    private async void AboutPage_OnAppearing(object sender, EventArgs e)
+    {
+        var html = await _documentService.RenderInternalDocument("about");
+        Browser.Source = new HtmlWebViewSource { Html = html };
+    }
+
+    private void Browser_OnNavigating(object sender, WebNavigatingEventArgs e)
+    {
+        var uri = new Uri(e.Url);
+        Launcher.Default.OpenAsync(uri);
     }
 }

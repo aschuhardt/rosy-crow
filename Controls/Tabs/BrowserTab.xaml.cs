@@ -130,7 +130,7 @@ public partial class BrowserTab : ContentView
             iconMenu?.Add("Set Custom")?
                 .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => SettingCustomIcon?.Invoke(this, new TabEventArgs(tab))));
 
-            if (tab.Browser != null && _browsingDatabase.TryGetCapsule(url.Host, out var capsule))
+            if (tab.InitializedByTabCollection && _browsingDatabase.TryGetCapsule(url.Host, out var capsule))
             {
                 iconMenu?.Add("Reset")?
                     .SetOnMenuItemClickListener(new ActionMenuClickHandler(() =>
@@ -142,17 +142,17 @@ public partial class BrowserTab : ContentView
                 menu.Add("Remove Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
                 {
                     _browsingDatabase.Bookmarks.Remove(bookmark);
-                    tab.Browser?.SimulateLocationChanged();
+                    tab.OnBookmarkChanged();
                     await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
                 }));
             }
-            else if (tab.Browser != null)
+            else if (tab.InitializedByTabCollection)
             {
                 menu.Add("Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
                 {
-                    bookmark = new Bookmark { Url = tab.Browser.Location.ToString(), Title = tab.Browser.PageTitle };
+                    bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
                     _browsingDatabase.Bookmarks.Remove(bookmark);
-                    tab.Browser?.SimulateLocationChanged();
+                    tab.OnBookmarkChanged();
                     await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
                 }));
             }

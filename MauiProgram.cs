@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using CommunityToolkit.Maui;
-using Microsoft.Maui.Controls.Compatibility.Hosting;
+using Microsoft.Maui.LifecycleEvents;
 using Opal;
 using Opal.Response;
 using RosyCrow.Database;
@@ -17,6 +17,9 @@ using Serilog.Events;
 using Serilog.Exceptions;
 using Serilog.Formatting.Compact;
 using SQLite;
+using SQLitePCL;
+
+// ReSharper disable AsyncVoidLambda
 
 namespace RosyCrow;
 
@@ -36,6 +39,14 @@ public static class MauiProgram
                 fonts.AddFont("NotoSans-Regular.ttf", "NotoSansRegular");
                 fonts.AddFont("NotoSans-Bold.ttf", "NotoSansBold");
             })
+            .ConfigureLifecycleEvents(events =>
+            {
+                events.AddAndroid(android =>
+                {
+                    android.OnApplicationCreating(async _ =>
+                        await Services.GetRequiredService<IDocumentService>().LoadResources());
+                });
+            })
             .ConfigureEssentials(config => { config.UseVersionTracking(); });
 
         if (VersionTracking.IsFirstLaunchForVersion("1.2.0"))
@@ -45,7 +56,7 @@ public static class MauiProgram
                 Directory.Delete(path, true);
         }
 
-        SQLitePCL.Batteries.Init();
+        Batteries.Init();
 
         builder.Services
             .AddSingleton(_ => new SQLiteConnection(Path.Combine(FileSystem.AppDataDirectory, Constants.DatabaseName),
@@ -82,8 +93,11 @@ public static class MauiProgram
         var logConfig = new LoggerConfiguration()
             .Enrich.WithExceptionDetails()
             .WriteTo.Async(a =>
-                a.File(new CompactJsonFormatter(), Path.Combine(logDirectory, "log.json"),
-                    LogEventLevel.Warning, retainedFileCountLimit: 7, rollingInterval: RollingInterval.Day))
+                a.File(new CompactJsonFormatter(),
+                    Path.Combine(logDirectory, "log.json"),
+                    LogEventLevel.Warning,
+                    retainedFileCountLimit: 7,
+                    rollingInterval: RollingInterval.Day))
             .WriteTo.Debug(LogEventLevel.Debug);
 
         builder.Logging.AddSerilog(logConfig.CreateLogger());

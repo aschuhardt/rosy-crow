@@ -103,7 +103,7 @@ public partial class CertificatePage : ContentPage
 
     private async void CertificatePage_OnAppearing(object sender, EventArgs e)
     {
-        Host = _mainPage.Browser.Location.Host;
+        Host = _mainPage.CurrentTab.Location.Host;
         if (_browsingDatabase.TryGetHostCertificate(Host, out var cert))
         {
             Subject = cert.Subject;

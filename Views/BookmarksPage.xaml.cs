@@ -28,7 +28,7 @@ public partial class BookmarksPage : ContentPage
 
         LoadPage = new Command(async param =>
         {
-            _mainPage.Browser.Location = new Uri((string)param);
+            _mainPage.CurrentTab.Location = new Uri((string)param);
             _mainPage.LoadPageOnAppearing = true;
             await Navigation.PopAsync(true);
         });

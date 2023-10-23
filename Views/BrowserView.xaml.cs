@@ -1,17 +1,11 @@
-using System.Text;
-using System.Web;
-using System.Windows.Input;
 using Android.Views;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core;
-using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Graphics.Platform;
 using Microsoft.Maui.Handlers;
 using Opal;
 using Opal.Authentication.Certificate;
 using Opal.CallbackArgs;
-using Opal.Document.Line;
 using Opal.Response;
 using Opal.Tofu;
 using RosyCrow.Controls.Tabs;
@@ -23,6 +17,7 @@ using RosyCrow.Resources.Localization;
 using RosyCrow.Services.Cache;
 using RosyCrow.Services.Document;
 using RosyCrow.Services.Identity;
+using Tab = RosyCrow.Models.Tab;
 using WebView = Android.Webkit.WebView;
 
 // ReSharper disable AsyncVoidLambda
@@ -31,33 +26,20 @@ namespace RosyCrow.Views;
 
 public partial class BrowserView : ContentView
 {
-    private const int MaxRequestAttempts = 5;
-    private static readonly string[] ValidInternalPaths = { "default", "preview", "about" };
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ICacheService _cache;
     private readonly IDocumentService _documentService;
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
     private readonly ILogger<BrowserView> _logger;
-    private readonly List<Task> _parallelRenderWorkload;
     private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
 
-    private bool _canPrint;
-    private bool _canShowHostCertificate;
     private string _findNextQuery;
-    private string _input;
-    private bool _isFirstLoad = true;
     private bool _isLoading;
-    private bool _isPageLoaded;
-    private bool _isRefreshing;
-    private Uri _location;
-    private string _pageTitle;
     private IPrintService _printService;
-    private ICommand _refresh;
-    private string _renderedHtml;
-    private string _renderUrl;
     private bool _resetFindNext;
+    private Tab _tab;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -75,8 +57,6 @@ public partial class BrowserView : ContentView
     {
         InitializeComponent();
 
-        BindingContext = this;
-
         _geminiClient = geminiClient;
         _settingsDatabase = settingsDatabase;
         _browsingDatabase = browsingDatabase;
@@ -85,141 +65,10 @@ public partial class BrowserView : ContentView
         _logger = logger;
         _documentService = documentService;
         _recentHistory = new Stack<Uri>();
-        _parallelRenderWorkload = new List<Task>();
-
-        Refresh = new Command(async () => await LoadPage(true));
 
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
         _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
-    }
-
-    public ContentPage ParentPage { get; set; }
-
-    public bool CanShowHostCertificate
-    {
-        get => _canShowHostCertificate;
-        set
-        {
-            if (value == _canShowHostCertificate) return;
-
-            _canShowHostCertificate = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public ICommand Refresh
-    {
-        get => _refresh;
-        set
-        {
-            if (Equals(value, _refresh)) return;
-
-            _refresh = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string RenderedHtml
-    {
-        get => _renderedHtml;
-        set
-        {
-            if (value == _renderedHtml) return;
-
-            _renderedHtml = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string PageTitle
-    {
-        get => _pageTitle;
-        set
-        {
-            if (value == _pageTitle) return;
-
-            _pageTitle = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public bool CanPrint
-    {
-        get => _canPrint;
-        set
-        {
-            if (value == _canPrint) return;
-
-            _canPrint = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public bool IsRefreshing
-    {
-        get => _isRefreshing;
-        set
-        {
-            if (value == _isRefreshing) return;
-
-            _isRefreshing = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public Uri Location
-    {
-        get => _location;
-        set
-        {
-            if (value != _location)
-            {
-                _location = value;
-                OnPropertyChanged();
-            }
-
-            if (!_isLoading)
-                Dispatcher.Dispatch(async () => await LoadPage());
-
-            OnPropertyChanged(nameof(IsPageLoaded));
-        }
-    }
-
-    public string Input
-    {
-        get => _input;
-        set
-        {
-            if (value == _input) return;
-
-            _input = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public string RenderUrl
-    {
-        get => _renderUrl;
-        set
-        {
-            if (value == _renderUrl) return;
-
-            _renderUrl = value;
-            OnPropertyChanged();
-        }
-    }
-
-    public bool IsPageLoaded
-    {
-        get => _isPageLoaded;
-        set
-        {
-            if (value == _isPageLoaded) return;
-
-            _isPageLoaded = value;
-            OnPropertyChanged();
-        }
     }
 
     public bool HasFindNextQuery
@@ -243,14 +92,14 @@ public partial class BrowserView : ContentView
 
     private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
     {
-        if (ParentPage == null)
+        if (_tab.ParentPage == null)
         {
             _logger.LogWarning("Unable to prompt the user to verify an unrecognized certificate because no ParentPage was set");
             return;
         }
 
         await Dispatcher.DispatchAsync(async () =>
-            arg.AcceptAndTrust = await ParentPage.DisplayAlert(
+            arg.AcceptAndTrust = await _tab.ParentPage.DisplayAlert(
                 Text.BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate,
                 string.Format(
                     Text
@@ -265,7 +114,7 @@ public partial class BrowserView : ContentView
 
     private async Task RemoteCertificateInvalidCallback(RemoteCertificateInvalidArgs arg)
     {
-        if (ParentPage == null)
+        if (_tab.ParentPage == null)
             return;
 
         var message = arg.Reason switch
@@ -286,7 +135,7 @@ public partial class BrowserView : ContentView
         };
 
         await Dispatcher.DispatchAsync(() =>
-            ParentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
+            _tab.ParentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
                 message,
                 Text.BrowserView_RemoteCertificateInvalidCallback_Cancel));
     }
@@ -305,15 +154,11 @@ public partial class BrowserView : ContentView
     private event EventHandler FindNext;
     private event EventHandler ClearMatches;
 
-    public event EventHandler ReadyToShow;
-    public event EventHandler PageLoaded;
-    public event EventHandler<UrlEventArgs> OpeningUrlInNewTab;
-
     public void Print()
     {
         try
         {
-            _printService.Print(PageTitle);
+            _printService.Print(_tab.Title);
         }
         catch (Exception e)
         {
@@ -321,7 +166,7 @@ public partial class BrowserView : ContentView
         }
     }
 
-    public bool GoBack()
+    public void GoBack()
     {
         try
         {
@@ -331,9 +176,8 @@ public partial class BrowserView : ContentView
                 if (_recentHistory.TryPeek(out var prev))
                 {
                     // navigate to the prior page but do 
-                    _location = prev;
+                    _tab.SetLocationWithoutLoading(prev);
                     Dispatcher.Dispatch(async () => await LoadPage(useCache: true));
-                    return true;
                 }
 
                 // there was no previous entry; re-push the current one in order to revert the stack to its initial state
@@ -344,13 +188,6 @@ public partial class BrowserView : ContentView
         {
             _logger.LogError(e, "Exception thrown while navigating backward");
         }
-
-        return false;
-    }
-
-    public void SimulateLocationChanged()
-    {
-        OnPropertyChanged(nameof(Location));
     }
 
     public void ClearFindResults()
@@ -371,307 +208,11 @@ public partial class BrowserView : ContentView
         _resetFindNext = false;
     }
 
-    private static string GetDefaultFileNameByMimeType(string mimeType)
-    {
-        var extension = MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
-        return extension != null
-            ? $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.{extension}"
-            : $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
-    }
-
-    private static async Task<MemoryStream> CreateInlinedImagePreview(Stream source, string mimetype)
-    {
-        var typeHint = mimetype switch
-        {
-            "image/jpeg" => ImageFormat.Jpeg,
-            "image/gif" => ImageFormat.Gif,
-            "image/bmp" => ImageFormat.Bmp,
-            "image/tiff" => ImageFormat.Tiff,
-            _ => ImageFormat.Png
-        };
-
-        var image = PlatformImage.FromStream(source, typeHint);
-        using var downsized = image.Downsize(256.0f, true);
-
-        var output = new MemoryStream();
-        await downsized.SaveAsync(output);
-
-        return output;
-    }
-
-    private string CreateInlineImageDataUrl(MemoryStream data)
-    {
-        data.Seek(0, SeekOrigin.Begin);
-        return $"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
-    }
-
-    private async Task<string> TryLoadCachedImage(Uri uri)
-    {
-        try
-        {
-            var image = new MemoryStream();
-
-            if (await _cache.TryRead(uri, image))
-            {
-                _logger.LogDebug("Loaded cached image originally from {URI}", uri);
-                return CreateInlineImageDataUrl(image);
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
-        }
-
-        return null;
-    }
-
-    private async Task<string> FetchAndCacheInlinedImage(Uri uri)
-    {
-        try
-        {
-            for (var i = 0; i < MaxRequestAttempts; i++)
-            {
-                try
-                {
-                    // don't follow redirects that the user isn't aware of
-                    var client = new OpalClient(new DummyCertificateDatabase(), RedirectBehavior.Ignore)
-                    {
-                        AllowIPv6 = _settingsDatabase.AllowIpv6
-                    };
-
-                    if (await client.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
-                    {
-                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
-                            success.MimeType,
-                            uri);
-
-                        var image = await CreateInlinedImagePreview(success.Body, success.MimeType);
-
-                        if (image == null)
-                        {
-                            _logger.LogWarning(
-                                "Loaded an image to be inlined from {URI} but failed to create the preview",
-                                uri);
-                            break;
-                        }
-
-                        image.Seek(0, SeekOrigin.Begin);
-                        await _cache.Write(uri, image);
-
-                        _logger.LogDebug("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
-
-                        return CreateInlineImageDataUrl(image);
-                    }
-
-                    // if the error was only temporary (according to the server), then
-                    // we can try again
-                }
-                catch (Exception e)
-                {
-                    // don't care
-                    _logger.LogDebug(e, "Attempt {Attempt} to fetch and inline an image from {URI} failed", i + 1, uri);
-                }
-
-                await Task.Delay(Convert.ToInt32(Math.Pow(2, i) * 100));
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while attempting to cache an image from {URI}", uri);
-        }
-
-        return null;
-    }
-
-    private async Task<HtmlNode> RenderLinkLine(LinkLine line)
-    {
-        return _settingsDatabase.InlineImages
-            ? await RenderInlineImage(line)
-            : RenderDefaultLinkLine(line);
-    }
-
-    private static HtmlNode RenderDefaultLinkLine(LinkLine line)
-    {
-        return HtmlNode.CreateNode(
-            $"<p><a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a></p>");
-    }
-
-    private async Task<HtmlNode> RenderInlineImage(LinkLine line)
-    {
-        try
-        {
-            var fileName = line.Uri.Segments.LastOrDefault()?.Trim('/');
-
-            string mimeType = null;
-
-            if (!string.IsNullOrWhiteSpace(fileName) && MimeTypes.TryGetMimeType(fileName, out mimeType) &&
-                mimeType.StartsWith("image"))
-            {
-                var node = HtmlNode.CreateNode("<p></p>");
-
-                _logger.LogDebug("Attempting to render an image preview inline from {URI}", line.Uri);
-
-                if (line.Uri.Scheme == Constants.GeminiScheme)
-                {
-                    _logger.LogDebug("The image URI specifies the gemini protocol");
-
-                    var cached = await TryLoadCachedImage(line.Uri);
-
-                    if (cached != null)
-                    {
-                        _logger.LogDebug("Loading the image preview from the cache");
-                        node.AppendChild(RenderInlineImageFigure(line, cached));
-                    }
-                    else
-                    {
-                        _logger.LogDebug(
-                            "Queueing the image download to complete after the rest of the page has been rendered.");
-                        _parallelRenderWorkload.Add(Task.Run(async () =>
-                        {
-                            var source = await FetchAndCacheInlinedImage(line.Uri);
-
-                            if (!string.IsNullOrEmpty(source))
-                            {
-                                _logger.LogDebug("Successfully created the image preview; rendering that now");
-                                node.AppendChild(RenderInlineImageFigure(line, source));
-                            }
-                            else
-                            {
-                                // did not load the image preview; fallback to a simple link
-                                _logger.LogDebug(
-                                    "Could not create the image preview; falling-back to a simple gemtext link line");
-                                node.AppendChild(HtmlNode.CreateNode(
-                                    $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
-                            }
-                        }));
-                    }
-                }
-                else
-                {
-                    // http, etc. can be handled by the browser
-                    _logger.LogDebug(
-                        "The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
-                    node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
-                }
-
-                return node;
-            }
-
-            _logger.LogDebug(
-                "The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
-                line.Uri,
-                mimeType ?? "none");
-            return RenderDefaultLinkLine(line);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Exception thrown while rendering an inline image preview from {URI}", line.Uri);
-            return null;
-        }
-    }
-
-    private static HtmlNode RenderInlineImageFigure(LinkLine line, string source)
-    {
-        // successfully loaded the image preview
-        var figure = HtmlNode.CreateNode($"<figure><img src=\"{source}\" /></figure>");
-
-        if (!string.IsNullOrWhiteSpace(line.Text))
-        {
-            figure.AppendChild(
-                HtmlNode.CreateNode($"<figcaption>{HttpUtility.HtmlEncode(line.Text)}</figcaption>"));
-        }
-
-        var anchor = HtmlNode.CreateNode($"<a href=\"{line.Uri}\"></a>");
-        anchor.AppendChild(figure);
-
-        return anchor;
-    }
-
-    private async Task<HtmlNode> RenderGemtextLine(ILine line)
-    {
-        return line switch
-        {
-            EmptyLine => HtmlNode.CreateNode("<br>"),
-            HeadingLine headingLine => HtmlNode.CreateNode(
-                $"<h{headingLine.Level}>{HttpUtility.HtmlEncode(headingLine.Text)}</h{headingLine.Level}>"),
-            LinkLine linkLine => await RenderLinkLine(linkLine),
-            QuoteLine quoteLine => HtmlNode.CreateNode(
-                $"<blockquote><p>{HttpUtility.HtmlEncode(quoteLine.Text)}</p></blockquote>"),
-            TextLine textLine => HtmlNode.CreateNode($"<p>{HttpUtility.HtmlEncode(textLine.Text)}</p>"),
-            _ => throw new ArgumentOutOfRangeException(nameof(line))
-        };
-    }
-
     private string RenderCachedHtml(Stream buffer)
     {
         var document = _documentService.LoadFromBuffer(buffer);
         var childNodes = document.DocumentNode.ChildNodes;
-        PageTitle = (childNodes.FindFirst("h1") ?? childNodes.FindFirst("h2") ?? childNodes.FindFirst("h3"))?.InnerText;
-        return document.DocumentNode.OuterHtml;
-    }
-
-    private async Task<string> RenderGemtextAsHtml(GemtextResponse gemtext)
-    {
-        var document = _documentService.CreateEmptyDocument();
-
-        var body = document.DocumentNode.ChildNodes.FindFirst("main");
-
-        PageTitle = null; // this will be set to the first heading we encounter
-
-        HtmlNode preNode = null;
-        HtmlNode listNode = null;
-        var preText = new StringBuilder();
-
-        foreach (var line in gemtext.AsDocument())
-            switch (line)
-            {
-                case FormattedBeginLine preBegin:
-                    var preParent = body.AppendChild(HtmlNode.CreateNode("<figure></figure>"));
-                    if (!string.IsNullOrWhiteSpace(preBegin.Text))
-                        preParent.AppendChild(HtmlNode.CreateNode($"<figcaption>{preBegin.Text}</figcaption>"));
-                    preNode = preParent.AppendChild(HtmlNode.CreateNode("<pre></pre>"));
-                    preText.Clear();
-                    break;
-                case FormattedEndLine when preNode != null:
-                    preNode.InnerHtml = HttpUtility.HtmlEncode(preText.ToString());
-                    break;
-                case FormattedLine formatted:
-                    preText.AppendLine(formatted.Text);
-                    break;
-                case ListLine listLine:
-                    listNode ??= HtmlNode.CreateNode("<ul></ul>");
-                    listNode.AppendChild(HtmlNode.CreateNode($"<li>{HttpUtility.HtmlEncode(listLine.Text)}</li>"));
-                    break;
-                default:
-                    if (listNode != null)
-                    {
-                        body.AppendChild(listNode);
-                        listNode = null;
-                    }
-
-                    if (PageTitle == null && line is HeadingLine heading)
-                        PageTitle = heading.Text;
-
-                    var renderedLine = await RenderGemtextLine(line);
-                    if (renderedLine != null)
-                        body.AppendChild(renderedLine);
-
-                    break;
-            }
-
-        if (listNode != null)
-            body.AppendChild(listNode);
-
-        if (_parallelRenderWorkload.Any())
-        {
-            await Task.WhenAll(_parallelRenderWorkload.ToArray());
-            _parallelRenderWorkload.Clear();
-        }
-
-        // cache the page prior to injecting the stylesheet
-        await using var pageBuffer = new MemoryStream(Encoding.UTF8.GetBytes(document.DocumentNode.OuterHtml));
-        await _cache.Write(gemtext.Uri, pageBuffer);
-
+        _tab.Title = (childNodes.FindFirst("h1") ?? childNodes.FindFirst("h2") ?? childNodes.FindFirst("h3"))?.InnerText;
         return document.DocumentNode.OuterHtml;
     }
 
@@ -699,22 +240,26 @@ public partial class BrowserView : ContentView
 
         _isLoading = true;
 
-        if (!IsRefreshing)
-            IsRefreshing = true;
+        if (!_tab.IsRefreshing)
+            _tab.IsRefreshing = true;
 
         try
         {
-            for (var attempts = 0; attempts < MaxRequestAttempts; attempts++)
+            for (var attempts = 0; attempts < Constants.MaxRequestAttempts; attempts++)
             {
-                if (!string.IsNullOrWhiteSpace(Input))
+                if (!string.IsNullOrWhiteSpace(_tab.Input))
                 {
-                    _logger.LogInformation("User provided input \"{Input}\"", Input);
-                    Location = new UriBuilder(Location) { Query = Input }.Uri;
+                    _logger.LogInformation("User provided input \"{Input}\"", _tab.Input);
+                    _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
                 }
 
                 _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
 
-                var response = await _geminiClient.UploadAsync(Location, payload.Size, payload.Token, payload.MimeType, payload.Contents);
+                var response = await _geminiClient.UploadAsync(_tab.Location,
+                    payload.Size,
+                    payload.Token,
+                    payload.MimeType,
+                    payload.Contents);
 
                 if (await HandleTitanResponse(response, attempts) == ResponseAction.Finished)
                 {
@@ -725,10 +270,10 @@ public partial class BrowserView : ContentView
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to {URI}", Location);
+            _logger.LogError(e, "Exception thrown while navigating to {URI}", _tab.Location);
         }
 
-        IsRefreshing = false;
+        _tab.IsRefreshing = false;
         _isLoading = false;
     }
 
@@ -737,33 +282,20 @@ public partial class BrowserView : ContentView
         if (_isLoading)
             return;
 
-        if (_isFirstLoad)
-        {
-            // don't show this view until at least an empty page has been loaded; this
-            // will ensure that the default white background doesn't flash annoyingly
-            // each time a tab is created
-            _isFirstLoad = false;
-            await Dispatcher.DispatchAsync(() =>
-            {
-                LoadEmptyPage();
-                OnReadyToShow();
-            });
-        }
+        _tab.CanShowHostCertificate = false;
 
-        CanShowHostCertificate = false;
-
-        if (Location == null || Location.Scheme == Constants.InternalScheme)
+        if (_tab.Location == null || _tab.Location.Scheme == Constants.InternalScheme)
         {
-            await LoadInternalPage(Location?.Host ?? "default");
-            if (Location != null)
-                RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
-            IsRefreshing = false;
-            CanShowHostCertificate = false;
+            await LoadInternalPage(_tab.Location?.Host ?? "default");
+            if (_tab.Location != null)
+                _tab.RenderUrl = $"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
+            _tab.IsRefreshing = false;
+            _tab.CanShowHostCertificate = false;
             _isLoading = false;
             return;
         }
 
-        if (Location.Scheme == Constants.TitanScheme)
+        if (_tab.Location.Scheme == Constants.TitanScheme)
         {
             await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
             return;
@@ -771,49 +303,49 @@ public partial class BrowserView : ContentView
 
         _isLoading = true;
 
-        if (!IsRefreshing)
-            IsRefreshing = true;
+        if (!_tab.IsRefreshing)
+            _tab.IsRefreshing = true;
 
-        CanPrint = false;
+        _tab.CanPrint = false;
 
         if (HasFindNextQuery)
             ClearFindResults();
 
-        _logger.LogInformation("Navigating to {URI}", Location);
+        _logger.LogInformation("Navigating to {URI}", _tab.Location);
 
         try
         {
-            for (var attempts = 0; attempts < MaxRequestAttempts; attempts++)
+            for (var attempts = 0; attempts < Constants.MaxRequestAttempts; attempts++)
             {
                 if (useCache && !triggeredByRefresh)
                 {
                     var cached = new MemoryStream();
 
-                    if (await _cache.TryRead(Location, cached))
+                    if (await _cache.TryRead(_tab.Location, cached))
                     {
                         _logger.LogInformation("Loading a cached copy of the page");
 
                         cached.Seek(0, SeekOrigin.Begin);
-                        RenderedHtml = RenderCachedHtml(cached);
-                        CanShowHostCertificate = true;
-                        RenderUrl = $"{Location.Host}{Location.PathAndQuery}";
-                        StoreVisitedLocation(Location, false);
-                        CanPrint = _printService != null;
+                        _tab.Html = RenderCachedHtml(cached);
+                        _tab.CanShowHostCertificate = true;
+                        _tab.RenderUrl = $"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
+                        StoreVisitedLocation(_tab.Location, false);
+                        _tab.CanPrint = _printService != null;
                         break;
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(Input))
+                if (!string.IsNullOrWhiteSpace(_tab.Input))
                 {
-                    _logger.LogInformation("User provided input \"{Input}\"", Input);
-                    Location = new UriBuilder(Location) { Query = Input }.Uri;
+                    _logger.LogInformation("User provided input \"{Input}\"", _tab.Input);
+                    _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
                 }
 
                 _geminiClient.AllowIPv6 = _settingsDatabase.AllowIpv6;
 
-                var response = await _geminiClient.SendRequestAsync(Location);
+                var response = await _geminiClient.SendRequestAsync(_tab.Location);
 
-                RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
+                _tab.RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
                 _logger.LogInformation("Response was {Response}", response);
 
                 if (await HandleGeminiResponse(response, attempts) == ResponseAction.Finished)
@@ -825,13 +357,12 @@ public partial class BrowserView : ContentView
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to {URI}", Location);
+            _logger.LogError(e, "Exception thrown while navigating to {URI}", _tab.Location);
         }
 
-        IsRefreshing = false;
+        _tab.IsRefreshing = false;
+        _tab.Input = null;
         _isLoading = false;
-
-        Input = null;
     }
 
     private async Task<ResponseAction> HandleTitanResponse(IGeminiResponse response, int attempt)
@@ -840,16 +371,16 @@ public partial class BrowserView : ContentView
         {
             case InputRequiredResponse inputRequired:
             {
-                if (ParentPage == null)
+                if (_tab.ParentPage == null)
                 {
                     _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
                     return ResponseAction.Finished;
                 }
 
-                Input = await ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                _tab.Input = await _tab.ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
-                if (string.IsNullOrEmpty(Input))
+                if (string.IsNullOrEmpty(_tab.Input))
                     return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
 
                 return ResponseAction.Retry;
@@ -859,13 +390,13 @@ public partial class BrowserView : ContentView
                 if (!error.CanRetry)
                     return ResponseAction.Finished;
 
-                _logger.LogInformation("{Attempts} attempt(s) remaining", MaxRequestAttempts - attempt);
+                _logger.LogInformation("{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
 
-                if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
+                if (Constants.MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
                     _logger.LogInformation("No further attempts will be made");
-                    if (ParentPage != null)
-                        await ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
+                    if (_tab.ParentPage != null)
+                        await _tab.ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
                     return ResponseAction.Finished;
                 }
 
@@ -889,16 +420,16 @@ public partial class BrowserView : ContentView
         {
             case InputRequiredResponse inputRequired:
             {
-                if (ParentPage == null)
+                if (_tab.ParentPage == null)
                 {
                     _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
                     return ResponseAction.Finished;
                 }
 
-                Input = await ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                _tab.Input = await _tab.ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
-                if (string.IsNullOrEmpty(Input))
+                if (string.IsNullOrEmpty(_tab.Input))
                 {
                     _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
                     return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
@@ -917,20 +448,20 @@ public partial class BrowserView : ContentView
                     return ResponseAction.Finished;
                 }
 
-                _logger.LogInformation("{Attempts} attempt(s) remaining", MaxRequestAttempts - attempt);
+                _logger.LogInformation("{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
 
-                if (MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
+                if (Constants.MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
                     _logger.LogInformation("No further attempts will be made");
 
-                    if (ParentPage == null)
+                    if (_tab.ParentPage == null)
                     {
                         return ResponseAction.Finished;
                     }
 
-                    if (ParentPage != null)
+                    if (_tab.ParentPage != null)
                     {
-                        await ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
+                        await _tab.ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
                             error.Message,
                             Text.BrowserView_LoadPage_OK);
                     }
@@ -952,26 +483,38 @@ public partial class BrowserView : ContentView
         }
     }
 
+    private static string GetDefaultFileNameByMimeType(string mimeType)
+    {
+        var extension = MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
+        return extension != null
+            ? $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.{extension}"
+            : $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+    }
+
     private async Task HandleSuccessfulResponse(SuccessfulResponse response)
     {
-        Location = response.Uri;
+        _tab.Location = response.Uri;
 
         if (response is GemtextResponse gemtext)
         {
             _logger.LogInformation("Response is a gemtext document");
 
-            CanShowHostCertificate = true;
-            RenderedHtml = await RenderGemtextAsHtml(gemtext);
-            StoreVisitedLocation(Location, false);
-            CanPrint = _printService != null;
-            OnPageLoaded();
+            var result = await _documentService.RenderGemtextAsHtml(gemtext);
+            _tab.Html = result.HtmlContents;
+            _tab.Title = result.Title;
+            _tab.CanShowHostCertificate = true;
+            _tab.CanPrint = _printService != null;
+            _tab.Url = _tab.Location.ToString();
+            _tab.Label = CreateTabLabel();
+            _browsingDatabase.Update(_tab);
+            StoreVisitedLocation(_tab.Location, false);
         }
         else
         {
             _logger.LogInformation(
                 "Response is not a gemtext document, so it will be opened externally");
 
-            StoreVisitedLocation(Location, true);
+            StoreVisitedLocation(_tab.Location, true);
 
             // not gemtext; save as a file
             var fileName = response.Uri.Segments.LastOrDefault() ??
@@ -1007,7 +550,7 @@ public partial class BrowserView : ContentView
                 _browsingDatabase.AddVisitedPage(new Visited
                 {
                     Url = uri.ToString(), Timestamp = DateTime.Now,
-                    Title = _pageTitle ?? uri.Segments.LastOrDefault() ?? uri.Host
+                    Title = _tab.Title ?? uri.Segments.LastOrDefault() ?? uri.Host
                 });
             }
         }
@@ -1022,19 +565,8 @@ public partial class BrowserView : ContentView
         try
         {
             _logger.LogInformation("Loading internal page {Name}", name);
-
-            var document = _documentService.CreateEmptyDocument();
-            var body = document.DocumentNode.ChildNodes.FindFirst("main");
-
-            await using (var file = await FileSystem.OpenAppPackageFileAsync($"{name}.html"))
-            using (var reader = new StreamReader(file))
-            {
-                body.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
-            }
-
-            RenderUrl = $"{Constants.InternalScheme}://{name}";
-
-            RenderedHtml = document.DocumentNode.OuterHtml;
+            _tab.RenderUrl = $"{Constants.InternalScheme}://{name}";
+            _tab.Html = await _documentService.RenderInternalDocument(name);
         }
         catch (Exception e)
         {
@@ -1046,7 +578,7 @@ public partial class BrowserView : ContentView
     {
         var uri = e.Url.ToUri();
         if (!uri.IsAbsoluteUri || uri.Scheme is Constants.GeminiScheme or Constants.TitanScheme or Constants.InternalScheme)
-            Location = uri;
+            _tab.Location = uri;
         else
             await Launcher.Default.OpenAsync(uri);
 
@@ -1063,6 +595,16 @@ public partial class BrowserView : ContentView
         ClearMatches?.Invoke(this, EventArgs.Empty);
     }
 
+    private string CreateTabLabel()
+    {
+        if (_browsingDatabase.TryGetCapsule(_tab.Location.Host, out var capsule) && !string.IsNullOrEmpty(capsule.Icon))
+        {
+            _logger.LogInformation("Capsule {Host} has a stored icon: {Icon}", _tab.Location.Host, capsule.Icon);
+            return capsule.Icon;
+        }
+
+        return _tab.DefaultLabel;
+    }
 
 #if ANDROID
     private void BuildContextMenu(IMenu menu, WebView view)
@@ -1079,8 +621,9 @@ public partial class BrowserView : ContentView
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Share.Default.RequestAsync(new ShareTextRequest(uri))));
             menu.Add("Open in New Tab")?.SetOnMenuItemClickListener(
-                new ActionMenuClickHandler<string>(hitTest.Extra, uri => OnOpeningUrlInNewTab(
-                    new UrlEventArgs(uri.ToGeminiUri()))));
+                new ActionMenuClickHandler<string>(hitTest.Extra,
+                    uri => OnOpeningUrlInNewTab(
+                        new UrlEventArgs(uri.ToGeminiUri()))));
         }
     }
 #endif
@@ -1108,17 +651,17 @@ public partial class BrowserView : ContentView
 
         webViewHandler.PlatformView.SetFindListener(new CallbackFindListener(count =>
         {
-            if (!_resetFindNext || ParentPage == null)
+            if (!_resetFindNext || _tab.ParentPage == null)
                 return;
 
             if (count == 0)
             {
-                ParentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
+                _tab.ParentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
                 FindNextQuery = null;
             }
             else
             {
-                ParentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
+                _tab.ParentPage.ShowToast(string.Format(Text.BrowserView_FindNext_Found__0__instances, count),
                     ToastDuration.Short);
             }
         }));
@@ -1136,24 +679,24 @@ public partial class BrowserView : ContentView
 #endif
     }
 
-    private void LoadEmptyPage()
-    {
-        RenderedHtml = _documentService.CreateEmptyDocument().DocumentNode.OuterHtml;
-    }
-
-    protected virtual void OnReadyToShow()
-    {
-        ReadyToShow?.Invoke(this, EventArgs.Empty);
-    }
-
-    protected virtual void OnPageLoaded()
-    {
-        PageLoaded?.Invoke(this, EventArgs.Empty);
-    }
-
     protected virtual void OnOpeningUrlInNewTab(UrlEventArgs e)
     {
-        OpeningUrlInNewTab?.Invoke(this, e);
+        _tab.OnOpeningUrlInNewTab(e);
+    }
+
+    private void BrowserView_OnBindingContextChanged(object sender, EventArgs e)
+    {
+        if (BindingContext is not Tab tab)
+            throw new InvalidOperationException();
+
+        _tab = tab;
+        tab.Refresh = new Command(async () => await LoadPage(true));
+        tab.FindNext = new Command(query => FindTextInPage((string)query));
+        tab.Print = new Command(Print, () => _tab.CanPrint);
+        tab.GoBack = new Command(GoBack, () => _recentHistory.TryPeek(out _));
+        tab.ClearFind = new Command(ClearFindResults, () => HasFindNextQuery);
+        tab.Load = new Command(async () => await LoadPage(false, true), () => !_isLoading);
+        tab.Location = tab.Url.ToGeminiUri();
     }
 
     private enum ResponseAction

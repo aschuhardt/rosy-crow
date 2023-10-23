@@ -56,7 +56,7 @@ public partial class HistoryPage : ContentPage
         ClearHistory = new Command(async () => await TryClearHistory());
         LoadPage = new Command(async param =>
         {
-            mainPage.Browser.Location = new Uri((string)param);
+            mainPage.Tabs.SelectedTab.Location = new Uri((string)param);
             mainPage.LoadPageOnAppearing = true;
             await Navigation.PopAsync(true);
         });

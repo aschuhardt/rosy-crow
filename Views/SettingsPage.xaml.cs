@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
+using RosyCrow.Services.Document;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -15,6 +16,7 @@ namespace RosyCrow.Views;
 
 public partial class SettingsPage : ContentPage
 {
+    private readonly IDocumentService _documentService;
     private readonly ILogger<SettingsPage> _logger;
     private readonly MainPage _mainPage;
     private readonly ISettingsDatabase _settingsDatabase;
@@ -29,10 +31,12 @@ public partial class SettingsPage : ContentPage
     private TabSide _tabSide;
     private string _versionInfo;
 
-    public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage)
+    public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage, IDocumentService documentService, ILogger<SettingsPage> logger)
     {
         _settingsDatabase = settingsDatabase;
         _mainPage = mainPage;
+        _documentService = documentService;
+        _logger = logger;
 
         InitializeComponent();
 
@@ -287,8 +291,6 @@ public partial class SettingsPage : ContentPage
             Choices = JsonConvert.DeserializeObject<ThemeChoice[]>(await reader.ReadToEndAsync());
         }
 
-        ThemePreviewBrowser.ParentPage = this;
-        ThemePreviewBrowser.Location = new Uri($"{Constants.InternalScheme}://preview");
 
         SelectedTheme = Choices?.FirstOrDefault(c => c.File == _settingsDatabase.Theme);
         HistoryPageSize = _settingsDatabase.HistoryPageSize;
@@ -300,6 +302,13 @@ public partial class SettingsPage : ContentPage
     private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)
     {
         _mainPage.LoadPageOnAppearing = true;
-        await ThemePreviewBrowser.LoadPage();
+
+        var html = await _documentService.RenderInternalDocument("preview");
+        ThemePreviewBrowser.Source = new HtmlWebViewSource { Html = html };
+    }
+
+    private void ThemePreviewBrowser_OnNavigating(object sender, WebNavigatingEventArgs e)
+    {
+        // do not
     }
 }

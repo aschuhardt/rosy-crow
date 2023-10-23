@@ -1,5 +1,4 @@
 ﻿using System.Windows.Input;
-using Android.App;
 using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
@@ -9,9 +8,9 @@ using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
-using RosyCrow.Platforms.Android;
 using RosyCrow.Resources.Localization;
 using Color = Android.Graphics.Color;
+using Tab = RosyCrow.Models.Tab;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -19,7 +18,9 @@ namespace RosyCrow.Views;
 
 public partial class MainPage : ContentPage
 {
-    public static readonly BindableProperty BrowserProperty = BindableProperty.Create(nameof(Browser), typeof(BrowserView), typeof(MainPage));
+    public static readonly BindableProperty CurrentTabProperty = BindableProperty.Create(nameof(CurrentTab), typeof(Tab), typeof(MainPage));
+
+    private static readonly object _scrollLock = new();
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<MainPage> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
@@ -62,7 +63,6 @@ public partial class MainPage : ContentPage
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
-        Print = new Command(() => Browser.Print());
         LoadHomeUrl = new Command(TryLoadHomeUrl);
         SetHomeUrl = new Command(TrySetHomeUrl);
         ToggleBookmarked = new Command(TryToggleBookmarked);
@@ -71,7 +71,16 @@ public partial class MainPage : ContentPage
         OpenIdentity = new Command(OpenMenuItem<IdentityPage>);
         OpenSettings = new Command(OpenMenuItem<SettingsPage>);
         FindInPage = new Command(async () => await TryFindInPage());
-        FindNextInPage = new Command(() => Browser.FindTextInPage(Browser.FindNextQuery));
+        Print = new Command(() =>
+        {
+            if (CurrentTab.Print?.CanExecute(null) ?? false)
+                CurrentTab.Print.Execute(null);
+        });
+        FindNextInPage = new Command(() =>
+        {
+            if (CurrentTab.FindNext?.CanExecute(CurrentTab.FindNextQuery) ?? false)
+                CurrentTab.FindNext.Execute(CurrentTab.FindNextQuery);
+        });
         ShowPageCertificate = new Command(OpenMenuItem<CertificatePage>);
 
         UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
@@ -87,8 +96,8 @@ public partial class MainPage : ContentPage
             button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
         }
 
-        UrlEntry.HandlerChanged += SetupUrlEnterHandling;
-        Tabs.SelectedViewChanged += TabsSelectedViewChanged;
+        // TODO: delete me
+        // Carousel.CurrentItemChanged += (sender, args) => Debugger.Break();
 
         WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
             (handler, _) =>
@@ -121,18 +130,10 @@ public partial class MainPage : ContentPage
             });
     }
 
-    private void TabsSelectedViewChanged(object sender, EventArgs e)
+    public Tab CurrentTab
     {
-        Browser = Tabs.SelectedView;
-        IsNavBarVisible = true;
-        if (UrlEntry.IsFocused)
-            UrlEntry.Unfocus();
-    }
-
-    public BrowserView Browser
-    {
-        get => (BrowserView)GetValue(BrowserProperty);
-        set => SetValue(BrowserProperty, value);
+        get => (Tab)GetValue(CurrentTabProperty);
+        set => SetValue(CurrentTabProperty, value);
     }
 
     public bool LoadPageOnAppearing
@@ -201,7 +202,7 @@ public partial class MainPage : ContentPage
         set
         {
             // don't allow the navbar to be hidden if "Find in page" is active
-            if (value == _isNavBarVisible || !value && Browser.HasFindNextQuery)
+            if (value == _isNavBarVisible || !value && CurrentTab.HasFindNextQuery)
                 return;
 
             _isNavBarVisible = value;
@@ -367,6 +368,27 @@ public partial class MainPage : ContentPage
         }
     }
 
+    private void Tabs_SelectedTabChanged(object sender, EventArgs e)
+    {
+        // TODO: This won't be necessary (as we can just bind CurrentItem) once this PR is released: https://github.com/dotnet/maui/pull/16165
+        // yuck
+        if (!Carousel.IsScrolling && Monitor.TryEnter(_scrollLock))
+        {
+            try
+            {
+                Carousel.ScrollTo(Tabs.SelectedTab, animate: false);
+            }
+            finally
+            {
+                Monitor.Exit(_scrollLock);
+            }
+        }
+
+        IsNavBarVisible = true;
+        if (UrlEntry.IsFocused)
+            UrlEntry.Unfocus();
+    }
+
     private async Task TryLoadEnteredUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -376,7 +398,7 @@ public partial class MainPage : ContentPage
 
         try
         {
-            Browser.Location = url.StartsWith(Constants.InternalScheme)
+            CurrentTab.Location = url.StartsWith(Constants.InternalScheme)
                 ? new Uri(url)
                 : url.ToGeminiUri();
         }
@@ -387,7 +409,7 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void SetupUrlEnterHandling(object sender, EventArgs e)
+    private void UrlEntry_HandlerChanged(object sender, EventArgs e)
     {
         if (sender is not Entry entry || entry.Handler is not EntryHandler handler)
             return;
@@ -479,7 +501,13 @@ public partial class MainPage : ContentPage
                 return true;
             }
 
-            return Browser.GoBack();
+            if (CurrentTab?.GoBack.CanExecute(null) ?? false)
+            {
+                CurrentTab.GoBack.Execute(null);
+                return true;
+            }
+
+            return false;
         }
         catch (Exception e)
         {
@@ -533,7 +561,7 @@ public partial class MainPage : ContentPage
             if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
                 this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
             else
-                Browser.Location = _settingsDatabase.HomeUrl.ToGeminiUri();
+                CurrentTab.Location = _settingsDatabase.HomeUrl.ToGeminiUri();
         }
         catch (Exception e)
         {
@@ -543,22 +571,22 @@ public partial class MainPage : ContentPage
 
     private void TrySetHomeUrl()
     {
-        if (Browser.Location == null)
+        if (CurrentTab.Location == null)
             return;
 
         try
         {
-            _settingsDatabase.HomeUrl = Browser.Location.ToString();
+            _settingsDatabase.HomeUrl = CurrentTab.Location.ToString();
 
             _logger.LogInformation("Home URI set to {URI}", _settingsDatabase.HomeUrl);
 
-            Browser.SimulateLocationChanged(); // force buttons to update
+            CurrentTab.OnBookmarkChanged(); // force buttons to update
 
             this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the home URI to {URI}", Browser.Location);
+            _logger.LogError(e, "Exception thrown while setting the home URI to {URI}", CurrentTab.Location);
         }
     }
 
@@ -568,11 +596,11 @@ public partial class MainPage : ContentPage
         {
             string query;
 
-            if (Browser.HasFindNextQuery)
+            if (CurrentTab.HasFindNextQuery)
             {
                 query = await DisplayPromptAsync(Text.MainPage_TryFindInPage_Find_in_Page,
                     Text.MainPage_TryFindInPage_OngoingPrompt,
-                    initialValue: Browser.FindNextQuery);
+                    initialValue: CurrentTab.FindNextQuery);
             }
             else
             {
@@ -582,14 +610,15 @@ public partial class MainPage : ContentPage
 
             if (string.IsNullOrEmpty(query))
             {
-                if (Browser.HasFindNextQuery)
-                    Browser.ClearFindResults();
+                if (CurrentTab?.ClearFind.CanExecute(null) ?? false)
+                    CurrentTab.ClearFind.Execute(null);
                 return;
             }
 
             IsMenuExpanded = false;
 
-            Browser.FindTextInPage(query);
+            if (CurrentTab?.FindNext.CanExecute(CurrentTab.FindNextQuery) ?? false)
+                CurrentTab.FindNext.Execute(CurrentTab.FindNextQuery);
         }
         catch (Exception e)
         {
@@ -599,15 +628,15 @@ public partial class MainPage : ContentPage
 
     private void TryToggleBookmarked()
     {
-        if (Browser.Location == null)
+        if (CurrentTab.Location == null)
             return;
 
         try
         {
-            if (_browsingDatabase.TryGetBookmark(Browser.Location, out var bookmark))
+            if (_browsingDatabase.TryGetBookmark(CurrentTab.Location, out var bookmark))
             {
                 _browsingDatabase.Bookmarks.Remove(bookmark);
-                Browser.SimulateLocationChanged(); // force buttons to update
+                CurrentTab.OnBookmarkChanged(); // force buttons to update
 
                 _logger.LogInformation("Removing bookmarked location {URI}", bookmark.Url);
 
@@ -617,10 +646,11 @@ public partial class MainPage : ContentPage
             {
                 _browsingDatabase.Bookmarks.Add(new Bookmark
                 {
-                    Title = Browser.PageTitle ?? Browser.Location.Segments.LastOrDefault() ?? Browser.Location.Host,
-                    Url = Browser.Location.ToString()
+                    Title = CurrentTab.Title ?? CurrentTab.Location.Segments.LastOrDefault() ?? CurrentTab.Location.Host,
+                    Url = CurrentTab.Location.ToString()
                 });
-                Browser.SimulateLocationChanged(); // force buttons to update
+
+                CurrentTab.OnBookmarkChanged(); // force buttons to update
 
                 _logger.LogInformation("Set bookmarked location {URI}", bookmark.Url);
 
@@ -629,7 +659,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown toggling the bookmark for {URI}", Browser.Location);
+            _logger.LogError(e, "Exception thrown toggling the bookmark for {URI}", CurrentTab.Location);
         }
     }
 
@@ -673,7 +703,6 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            Browser = Tabs.SelectedView;
             PullTabVisible = !_settingsDatabase.HidePullTab;
 
             await Task.WhenAny(
@@ -683,7 +712,8 @@ public partial class MainPage : ContentPage
             if (LoadPageOnAppearing)
             {
                 LoadPageOnAppearing = false;
-                await Browser.LoadPage();
+                if (CurrentTab?.Load.CanExecute(null) ?? false)
+                    CurrentTab.Load.Execute(null);
             }
 
             if (!_whatsNewShown && VersionTracking.IsFirstLaunchForCurrentVersion)
@@ -725,9 +755,19 @@ public partial class MainPage : ContentPage
         });
     }
 
-    private void CurrentPageView_OnFocused(object sender, FocusEventArgs e)
+    private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
     {
-        if (Tabs.IsReordering)
-            Tabs.IsReordering = false;
+        if (!Tabs.SelectedTab?.Equals(e.CurrentItem) ?? false)
+            Tabs.SelectedTab = (Tab)e.CurrentItem;
+    }
+
+    private void Carousel_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
+    {
+        if (e.CenterItemIndex < 0 || Tabs.SelectedTab == null)
+            return;
+
+        var itemAtIndex = Tabs.Tabs[e.CenterItemIndex];
+        if (!Tabs.SelectedTab.Equals(itemAtIndex))
+            Tabs.SelectedTab = itemAtIndex;
     }
 }

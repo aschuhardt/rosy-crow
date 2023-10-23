@@ -16,7 +16,6 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Models.Serialization;
-using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
 
 // ReSharper disable AsyncVoidLambda
@@ -32,7 +31,6 @@ public partial class TabCollection : ContentView
     private bool _isReordering;
 
     private Tab _selectedTab;
-    private BrowserView _selectedView;
     private ObservableCollection<Tab> _tabs;
     private bool _tabsEnabled;
     private TabSide _tabSide;
@@ -49,7 +47,6 @@ public partial class TabCollection : ContentView
     {
         _browsingDatabase = browsingDatabase;
         _logger = logger;
-
         _settingsDatabase = settingsDatabase;
         _settingsDatabase.PropertyChanged += OnSettingsChanged;
 
@@ -87,15 +84,15 @@ public partial class TabCollection : ContentView
         }
     }
 
-    public BrowserView SelectedView
+    public Tab SelectedTab
     {
-        get => _selectedView;
+        get => _selectedTab;
         set
         {
-            if (Equals(value, _selectedView)) return;
+            if (Equals(value, _selectedTab))
+                return;
 
-            _selectedView = value;
-            SelectedViewChanged?.Invoke(this, EventArgs.Empty);
+            SelectTab(value);
             OnPropertyChanged();
         }
     }
@@ -160,24 +157,19 @@ public partial class TabCollection : ContentView
         Handler?.UpdateValue(nameof(Content));
     }
 
-    public event EventHandler SelectedViewChanged;
+    public event EventHandler BookmarkChanged;
+    public event EventHandler SelectedTabChanged;
 
     public void SelectTab(Tab tab)
     {
         if (IsReordering)
             IsReordering = false;
 
-        if (tab.Browser == null)
+        if (!tab?.InitializedByTabCollection ?? false)
         {
             // the tab was just loaded from the database and hasn't been initialized yet
-            InitializeTab(tab);
-
-            // when the tab is ready to be shown, it will raise ReadyToShow which
-            // will call this method again
-            return;
+            SetupTab(tab);
         }
-
-        SelectedView = tab.Browser;
 
         if (_selectedTab != null)
         {
@@ -186,8 +178,21 @@ public partial class TabCollection : ContentView
         }
 
         _selectedTab = tab;
-        tab.Selected = true;
-        _browsingDatabase.Update(tab);
+        OnSelectedTabChanged();
+
+        if (tab != null)
+        {
+            tab.Selected = true;
+            _browsingDatabase.Update(tab);
+        }
+    }
+
+    private void SetupTab(Tab tab)
+    {
+        tab.ParentPage = ParentPage;
+        tab.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
+        tab.BookmarkChanged += BookmarkChanged;
+        tab.InitializedByTabCollection = true;
     }
 
     public Task AddDefaultTab()
@@ -204,12 +209,8 @@ public partial class TabCollection : ContentView
     {
         _logger.LogDebug("Adding a new tab for {URL} with label {Label}", url, label);
 
-        var tab = new Tab(url, label)
-        {
-            Selected = true
-        };
-
-        InitializeTab(tab);
+        var tab = new Tab(url, label);
+        SelectTab(tab);
 
         Tabs.Add(tab);
 
@@ -227,11 +228,12 @@ public partial class TabCollection : ContentView
             else
             {
                 var info = new StringInfo(tab.Label);
+
                 if (info.LengthInTextElements > 1)
                 {
                     _logger.LogDebug("Truncating an imported tab's label (initially length {Length})", info.LengthInTextElements);
                     tab.Label = info.SubstringByTextElements(0, 1);
-                }    
+                }
             }
 
             Tabs.Add(tab);
@@ -240,38 +242,9 @@ public partial class TabCollection : ContentView
         return _browsingDatabase.UpdateTabOrder();
     }
 
-    private void InitializeTab(Tab tab)
-    {
-        _logger.LogDebug("Initializing a new tab");
-        tab.Browser = MauiProgram.Services.GetRequiredService<BrowserView>();
-        tab.Browser.ParentPage = ParentPage;
-        tab.Browser.ReadyToShow += (_, _) => SelectTab(tab);
-        tab.Browser.Location = tab.Url.ToGeminiUri();
-        tab.Browser.PageLoaded += (_, _) => UpdateTabWithPageInfo(tab);
-        tab.Browser.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
-    }
-
-    private void UpdateTabWithPageInfo(Tab tab, bool useDefaultLabel = false)
-    {
-        var uri = tab.Browser.Location;
-
-        if (!useDefaultLabel && _browsingDatabase.TryGetCapsule(uri.Host, out var capsule) && !string.IsNullOrEmpty(capsule.Icon))
-        {
-            _logger.LogInformation("Capsule {Host} has a stored icon: {Icon}", uri.Host, capsule.Icon);
-            tab.Label = capsule.Icon;
-        }
-        else
-        {
-            tab.Label = tab.Browser.PageTitle?[..1] ?? uri.Host[..1].ToUpperInvariant();
-        }
-
-        tab.Url = uri.ToString();
-        _browsingDatabase.Update(tab);
-    }
-
     private void BrowserTab_OnSelected(object sender, TabEventArgs e)
     {
-        SelectTab(e.Tab);
+        SelectedTab = e.Tab;
     }
 
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
@@ -288,7 +261,7 @@ public partial class TabCollection : ContentView
         {
             // try to find the tab that is to the left of this one; if there is none, just select the first one
             var next = Tabs.OrderByDescending(t => t.Order).FirstOrDefault(t => t.Order < e.Tab.Order);
-            SelectTab(next ?? _tabs.First());
+            SelectedTab = next ?? _tabs.First();
         }
     }
 
@@ -300,7 +273,9 @@ public partial class TabCollection : ContentView
     private void TabCollection_OnLoaded(object sender, EventArgs e)
     {
         if (Tabs.FirstOrDefault(t => t.Selected) is { } tab)
-            SelectTab(tab);
+            SelectedTab = tab;
+
+        // okay NOW you can start overwriting SelectedTab
     }
 
     private async void BrowserTab_OnFetchingIcon(object sender, TabEventArgs e)
@@ -394,7 +369,7 @@ public partial class TabCollection : ContentView
     {
         // this feature will only be displayed in the context menu if
         // the tab has been initialized (so that we have a title to use) AND if the capsule has a saved icon
-        var host = e.Tab?.Browser?.Location?.Host;
+        var host = e.Tab?.Location?.Host;
         if (string.IsNullOrWhiteSpace(host))
             return;
 
@@ -410,7 +385,8 @@ public partial class TabCollection : ContentView
                 await Toast.Make("The icon has been reset").Show();
             }
 
-            UpdateTabWithPageInfo(e.Tab, true);
+            e.Tab.Label = e.Tab.DefaultLabel;
+            _browsingDatabase.Update(e.Tab);
         }
         catch (Exception ex)
         {
@@ -585,5 +561,10 @@ public partial class TabCollection : ContentView
             await Toast.Make("Nothing was exported because something went wrong", ToastDuration.Long).Show();
         }
 #endif
+    }
+
+    protected virtual void OnSelectedTabChanged()
+    {
+        SelectedTabChanged?.Invoke(this, EventArgs.Empty);
     }
 }

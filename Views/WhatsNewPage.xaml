@@ -10,12 +10,13 @@
         <Label Text="{Binding Title}" VerticalTextAlignment="Center" FontSize="18" FontAttributes="Bold" />
     </NavigationPage.TitleView>
     <AbsoluteLayout>
-        <views:BrowserView
+        <WebView
             x:Name="Browser"
             x:FieldModifier="public"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
             HorizontalOptions="Fill"
-            VerticalOptions="Fill" />
+            VerticalOptions="Fill"
+            Navigating="Browser_OnNavigating"/>
     </AbsoluteLayout>
 </ContentPage>

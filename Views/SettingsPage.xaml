@@ -60,10 +60,11 @@
                     SelectedItem="{Binding SelectedTheme}"
                     SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
             </Grid>
-            <views:BrowserView
+            <WebView
                 x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16"
                 SemanticProperties.Description="{x:Static localization:Text.SettingsPage_Preview}"
-                SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_PreviewHint}" />
+                SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_PreviewHint}"
+                Navigating="ThemePreviewBrowser_OnNavigating"/>
             <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
             <Button Text="{x:Static localization:Text.SettingsPage_WhatsNew}" Command="{Binding OpenWhatsNew}" />
             <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />

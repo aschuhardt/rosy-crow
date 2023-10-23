@@ -8,7 +8,7 @@ public class TabsFlowDirectionConverter : BindableObject, IValueConverter
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         if (value is TabSide side)
-            return side == TabSide.Right ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
+            return side == TabSide.Right ? FlowDirection.LeftToRight : FlowDirection.RightToLeft;
 
         throw new ArgumentOutOfRangeException(nameof(value));
     }

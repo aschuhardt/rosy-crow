@@ -39,7 +39,7 @@
                 <Switch IsToggled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Tabs side" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="Tab button side" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Picker SelectedItem="{Binding TabSide}" Grid.Column="1" IsEnabled="{Binding TabsEnabled}">
                     <Picker.ItemsSource>
                         <x:Array Type="{x:Type models:TabSide}">

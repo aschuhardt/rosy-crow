@@ -25,7 +25,6 @@
                 ExportRequested="BrowserTab_OnExportRequested" />
         </DataTemplate>
         <converters:TabAddNewAlignmentConverter x:Key="AlignmentConverter" />
-        <converters:TabsFlowDirectionConverter x:Key="FlowDirectionConverter" />
     </ContentView.Resources>
     <Grid RowDefinitions="*,Auto,Auto">
         <Button
@@ -43,8 +42,7 @@
         </Button>
         <ScrollView
             Grid.Row="2"
-            Orientation="Horizontal" 
-            FlowDirection="{Binding TabSide, Converter={StaticResource FlowDirectionConverter}}">
+            Orientation="Horizontal">
             <CollectionView
                 ItemsLayout="HorizontalList"
                 CanReorderItems="{Binding IsReordering}"

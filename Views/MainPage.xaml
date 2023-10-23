@@ -11,7 +11,9 @@
              Loaded="MainPage_OnLoaded"
              Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False"
-             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference Tabs}}">
+             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference TabCollection}}"
+             views:MainPage.CurrentTabViewTemplate="{DynamicResource TabViewTemplate}"
+             views:MainPage.Tabs="{Binding Tabs, Source={x:Reference TabCollection}}">
     <ContentPage.Resources>
         <converters:HomeButtonImageConverter x:Key="HomeButtonImageConverter" />
         <converters:BookmarkButtonImageConverter x:Key="BookmarkButtonImageConverter" />
@@ -24,8 +26,8 @@
             x:Name="Carousel"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All" Loop="False"
-            ItemsSource="{Binding Tabs, Source={x:Reference Tabs}}"
-            ItemTemplate="{StaticResource TabViewTemplate}"
+            ItemsSource="{Binding Tabs}"
+            ItemTemplate="{Binding CurrentTabViewTemplate}"
             CurrentItemChanged="Carousel_OnCurrentItemChanged"
             Scrolled="Carousel_OnScrolled" />
         <Grid
@@ -136,7 +138,7 @@
                    Source="{AppThemeBinding Light=drag_dark.png,Dark=drag_light.png}" />
         </VerticalStackLayout>
         <controls:TabCollection
-            x:Name="Tabs" x:FieldModifier="public"
+            x:Name="TabCollection" x:FieldModifier="public"
             AbsoluteLayout.LayoutBounds="0,0,1,1"
             AbsoluteLayout.LayoutFlags="All"
             VerticalOptions="End"

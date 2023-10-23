@@ -1,9 +1,11 @@
-﻿using System.Windows.Input;
+﻿using System.Collections.ObjectModel;
+using System.Windows.Input;
 using Android.Content.Res;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
@@ -20,7 +22,12 @@ public partial class MainPage : ContentPage
 {
     public static readonly BindableProperty CurrentTabProperty = BindableProperty.Create(nameof(CurrentTab), typeof(Tab), typeof(MainPage));
 
-    private static readonly object _scrollLock = new();
+    public static readonly BindableProperty TabsProperty =
+        BindableProperty.Create(nameof(Tabs), typeof(ObservableCollection<Tab>), typeof(MainPage));
+
+    public static readonly BindableProperty CurrentTabViewTemplateProperty =
+        BindableProperty.Create(nameof(CurrentTabViewTemplate), typeof(DataTemplate), typeof(MainPage));
+
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<MainPage> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
@@ -134,6 +141,18 @@ public partial class MainPage : ContentPage
     {
         get => (Tab)GetValue(CurrentTabProperty);
         set => SetValue(CurrentTabProperty, value);
+    }
+
+    public ObservableCollection<Tab> Tabs
+    {
+        get => (ObservableCollection<Tab>)GetValue(TabsProperty);
+        set => SetValue(TabsProperty, value);
+    }
+
+    public DataTemplate CurrentTabViewTemplate
+    {
+        get => (DataTemplate)GetValue(CurrentTabViewTemplateProperty);
+        set => SetValue(CurrentTabViewTemplateProperty, value);
     }
 
     public bool LoadPageOnAppearing
@@ -368,21 +387,24 @@ public partial class MainPage : ContentPage
         }
     }
 
+    /// <summary>
+    ///     For some reason setting the Tabs property is when reordering has ended is triggering Carousel.OnCurrentItemChanged.
+    ///     Don't actually overwrite the selected tab unless we've updated the other things as well.
+    /// </summary>
+    private bool ShouldUpdateSelectedTab
+    {
+        // this is silly and bad, but I can't prevent 'Tabs = __' from triggering an update on Carousel.CurrentItem.
+        // at least I know that the thing won't be inexplicably changing its opacity.
+        // maybe i'll find another solution for this sometime.
+        get => Carousel.Opacity > 0;
+    }
+
     private void Tabs_SelectedTabChanged(object sender, EventArgs e)
     {
         // TODO: This won't be necessary (as we can just bind CurrentItem) once this PR is released: https://github.com/dotnet/maui/pull/16165
         // yuck
-        if (!Carousel.IsScrolling && Monitor.TryEnter(_scrollLock))
-        {
-            try
-            {
-                Carousel.ScrollTo(Tabs.SelectedTab, animate: false);
-            }
-            finally
-            {
-                Monitor.Exit(_scrollLock);
-            }
-        }
+        if (!Carousel.IsScrolling && !TabCollection.IsReordering)
+            Carousel.ScrollTo(TabCollection.SelectedTab, animate: false);
 
         IsNavBarVisible = true;
         if (UrlEntry.IsFocused)
@@ -439,7 +461,7 @@ public partial class MainPage : ContentPage
                     await Task.WhenAny(
                         NavBar.TranslateTo(NavBar.TranslationX, 0),
                         PullTab.TranslateTo(PullTab.TranslationX, 0),
-                        Tabs.TranslateTo(Tabs.TranslationX, 0));
+                        TabCollection.TranslateTo(TabCollection.TranslationX, 0));
                 });
             }
             else
@@ -454,7 +476,7 @@ public partial class MainPage : ContentPage
                     await Task.WhenAny(
                         PullTab.TranslateTo(PullTab.TranslationX, -(PullTab.Y + PullTab.Height * 1.25)),
                         NavBar.TranslateTo(NavBar.TranslationX, -NavBar.Height * 1.25),
-                        Tabs.TranslateTo(Tabs.TranslationX, Tabs.TranslationY + Tabs.Height * 1.25));
+                        TabCollection.TranslateTo(TabCollection.TranslationX, TabCollection.TranslationY + TabCollection.Height * 1.25));
                 });
             }
         }
@@ -495,9 +517,9 @@ public partial class MainPage : ContentPage
                 return true;
             }
 
-            if (Tabs.IsReordering)
+            if (TabCollection.IsReordering)
             {
-                Tabs.IsReordering = false;
+                TabCollection.IsReordering = false;
                 return true;
             }
 
@@ -686,10 +708,10 @@ public partial class MainPage : ContentPage
         {
             AddMenuAnimations();
 
-            Tabs.ParentPage = this;
+            TabCollection.ParentPage = this;
 
-            if (!Tabs.Tabs.Any())
-                await Tabs.AddDefaultTab();
+            if (!TabCollection.Tabs.Any())
+                await TabCollection.AddDefaultTab();
 
             PullTabVisible = !_settingsDatabase.HidePullTab;
         }
@@ -730,8 +752,8 @@ public partial class MainPage : ContentPage
 
     private async void UrlEntry_OnFocused(object sender, FocusEventArgs e)
     {
-        if (Tabs.IsReordering)
-            Tabs.IsReordering = false;
+        if (TabCollection.IsReordering)
+            TabCollection.IsReordering = false;
 
         await Dispatcher.DispatchAsync(() =>
         {
@@ -757,17 +779,43 @@ public partial class MainPage : ContentPage
 
     private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
     {
-        if (!Tabs.SelectedTab?.Equals(e.CurrentItem) ?? false)
-            Tabs.SelectedTab = (Tab)e.CurrentItem;
+        if (ShouldUpdateSelectedTab && !TabCollection.IsReordering && e.CurrentItem != null &&
+            (!TabCollection.SelectedTab?.Equals(e.CurrentItem) ?? false))
+            TabCollection.SelectedTab = (Tab)e.CurrentItem;
     }
 
     private void Carousel_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
     {
-        if (e.CenterItemIndex < 0 || Tabs.SelectedTab == null)
+        if (e.CenterItemIndex < 0 || TabCollection.SelectedTab == null)
             return;
 
-        var itemAtIndex = Tabs.Tabs[e.CenterItemIndex];
-        if (!Tabs.SelectedTab.Equals(itemAtIndex))
-            Tabs.SelectedTab = itemAtIndex;
+        var itemAtIndex = TabCollection.Tabs[e.CenterItemIndex];
+        if (ShouldUpdateSelectedTab && !TabCollection.SelectedTab.Equals(itemAtIndex))
+            TabCollection.SelectedTab = itemAtIndex;
+    }
+
+    private void Tabs_OnReorderingChanged(object sender, EventArgs e)
+    {
+#if ANDROID
+        var view = (Carousel.Handler as CarouselViewHandler)?.PlatformView;
+        view?.SuppressLayout(TabCollection.IsReordering);
+
+        if (!TabCollection.IsReordering)
+        {
+            // done re-ordering
+            Carousel.CurrentItem = TabCollection.SelectedTab;
+            CurrentTabViewTemplate = (DataTemplate)Resources["TabViewTemplate"];
+            Tabs = TabCollection.Tabs;
+            Carousel.FadeTo(1);
+        }
+        else
+        {
+            // currently re-ordering
+            Carousel.FadeTo(0);
+            Carousel.CurrentItem = null;
+            CurrentTabViewTemplate = null;
+            Tabs = null;
+        }
+#endif
     }
 }

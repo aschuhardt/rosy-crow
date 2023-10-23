@@ -119,6 +119,8 @@ public partial class TabCollection : ContentView
             _isReordering = value;
             foreach (var tab in Tabs)
                 tab.HandleReordering?.Execute(_isReordering);
+
+            OnReorderingChanged();
             OnPropertyChanged();
         }
     }
@@ -159,6 +161,7 @@ public partial class TabCollection : ContentView
 
     public event EventHandler BookmarkChanged;
     public event EventHandler SelectedTabChanged;
+    public event EventHandler ReorderingChanged;
 
     public void SelectTab(Tab tab)
     {
@@ -566,5 +569,10 @@ public partial class TabCollection : ContentView
     protected virtual void OnSelectedTabChanged()
     {
         SelectedTabChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void OnReorderingChanged()
+    {
+        ReorderingChanged?.Invoke(this, EventArgs.Empty);
     }
 }

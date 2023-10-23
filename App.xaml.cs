@@ -40,7 +40,7 @@ public partial class App : Application
                     if (!await page.DisplayAlert("Import Tabs", $"Do you want to import {tabs.Length} tabs?", "Yes", "No"))
                         return;
 
-                    await page.Tabs.ImportTabs(tabs.Select(t => new Tab
+                    await page.TabCollection.ImportTabs(tabs.Select(t => new Tab
                     {
                         Url = t.Url,
                         Label = t.Icon
@@ -82,15 +82,15 @@ public partial class App : Application
             {
                 try
                 {
-                    var alreadyOpenTab = page.Tabs.Tabs
+                    var alreadyOpenTab = page.TabCollection.Tabs
                         .FirstOrDefault(t => uri.AreGeminiUrlsEqual(t.Url));
 
                     // if this URL is already open in some tab, just select that tab.
                     // otherwise, add a new tab
                     if (alreadyOpenTab != null)
-                        page.Tabs.SelectTab(alreadyOpenTab);
+                        page.TabCollection.SelectTab(alreadyOpenTab);
                     else
-                        Dispatcher.Dispatch(async () => await page.Tabs.AddTab(uri.ToGeminiUri()));
+                        Dispatcher.Dispatch(async () => await page.TabCollection.AddTab(uri.ToGeminiUri()));
                 }
                 catch (Exception)
                 {

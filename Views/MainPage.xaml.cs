@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Windows.Input;
 using Android.Content.Res;
 using Android.Views;
@@ -31,6 +32,7 @@ public partial class MainPage : ContentPage
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<MainPage> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
+    private readonly IDispatcherTimer _swipeTimer;
 
     private ICommand _expandMenu;
     private ICommand _findInPage;
@@ -51,6 +53,7 @@ public partial class MainPage : ContentPage
     private bool _pullTabVisible;
     private ICommand _setHomeUrl;
     private ICommand _showPageCertificate;
+    private bool _tabsEnabled;
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
@@ -61,11 +64,23 @@ public partial class MainPage : ContentPage
         _browsingDatabase = browsingDatabase;
         _logger = logger;
         _isNavBarVisible = true;
+        _settingsDatabase.PropertyChanged += SettingsChanged;
+        TabsEnabled = _settingsDatabase.TabsEnabled;
+
+        _swipeTimer = Dispatcher.CreateTimer();
+        _swipeTimer.Interval = TimeSpan.FromMilliseconds(500);
+        _swipeTimer.IsRepeating = false;
+        _swipeTimer.Tick += (_, _) =>
+        {
+            if (Carousel != null)
+                Carousel.IsSwipeEnabled = TabsEnabled;
+        };
 
         InitializeComponent();
 
         BindingContext = this;
 
+        Carousel.IsSwipeEnabled = TabsEnabled;
         LoadEnteredUrl = new Command<string>(async url => await TryLoadEnteredUrl(url));
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
@@ -116,6 +131,13 @@ public partial class MainPage : ContentPage
                         IsNavBarVisible = false;
                     else if (args.ScrollY < args.OldScrollY - 20 || args.ScrollY == 0)
                         IsNavBarVisible = true;
+
+                    if (TabsEnabled)
+                    {
+                        Carousel.IsSwipeEnabled = false;
+                        _swipeTimer.Stop();
+                        _swipeTimer.Start();
+                    }
                 };
 #endif
             });
@@ -163,6 +185,18 @@ public partial class MainPage : ContentPage
             if (value == _loadPageOnAppearing) return;
 
             _loadPageOnAppearing = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool TabsEnabled
+    {
+        get => _tabsEnabled;
+        set
+        {
+            if (value == _tabsEnabled) return;
+
+            _tabsEnabled = value;
             OnPropertyChanged();
         }
     }
@@ -397,6 +431,14 @@ public partial class MainPage : ContentPage
         // at least I know that the thing won't be inexplicably changing its opacity.
         // maybe i'll find another solution for this sometime.
         get => Carousel.Opacity > 0;
+    }
+
+    private void SettingsChanged(object sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ISettingsDatabase.TabsEnabled))
+        {
+            TabsEnabled = _settingsDatabase.TabsEnabled;
+        }
     }
 
     private void Tabs_SelectedTabChanged(object sender, EventArgs e)

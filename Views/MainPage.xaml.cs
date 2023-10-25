@@ -438,6 +438,7 @@ public partial class MainPage : ContentPage
         if (e.PropertyName == nameof(ISettingsDatabase.TabsEnabled))
         {
             TabsEnabled = _settingsDatabase.TabsEnabled;
+            Carousel.IsSwipeEnabled = TabsEnabled;
         }
     }
 

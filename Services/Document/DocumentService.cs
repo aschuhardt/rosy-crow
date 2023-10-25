@@ -257,8 +257,15 @@ internal class DocumentService : IDocumentService
 
     private static HtmlNode RenderDefaultLinkLine(LinkLine line)
     {
-        return HtmlNode.CreateNode(
+        var node = HtmlNode.CreateNode(
             $"<p><a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a></p>");
+
+        if (string.IsNullOrWhiteSpace(line.Text) && !line.Uri.Scheme.Equals(Constants.GeminiScheme, StringComparison.OrdinalIgnoreCase))
+        {
+            node.PrependChild(HtmlNode.CreateNode($"<sup>({HttpUtility.HtmlEncode(line.Uri.Scheme.ToUpperInvariant())})&nbsp;</sup>"));
+        }
+
+        return node;
     }
 
     private async Task<HtmlNode> RenderInlineImage(LinkLine line)

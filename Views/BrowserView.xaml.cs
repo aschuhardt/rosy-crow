@@ -621,10 +621,14 @@ public partial class BrowserView : ContentView
             menu.Add(Text.BrowserView_BuildContextMenu_Share_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Share.Default.RequestAsync(new ShareTextRequest(uri))));
-            menu.Add("Open in New Tab")?.SetOnMenuItemClickListener(
-                new ActionMenuClickHandler<string>(hitTest.Extra,
-                    uri => OnOpeningUrlInNewTab(
-                        new UrlEventArgs(uri.ToGeminiUri()))));
+
+            if (_settingsDatabase.TabsEnabled)
+            {
+                menu.Add("Open in New Tab")?.SetOnMenuItemClickListener(
+                    new ActionMenuClickHandler<string>(hitTest.Extra,
+                        uri => OnOpeningUrlInNewTab(
+                            new UrlEventArgs(uri.ToGeminiUri()))));
+            }
         }
     }
 #endif

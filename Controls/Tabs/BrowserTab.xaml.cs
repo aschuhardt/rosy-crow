@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows.Input;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
@@ -122,44 +121,6 @@ public partial class BrowserTab : ContentView
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
             menu.SetGroupDividerEnabled(true);
 
-        if (url.Scheme != Constants.InternalScheme)
-        {
-            var iconMenu = menu.AddSubMenu("Icon");
-            iconMenu?.Add("Fetch (favicon.txt)")?
-                .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => FetchingIcon?.Invoke(this, new TabEventArgs(tab))));
-            iconMenu?.Add("Set Custom")?
-                .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => SettingCustomIcon?.Invoke(this, new TabEventArgs(tab))));
-
-            if (tab.InitializedByTabCollection && _browsingDatabase.TryGetCapsule(url.Host, out var capsule))
-            {
-                iconMenu?.Add("Reset")?
-                    .SetOnMenuItemClickListener(new ActionMenuClickHandler(() =>
-                        ResettingIcon?.Invoke(this, new TabCapsuleEventArgs(tab, capsule))));
-            }
-
-            if (_browsingDatabase.TryGetBookmark(tab.Url, out var bookmark))
-            {
-                menu.Add("Remove Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
-                {
-                    _browsingDatabase.Bookmarks.Remove(bookmark);
-                    tab.OnBookmarkChanged();
-                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
-                }));
-            }
-            else if (tab.InitializedByTabCollection)
-            {
-                menu.Add("Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
-                {
-                    bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
-                    _browsingDatabase.Bookmarks.Remove(bookmark);
-                    tab.OnBookmarkChanged();
-                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
-                }));
-            }
-        }
-
-        menu.Add("Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
-
         var allMenu = menu.AddSubMenu("All Tabs");
 
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
@@ -169,10 +130,48 @@ public partial class BrowserTab : ContentView
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ImportRequested?.Invoke(this, EventArgs.Empty)));
         allMenu?.Add("Export")?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ExportRequested?.Invoke(this, EventArgs.Empty)));
+        allMenu?.Add("Arrange")?
+            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ReorderingRequested?.Invoke(this, EventArgs.Empty)));
         allMenu?.Add(1, IMenu.None, IMenu.None, "Close All")?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveAllRequested?.Invoke(this, EventArgs.Empty)));
-        allMenu?.Add(2, IMenu.None, IMenu.None, "Arrange")?
-            .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ReorderingRequested?.Invoke(this, EventArgs.Empty)));
+
+        if (url.Scheme != Constants.InternalScheme)
+        {
+            var iconMenu = menu.AddSubMenu(2, IMenu.None, IMenu.None, "Icon");
+
+            iconMenu?.Add("Fetch (favicon.txt)")?
+                .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => FetchingIcon?.Invoke(this, new TabEventArgs(tab))));
+            iconMenu?.Add("Set Custom")?
+                .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => SettingCustomIcon?.Invoke(this, new TabEventArgs(tab))));
+            if (tab.InitializedByTabCollection && _browsingDatabase.TryGetCapsule(url.Host, out var capsule))
+            {
+                iconMenu?.Add("Reset")?
+                    .SetOnMenuItemClickListener(new ActionMenuClickHandler(() =>
+                        ResettingIcon?.Invoke(this, new TabCapsuleEventArgs(tab, capsule))));
+            }
+
+            if (_browsingDatabase.TryGetBookmark(tab.Url, out var bookmark))
+            {
+                menu.Add(2, IMenu.None, IMenu.None, "Remove Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
+                {
+                    _browsingDatabase.Bookmarks.Remove(bookmark);
+                    tab.OnBookmarkChanged();
+                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
+                }));
+            }
+            else if (tab.InitializedByTabCollection)
+            {
+                menu.Add(2, IMenu.None, IMenu.None, "Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
+                {
+                    bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
+                    _browsingDatabase.Bookmarks.Add(bookmark);
+                    tab.OnBookmarkChanged();
+                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_added).Show();
+                }));
+            }
+        }
+
+        menu.Add(2, IMenu.None, IMenu.None, "Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
 
         menu.Add(1, IMenu.None, IMenu.None, "Close")?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
@@ -188,6 +187,5 @@ public partial class BrowserTab : ContentView
 
         view.ContextMenuCreated += (_, arg) => BuildContextMenu(arg.Menu);
 #endif
-
     }
 }

@@ -37,7 +37,7 @@ public partial class App : Application
 
                 if (tabs?.Any() ?? false)
                 {
-                    if (!await page.DisplayAlert("Import Tabs", $"Do you want to import {tabs.Length} tabs?", "Yes", "No"))
+                    if (!await page.DisplayAlertOnMainThread("Import Tabs", $"Do you want to import {tabs.Length} tabs?", "Yes", "No"))
                         return;
 
                     await page.TabCollection.ImportTabs(tabs.Select(t => new Tab

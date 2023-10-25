@@ -408,7 +408,7 @@ public partial class TabCollection : ContentView
 
         try
         {
-            var label = await ParentPage.DisplayPromptAsync(
+            var label = await ParentPage.DisplayPromptOnMainThread(
                 "Custom Icon",
                 "Enter what you would like this tab's icon to be.\nOne or two letters or numbers may be entered, or a single emoji character.",
                 maxLength: 2,
@@ -450,7 +450,7 @@ public partial class TabCollection : ContentView
 
     private async void BrowserTab_OnRemoveAllRequested(object sender, EventArgs e)
     {
-        if (await ParentPage.DisplayAlert("Close All", "All tabs will be closed.\nProceed?", "Yes", "No"))
+        if (await ParentPage.DisplayAlertOnMainThread("Close All", "All tabs will be closed.\nProceed?", "Yes", "No"))
         {
             Tabs.Clear();
             await AddDefaultTab();
@@ -525,7 +525,7 @@ public partial class TabCollection : ContentView
 
                 if (status != PermissionStatus.Granted && Permissions.ShouldShowRationale<Permissions.StorageWrite>())
                 {
-                    await ParentPage.DisplayAlert("Lacking Permission",
+                    await ParentPage.DisplayAlertOnMainThread("Lacking Permission",
                         "Tabs cannot be exported unless Rosy Crow has permission to write to you device's storage.\n\nTry again after you've granted the app permission to do so.",
                         "OK");
                     return;

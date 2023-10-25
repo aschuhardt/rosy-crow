@@ -26,9 +26,11 @@ public class Tab : INotifyPropertyChanged
     private string _renderUrl;
     private bool _selected;
     private string _title;
+    private Stack<Uri> _recentHistory;
 
     public Tab()
     {
+        _recentHistory = new Stack<Uri>();
     }
 
     public Tab(string url, string label)
@@ -182,6 +184,13 @@ public class Tab : INotifyPropertyChanged
     public string DefaultLabel
     {
         get => Title?[..1] ?? Location.Host[..1].ToUpperInvariant();
+    }
+
+    [Ignore]
+    public Stack<Uri> RecentHistory
+    {
+        get => _recentHistory;
+        set => SetField(ref _recentHistory, value);
     }
 
     public string Url { get; set; }

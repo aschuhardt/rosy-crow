@@ -32,7 +32,6 @@ public partial class BrowserView : ContentView
     private readonly IOpalClient _geminiClient;
     private readonly IIdentityService _identityService;
     private readonly ILogger<BrowserView> _logger;
-    private readonly Stack<Uri> _recentHistory;
     private readonly ISettingsDatabase _settingsDatabase;
 
     private string _findNextQuery;
@@ -64,7 +63,6 @@ public partial class BrowserView : ContentView
         _cache = cache;
         _logger = logger;
         _documentService = documentService;
-        _recentHistory = new Stack<Uri>();
 
         _geminiClient.GetActiveClientCertificateCallback = GetActiveCertificateCallback;
         _geminiClient.RemoteCertificateInvalidCallback = RemoteCertificateInvalidCallback;
@@ -98,15 +96,14 @@ public partial class BrowserView : ContentView
             return;
         }
 
-        await Dispatcher.DispatchAsync(async () =>
-            arg.AcceptAndTrust = await _tab.ParentPage.DisplayAlert(
-                Text.BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate,
-                string.Format(
-                    Text
-                        .BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__,
-                    arg.Fingerprint),
-                Text.BrowserView_RemoteCertificateUnrecognizedCallback_Yes,
-                Text.BrowserView_RemoteCertificateUnrecognizedCallback_No));
+        arg.AcceptAndTrust = await _tab.ParentPage.DisplayAlertOnMainThread(
+            Text.BrowserView_RemoteCertificateUnrecognizedCallback_New_Certificate,
+            string.Format(
+                Text
+                    .BrowserView_RemoteCertificateUnrecognizedCallback_Accept_the_host_s_new_certificate_and_continue___Its_fingerprint_is__0__,
+                arg.Fingerprint),
+            Text.BrowserView_RemoteCertificateUnrecognizedCallback_Yes,
+            Text.BrowserView_RemoteCertificateUnrecognizedCallback_No);
 
         if (arg.AcceptAndTrust)
             _browsingDatabase.AcceptHostCertificate(arg.Host);
@@ -134,10 +131,9 @@ public partial class BrowserView : ContentView
             _ => throw new ArgumentOutOfRangeException()
         };
 
-        await Dispatcher.DispatchAsync(() =>
-            _tab.ParentPage.DisplayAlert(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
-                message,
-                Text.BrowserView_RemoteCertificateInvalidCallback_Cancel));
+        await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
+            message,
+            Text.BrowserView_RemoteCertificateInvalidCallback_Cancel);
     }
 
     private async Task<IClientCertificate> GetActiveCertificateCallback()
@@ -171,17 +167,15 @@ public partial class BrowserView : ContentView
         try
         {
             // first pop the current page, then peek to get the prior
-            if (_recentHistory.TryPop(out var current))
+            if (_tab.RecentHistory.TryPop(out var current))
             {
-                if (_recentHistory.TryPeek(out var prev))
+                if (_tab.RecentHistory.TryPeek(out var prev))
+                    _tab.Location = prev;
+                else
                 {
-                    // navigate to the prior page but do 
-                    _tab.SetLocationWithoutLoading(prev);
-                    Dispatcher.Dispatch(async () => await LoadPage(useCache: true));
+                    // there was no previous entry; re-push the current one in order to revert the stack to its initial state
+                    _tab.RecentHistory.Push(current);
                 }
-
-                // there was no previous entry; re-push the current one in order to revert the stack to its initial state
-                _recentHistory.Push(current);
             }
         }
         catch (Exception e)
@@ -297,7 +291,11 @@ public partial class BrowserView : ContentView
 
         if (_tab.Location.Scheme == Constants.TitanScheme)
         {
-            await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
+            if (MainThread.IsMainThread)
+                await Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this);
+            else
+                await MainThread.InvokeOnMainThreadAsync(() => Navigation.PushModalPageAsync<TitanUploadPage>(page => page.Browser = this));
+
             return;
         }
 
@@ -377,7 +375,7 @@ public partial class BrowserView : ContentView
                     return ResponseAction.Finished;
                 }
 
-                _tab.Input = await _tab.ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
                 if (string.IsNullOrEmpty(_tab.Input))
@@ -396,7 +394,9 @@ public partial class BrowserView : ContentView
                 {
                     _logger.LogInformation("No further attempts will be made");
                     if (_tab.ParentPage != null)
-                        await _tab.ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error, error.Message, Text.BrowserView_LoadPage_OK);
+                        await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
+                            error.Message,
+                            Text.BrowserView_LoadPage_OK);
                     return ResponseAction.Finished;
                 }
 
@@ -426,8 +426,9 @@ public partial class BrowserView : ContentView
                     return ResponseAction.Finished;
                 }
 
-                _tab.Input = await _tab.ParentPage.DisplayPromptAsync(Text.BrowserView_LoadPage_Input_Required,
+                _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
+                ;
 
                 if (string.IsNullOrEmpty(_tab.Input))
                 {
@@ -461,7 +462,7 @@ public partial class BrowserView : ContentView
 
                     if (_tab.ParentPage != null)
                     {
-                        await _tab.ParentPage.DisplayAlert(Text.BrowserView_LoadPage_Error,
+                        await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
                             error.Message,
                             Text.BrowserView_LoadPage_OK);
                     }
@@ -541,8 +542,8 @@ public partial class BrowserView : ContentView
             {
                 _settingsDatabase.LastVisitedUrl = uri.ToString();
 
-                if (!_recentHistory.TryPeek(out var prev) || !prev.Equals(uri))
-                    _recentHistory.Push(uri);
+                if (!_tab.RecentHistory.TryPeek(out var prev) || !prev.Equals(uri))
+                    _tab.RecentHistory.Push(uri);
             }
 
             if (_settingsDatabase.SaveVisited)
@@ -693,7 +694,7 @@ public partial class BrowserView : ContentView
         tab.Refresh = new Command(async () => await LoadPage(true));
         tab.FindNext = new Command(query => FindTextInPage((string)query));
         tab.Print = new Command(Print, () => _tab.CanPrint);
-        tab.GoBack = new Command(GoBack, () => _recentHistory.TryPeek(out _));
+        tab.GoBack = new Command(GoBack, () => _tab.RecentHistory.TryPeek(out _));
         tab.ClearFind = new Command(ClearFindResults, () => HasFindNextQuery);
         tab.Load = new Command(async () => await LoadPage(false, true), () => !_isLoading);
         tab.Location = tab.Url.ToGeminiUri();

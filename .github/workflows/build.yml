@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, beta ]
     paths-ignore:
       - '**/*.md'
       - '**/*.gitignore'
@@ -57,15 +57,15 @@ jobs:
       - name: Restore Dependencies
         run: dotnet restore RosyCrow.csproj
 
-      - name: Build MAUI Android
-        run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore
+      - name: Build
+        run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore -p:ApplicationDisplayVersion=${{ steps.gitversion.outputs.semVer }}
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2.3.1
         with:
-          name: build-${{ github.run_number }}
+          name: build-${{ github.run_number }}-${{ steps.gitversion.outputs.semVer }}
           path: |
             bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
             bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk

@@ -47,11 +47,6 @@
 	  <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass>
 	  <TrimMode>link</TrimMode>
 	  <AndroidLinkTool>r8</AndroidLinkTool>
-	  <ApplicationDisplayVersion>1.3.1</ApplicationDisplayVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net7.0-android33.0|AnyCPU'">
-	  <ApplicationDisplayVersion>1.3.1</ApplicationDisplayVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -208,10 +203,6 @@
 	    <Generator>ResXFileCodeGenerator</Generator>
 	    <LastGenOutput>Text.Designer.cs</LastGenOutput>
 	  </EmbeddedResource>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Behaviors\" />
 	</ItemGroup>
 
 	<ProjectExtensions><VisualStudio><UserProperties XamarinHotReloadDebuggerTimeoutExceptionRosyCrowHideInfoBar="True" XamarinHotReloadUnhandledDeviceExceptionRosyCrowHideInfoBar="True" /></VisualStudio></ProjectExtensions>

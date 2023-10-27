@@ -1,4 +1,4 @@
-name: CI Build and Deploy
+name: Build
 
 on:
   push:
@@ -10,7 +10,6 @@ on:
   pull_request:
     branches: [ main ]
   workflow_dispatch:
-
 permissions:
   contents: read
 
@@ -27,12 +26,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0
+        with:
+          versionSpec: '5.x'
+          preferLatestVersion: true
+
+      - name: Determine Version
+        uses: gittools/actions/gitversion/execute@v0
+        with:
+          useConfigFile: true
+
       - name: Setup .NET 7
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 7.0.x
           include-prerelease: true
-          
+
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.4
         with:

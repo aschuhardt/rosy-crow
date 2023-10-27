@@ -17,4 +17,5 @@ public interface ISettingsDatabase : INotifyPropertyChanged
     bool AllowIpv6 { get; set; }
     TabSide TabSide { get; set; }
     bool TabsEnabled { get; set; }
+    bool SwipeEnabled { get; set; }
 }

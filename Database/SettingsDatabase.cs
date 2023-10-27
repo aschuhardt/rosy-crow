@@ -25,6 +25,7 @@ internal class SettingsDatabase : ISettingsDatabase
     private bool? _allowIpv6;
     private TabSide? _tabSide;
     private bool? _tabsEnabled;
+    private bool? _swipeEnabled;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -206,6 +207,20 @@ internal class SettingsDatabase : ISettingsDatabase
         {
             if (SetField(ref _storeVisited, value))
                 SetBoolValue(value);
+        }
+    }
+
+    public bool SwipeEnabled
+    {
+        get
+        {
+            _swipeEnabled ??= GetBoolValue(true);
+            return _swipeEnabled.GetValueOrDefault(true);
+        }
+        set
+        {
+           if (SetField(ref _swipeEnabled, value))
+               SetBoolValue(value);
         }
     }
 

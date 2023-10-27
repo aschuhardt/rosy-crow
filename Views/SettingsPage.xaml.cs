@@ -27,8 +27,6 @@ public partial class SettingsPage : ContentPage
     private ICommand _openAbout;
     private ICommand _openWhatsNew;
     private ThemeChoice _selectedTheme;
-    private bool _tabsEnabled;
-    private TabSide _tabSide;
     private string _versionInfo;
 
     public SettingsPage(ISettingsDatabase settingsDatabase, MainPage mainPage, IDocumentService documentService, ILogger<SettingsPage> logger)
@@ -54,12 +52,12 @@ public partial class SettingsPage : ContentPage
 
     public bool TabsEnabled
     {
-        get => _tabsEnabled;
+        get => _settingsDatabase.TabsEnabled;
         set
         {
-            if (value == _tabsEnabled) return;
+            if (value == _settingsDatabase.TabsEnabled)
+                return;
 
-            _tabsEnabled = value;
             _settingsDatabase.TabsEnabled = value;
             OnPropertyChanged();
         }
@@ -67,12 +65,12 @@ public partial class SettingsPage : ContentPage
 
     public TabSide TabSide
     {
-        get => _tabSide;
+        get => _settingsDatabase.TabSide;
         set
         {
-            if (value == _tabSide) return;
+            if (value == _settingsDatabase.TabSide)
+                return;
 
-            _tabSide = value;
             _settingsDatabase.TabSide = value;
             OnPropertyChanged();
         }
@@ -226,6 +224,19 @@ public partial class SettingsPage : ContentPage
                 return;
 
             _settingsDatabase.StrictTofuMode = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool EnableSwipe
+    {
+        get => _settingsDatabase?.SwipeEnabled ?? default;
+        set
+        {
+            if (value == _settingsDatabase.SwipeEnabled)
+                return;
+
+            _settingsDatabase.SwipeEnabled = value;
             OnPropertyChanged();
         }
     }

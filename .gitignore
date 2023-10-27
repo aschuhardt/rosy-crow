@@ -362,10 +362,9 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
 /app.db
-
 fdroid/
-
 *.pem
-
 *.db
+.env

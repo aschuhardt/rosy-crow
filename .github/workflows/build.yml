@@ -2,13 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [ main, beta ]
+    branches: [ main, develop ]
     paths-ignore:
       - '**/*.md'
       - '**/*.gitignore'
       - '**/*.gitattributes'
   pull_request:
-    branches: [ main, beta ]
+    branches: [ main, develop ]
   workflow_dispatch:
 permissions:
   contents: read

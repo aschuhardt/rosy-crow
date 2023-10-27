@@ -63,15 +63,23 @@
                 <SwipeGestureRecognizer x:Name="SwipeDownRecognizer" Direction="Down" Command="{Binding ExpandMenu}" />
                 <SwipeGestureRecognizer x:Name="SwipeUpRecognizer" Direction="Up" Command="{Binding HideMenu}" />
             </VerticalStackLayout.GestureRecognizers>
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto" Padding="0,2,0,0" x:Name="NavigationGrid">
+            <FlexLayout Padding="0,2,0,0" Wrap="NoWrap" x:Name="NavigationGrid">
                 <ImageButton
-                    Grid.Column="0"
+                    FlexLayout.AlignSelf="Start"
+                    FlexLayout.Order="0"
+                    FlexLayout.Shrink="0"
+                    x:Name="PageInfoButton"
                     Scale="0.75" IsEnabled="{Binding CurrentTab.CanShowHostCertificate}"
                     Command="{Binding ShowPageCertificate}"
                     Source="{AppThemeBinding Light=info_dark.png, Dark=info_light.png}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_PageInformation}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_PageInformationHint}" />
-                <Border Grid.Column="1" HeightRequest="48" x:Name="UrlEntryBorder">
+                <Border
+                    FlexLayout.AlignSelf="Stretch"
+                    FlexLayout.Order="1"
+                    FlexLayout.Grow="1"
+                    Margin="0"
+                    HeightRequest="48" x:Name="UrlEntryBorder">
                     <Entry
                         Text="{Binding CurrentTab.RenderUrl}"
                         ReturnCommand="{Binding LoadEnteredUrl}"
@@ -84,25 +92,34 @@
                         HandlerChanged="UrlEntry_HandlerChanged" />
                 </Border>
                 <ImageButton
+                    FlexLayout.AlignSelf="End"
+                    FlexLayout.Order="2"
+                    FlexLayout.Shrink="0"
                     Scale="0.75" Grid.Column="2" x:Name="BookmarkButton"
                     Command="{Binding ToggleBookmarked}"
                     Source="{Binding CurrentTab.Location, Converter={StaticResource BookmarkButtonImageConverter}}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Bookmark}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_BookmarkHint}" />
                 <controls:BiModalImageButton
+                    FlexLayout.AlignSelf="End"
+                    FlexLayout.Order="3"
+                    FlexLayout.Shrink="0"
                     Scale="0.75" Grid.Column="3" x:Name="HomeButton"
                     Command="{Binding LoadHomeUrl}" LongCommand="{Binding SetHomeUrl}"
                     Source="{Binding CurrentTab.Location, Converter={StaticResource HomeButtonImageConverter}}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Home}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_HomeHint}" />
                 <ImageButton
+                    FlexLayout.AlignSelf="End"
+                    FlexLayout.Order="4"
+                    FlexLayout.Shrink="0"
                     Scale="0.75" Grid.Column="4" x:Name="FindNextButton"
                     Command="{Binding FindNextInPage}"
                     IsVisible="{Binding CurrentTab.HasFindNextQuery}"
                     Source="{AppThemeBinding Light=next_dark.png, Dark=next_light.png}"
                     SemanticProperties.Description="{x:Static localization:Text.MainPage_Next}"
                     SemanticProperties.Hint="{x:Static localization:Text.MainPage_NextHint}" />
-            </Grid>
+            </FlexLayout>
             <VerticalStackLayout x:Name="ExpandableMenu" HeightRequest="0" IsClippedToBounds="True">
                 <Button Text="{x:Static localization:Text.MainPage_FindInPage}" HorizontalOptions="Fill"
                         Command="{Binding FindInPage}"

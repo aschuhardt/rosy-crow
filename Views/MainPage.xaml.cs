@@ -73,14 +73,14 @@ public partial class MainPage : ContentPage
         _swipeTimer.Tick += (_, _) =>
         {
             if (Carousel != null)
-                Carousel.IsSwipeEnabled = TabsEnabled;
+                Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         };
 
         InitializeComponent();
 
         BindingContext = this;
 
-        Carousel.IsSwipeEnabled = TabsEnabled;
+        Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         LoadEnteredUrl = new Command<string>(async url => await TryLoadEnteredUrl(url));
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
@@ -435,10 +435,10 @@ public partial class MainPage : ContentPage
 
     private void SettingsChanged(object sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(ISettingsDatabase.TabsEnabled))
+        if (e.PropertyName is nameof(ISettingsDatabase.TabsEnabled) or nameof(ISettingsDatabase.SwipeEnabled))
         {
             TabsEnabled = _settingsDatabase.TabsEnabled;
-            Carousel.IsSwipeEnabled = TabsEnabled;
+            Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         }
     }
 
@@ -793,31 +793,41 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private async void UrlEntry_OnFocused(object sender, FocusEventArgs e)
+    private void UrlEntry_OnFocused(object sender, FocusEventArgs e)
     {
         if (TabCollection.IsReordering)
             TabCollection.IsReordering = false;
 
-        await Dispatcher.DispatchAsync(() =>
-        {
-            new Animation
-            {
-                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, 0, Width, Easing.CubicInOut) },
-                { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
-            }.Commit(this, "ExpandUrlEntry");
-        });
+        HomeButton.IsVisible = false;
+        PageInfoButton.IsVisible = false;
+        BookmarkButton.IsVisible = false;
+
+        // TODO it would be great if this wasn't broken anymore, but that's how it is with MAUI
+
+        // await Dispatcher.DispatchAsync(() =>
+        // {
+        //     new Animation
+        //     {
+        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 0, 1, Easing.CubicInOut) },
+        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
+        //     }.Commit(this, "ExpandUrlEntry");
+        // });
     }
 
-    private async void UrlEntry_OnUnfocused(object sender, FocusEventArgs e)
+    private void UrlEntry_OnUnfocused(object sender, FocusEventArgs e)
     {
-        await Dispatcher.DispatchAsync(() =>
-        {
-            new Animation
-            {
-                { 0, 1, new Animation(v => UrlEntryBorder.MinimumWidthRequest = v, Width, 0, Easing.CubicInOut) },
-                { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
-            }.Commit(this, "ShrinkUrlEntry");
-        });
+        HomeButton.IsVisible = true;
+        PageInfoButton.IsVisible = true;
+        BookmarkButton.IsVisible = true;
+
+        // await Dispatcher.DispatchAsync(() =>
+        // {
+        //     new Animation
+        //     {
+        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 1, 0, Easing.CubicInOut) },
+        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
+        //     }.Commit(this, "ShrinkUrlEntry");
+        // });
     }
 
     private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)

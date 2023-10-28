@@ -1,4 +1,4 @@
-name: Draft a Production Release
+name: Publish a Production Release
 on:
   workflow_run:
     workflows: [ Build ]
@@ -60,4 +60,4 @@ jobs:
         releaseName: ${{ steps.set_version.outputs.build_version }}
         track: production
         mappingFile: mapping.txt
-        status: draft
+        status: completed

@@ -276,7 +276,7 @@ public partial class TabCollection : ContentView
     private void TabCollection_OnLoaded(object sender, EventArgs e)
     {
         if (Tabs.FirstOrDefault(t => t.Selected) is { } tab)
-            SelectedTab = tab;
+            SelectTab(tab);
 
         // okay NOW you can start overwriting SelectedTab
     }

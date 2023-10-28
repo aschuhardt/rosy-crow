@@ -1,4 +1,5 @@
-﻿using Java.Lang;
+﻿using System.ComponentModel;
+using Java.Lang;
 using Java.Net;
 using Java.Security;
 using Java.Security.Cert;
@@ -6,6 +7,7 @@ using Javax.Net.Ssl;
 
 namespace RosyCrow.Platforms.Android;
 
+[Localizable(false)]
 internal class TransparentTrustProvider : Provider
 {
     private const string TRUST_PROVIDER_ALG = "TransparentTrustAlgorithm";

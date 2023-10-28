@@ -1,5 +1,5 @@
 ﻿<div>
-    <style>
+  <style>
         a.tracker-id {
             font-size: small;
             font-family: monospace;
@@ -9,19 +9,43 @@
             margin-top: 0!important;
         }
     </style>
-
-    <h4>Version 1.3.1 - July 16th, 2023</h4>
-    <p>Adjustments to line spacing</p>
-
-    <h4>Version 1.3.0 - July 15th, 2023</h4>
+  
+  <h4>Version 1.4 - October 27th, 2023</h4>
+  <p>Tabs are the focus of this release, as well as several bug-fixes.</p>
+  <h5>Tabs <a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/27">#27</a></h5>
+  <ul>
+    <li>Tabs will now appear along the bottom of the screen</li>
+    <li>Swiping left and right in the app will navigate through the open tabs</li>
+    <li>A number of tab-related features can be accessed by long-pressing on a tab</li>
     <ul>
-        <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/12">#12</a> Added support for long-form text and file uploads via the <a href="gemini://transjovian.org/titan">Titan protocol</a></li>
-        <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/19">#19</a> Added the ability to change the visual order of bookmarks by dragging them into the desired position</li>
-        <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/21">#21</a> Made IPv6 support opt-in via a new setting</li>
-        <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/22">#22</a> Don't crash when navigating to an empty URL</li>
-        <li>Made the URL entry expand when it's focused in order to allow make it easier to use</li>
-        <li>Added a donation link to the About page</li>
-        <li>Added this What's New page</li>
-        <li>Various cosmetic changes</li>
+      <li>Tab icons can be manually set or fetched from the capsule's favicon.txt file if one exists</li>
+      <li>Tabs can be imported or exported as JSON files</li>
+      <li>Tabs can be visually rearranged</li>
     </ul>
+    <li>Tabs can be disabled in the Settings menu</li>
+    <li>Swipe-style tab navigation can also disabled in the Settings menu</li>
+  </ul>
+  <h5>Other changes</h5>
+  <ul>
+    <li>Importing and exporting identities now uses Android's file-browser more seamlessly</li>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/24">#24</a> Gemini links in other apps can now be opened in Rosy Crow</li>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/22">#22</a> Fixed a bug causing empty links to crash the app</li>
+  </ul>
+  <h5>Regressions</h5>
+  <p>Due to breaking changes in the MAUI framework, the URL entry can no longer be smoothly animated as it had previously been.  This is something that I'll be keeping an eye on in the hopes of fixing in the foreseeable future.</p>
+
+  <h4>Version 1.3.1 - July 16th, 2023</h4>
+  <p>Adjustments to line spacing</p>
+
+  <h4>Version 1.3 - July 15th, 2023</h4>
+  <ul>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/12">#12</a> Added support for long-form text and file uploads via the <a href="gemini://transjovian.org/titan">Titan protocol</a></li>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/19">#19</a> Added the ability to change the visual order of bookmarks by dragging them into the desired position</li>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/21">#21</a> Made IPv6 support opt-in via a new setting</li>
+    <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/22">#22</a> Don't crash when navigating to an empty URL</li>
+    <li>Made the URL entry expand when it's focused in order to allow make it easier to use</li>
+    <li>Added a donation link to the About page</li>
+    <li>Added this What's New page</li>
+    <li>Various cosmetic changes</li>
+  </ul>
 </div>

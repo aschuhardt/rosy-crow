@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel;
+using System.Diagnostics;
 using CommunityToolkit.Maui;
 using Microsoft.Maui.LifecycleEvents;
 using Opal;
@@ -23,6 +24,7 @@ using SQLitePCL;
 
 namespace RosyCrow;
 
+[Localizable(false)]
 public static class MauiProgram
 {
     public static IServiceProvider Services { get; private set; }

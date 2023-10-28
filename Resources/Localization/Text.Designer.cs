@@ -61,6 +61,78 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Do you want to import {0} tabs?.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_Do_you_want_to_import__0__tabs_ {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_Do_you_want_to_import__0__tabs_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import Tabs.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_Import_Tabs {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_Import_Tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_No {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No tabs were imported because something went wrong.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_No_tabs_were_imported_because_something_went_wrong {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_No_tabs_were_imported_because_something_went_wrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file contains no tabs.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_The_file_contains_no_tabs {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_The_file_contains_no_tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file is formatted incorrectly.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_The_file_is_formatted_incorrectly {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_The_file_is_formatted_incorrectly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        internal static string App_HandleImportTabsIntent_Yes {
+            get {
+                return ResourceManager.GetString("App_HandleImportTabsIntent_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Something went wrong, so the link could not be opened.
+        /// </summary>
+        internal static string App_HandleNavigationIntent_Something_went_wrong__so_the_link_could_not_be_opened {
+            get {
+                return ResourceManager.GetString("App_HandleNavigationIntent_Something_went_wrong__so_the_link_could_not_be_opened", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bookmarks.
         /// </summary>
         internal static string BookmarksPage_Title {
@@ -88,11 +160,137 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All Tabs.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_All_Tabs {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_All_Tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Arrange.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Arrange {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Arrange", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bookmark.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Bookmark {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Bookmark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Close {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close All.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Close_All {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Close_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Copy URL.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Copy_URL {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Copy_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Export.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Export {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Export", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fetch (favicon.txt).
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Fetch__favicon_txt_ {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Fetch__favicon_txt_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Icon.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Icon {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Icon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Import.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Import {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove Bookmark.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Remove_Bookmark {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Remove_Bookmark", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reset.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Reset {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Reset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Set Custom.
+        /// </summary>
+        internal static string BrowserTab_BuildContextMenu_Set_Custom {
+            get {
+                return ResourceManager.GetString("BrowserTab_BuildContextMenu_Set_Custom", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy URL.
         /// </summary>
         internal static string BrowserView_BuildContextMenu_Copy_URL {
             get {
                 return ResourceManager.GetString("BrowserView_BuildContextMenu_Copy_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Open in New Tab.
+        /// </summary>
+        internal static string BrowserView_BuildContextMenu_Open_in_New_Tab {
+            get {
+                return ResourceManager.GetString("BrowserView_BuildContextMenu_Open_in_New_Tab", resourceCulture);
             }
         }
         
@@ -281,6 +479,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        internal static string CertificatePage_CertificatePage_Copied {
+            get {
+                return ResourceManager.GetString("CertificatePage_CertificatePage_Copied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Expiration.
         /// </summary>
         internal static string CertificatePage_Expiration {
@@ -326,6 +533,26 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportIdentityPage_Copied {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportIdentityPage_Copied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Identities cannot be exported unless Rosy Crow has permission to write to you device&apos;s storage.
+        ///
+        ///Try again after you&apos;ve granted the app permission to do so..
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_ {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Certificate for Identity {ID} exported encrypted to {Path}.
         /// </summary>
         internal static string ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_encrypted_to__Path_ {
@@ -342,6 +569,15 @@ namespace RosyCrow.Resources.Localization {
             get {
                 return ResourceManager.GetString("ExportIdentityPage_ExportKey_Certificate_for_Identity__ID__exported_unencrypted_t" +
                         "o__Path_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not save the file.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Could_not_save_the_file {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Could_not_save_the_file", resourceCulture);
             }
         }
         
@@ -370,6 +606,24 @@ namespace RosyCrow.Resources.Localization {
         internal static string ExportIdentityPage_ExportKey_Failed_to_export_the_certificate {
             get {
                 return ResourceManager.GetString("ExportIdentityPage_ExportKey_Failed_to_export_the_certificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lacking Permission.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_Lacking_Permission {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_Lacking_Permission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string ExportIdentityPage_ExportKey_OK {
+            get {
+                return ResourceManager.GetString("ExportIdentityPage_ExportKey_OK", resourceCulture);
             }
         }
         
@@ -599,6 +853,43 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot export this identity.
+        /// </summary>
+        internal static string IdentityPage_TryOpeningExportKeyPage_Cannot_export_this_identity {
+            get {
+                return ResourceManager.GetString("IdentityPage_TryOpeningExportKeyPage_Cannot_export_this_identity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not unlock the identity.
+        /// </summary>
+        internal static string IdentityService_DerivePassword_Could_not_unlock_the_identity {
+            get {
+                return ResourceManager.GetString("IdentityService_DerivePassword_Could_not_unlock_the_identity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unlock the Identity.
+        /// </summary>
+        internal static string IdentityService_DerivePassword_Unlock_the_Identity {
+            get {
+                return ResourceManager.GetString("IdentityService_DerivePassword_Unlock_the_Identity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unlock the identity using your device&apos;s credential..
+        /// </summary>
+        internal static string IdentityService_DerivePassword_Unlock_the_identity_using_your_device_s_credential_ {
+            get {
+                return ResourceManager.GetString("IdentityService_DerivePassword_Unlock_the_identity_using_your_device_s_credential" +
+                        "_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Fingerprint.
         /// </summary>
         internal static string ImportIdentityPage_Fingerprint {
@@ -617,6 +908,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        internal static string ImportIdentityPage_ImportIdentityPage_Copied {
+            get {
+                return ResourceManager.GetString("ImportIdentityPage_ImportIdentityPage_Copied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Failed to read the certificate file.
         /// </summary>
         internal static string ImportIdentityPage_ImportIdentityPage_OnAppearing_Failed_to_read_the_certificate_file {
@@ -627,31 +927,11 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attempted to load a certificate file that lacks a private key.
-        /// </summary>
-        internal static string ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_private_key {
-            get {
-                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_pr" +
-                        "ivate_key", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Decryption Failed.
         /// </summary>
         internal static string ImportIdentityPage_ImportKey_Decryption_Failed {
             get {
                 return ResourceManager.GetString("ImportIdentityPage_ImportKey_Decryption_Failed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Importing a new identity certificate with subject {Subject}.
-        /// </summary>
-        internal static string ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__Subject_ {
-            get {
-                return ResourceManager.GetString("ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__S" +
-                        "ubject_", resourceCulture);
             }
         }
         
@@ -974,6 +1254,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Body.
+        /// </summary>
+        internal static string SettingsPage_Body {
+            get {
+                return ResourceManager.GetString("SettingsPage_Body", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Copy.
         /// </summary>
         internal static string SettingsPage_CopyVersion {
@@ -992,11 +1281,94 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Logs cannot be exported unless Rosy Crow has permission to write to you device&apos;s storage.
+        ///
+        ///Try again after you&apos;ve granted the app permission to do so..
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogArchive_ {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogArchive_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not save archive.
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogArchive_Could_not_save_archive {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogArchive_Could_not_save_archive", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lacking Permission.
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogArchive_Lacking_Permission {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogArchive_Lacking_Permission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogArchive_OK {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogArchive_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are no error logs to export.
+        /// </summary>
+        internal static string SettingsPage_ExportErrorLogArchive_There_are_no_error_logs_to_export {
+            get {
+                return ResourceManager.GetString("SettingsPage_ExportErrorLogArchive_There_are_no_error_logs_to_export", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Export Error Logs.
         /// </summary>
         internal static string SettingsPage_ExportErrorLogs {
             get {
                 return ResourceManager.GetString("SettingsPage_ExportErrorLogs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Font Sizes.
+        /// </summary>
+        internal static string SettingsPage_Font_Sizes {
+            get {
+                return ResourceManager.GetString("SettingsPage_Font_Sizes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heading 1.
+        /// </summary>
+        internal static string SettingsPage_Heading_1 {
+            get {
+                return ResourceManager.GetString("SettingsPage_Heading_1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heading 2.
+        /// </summary>
+        internal static string SettingsPage_Heading_2 {
+            get {
+                return ResourceManager.GetString("SettingsPage_Heading_2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Heading 3.
+        /// </summary>
+        internal static string SettingsPage_Heading_3 {
+            get {
+                return ResourceManager.GetString("SettingsPage_Heading_3", resourceCulture);
             }
         }
         
@@ -1046,6 +1418,51 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Copied.
+        /// </summary>
+        internal static string SettingsPage_SettingsPage_Copied {
+            get {
+                return ResourceManager.GetString("SettingsPage_SettingsPage_Copied", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Version {0}, build {1}.
+        /// </summary>
+        internal static string SettingsPage_SettingsPage_OnLoaded_Version__0___build__1_ {
+            get {
+                return ResourceManager.GetString("SettingsPage_SettingsPage_OnLoaded_Version__0___build__1_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Show tabs.
+        /// </summary>
+        internal static string SettingsPage_Show_tabs {
+            get {
+                return ResourceManager.GetString("SettingsPage_Show_tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Swipe to move between tabs.
+        /// </summary>
+        internal static string SettingsPage_Swipe_to_move_between_tabs {
+            get {
+                return ResourceManager.GetString("SettingsPage_Swipe_to_move_between_tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tab button side.
+        /// </summary>
+        internal static string SettingsPage_Tab_button_side {
+            get {
+                return ResourceManager.GetString("SettingsPage_Tab_button_side", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Theme.
         /// </summary>
         internal static string SettingsPage_Theme {
@@ -1060,6 +1477,15 @@ namespace RosyCrow.Resources.Localization {
         internal static string SettingsPage_Title {
             get {
                 return ResourceManager.GetString("SettingsPage_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Use a custom font size.
+        /// </summary>
+        internal static string SettingsPage_Use_a_custom_font_size {
+            get {
+                return ResourceManager.GetString("SettingsPage_Use_a_custom_font_size", resourceCulture);
             }
         }
         
@@ -1087,6 +1513,211 @@ namespace RosyCrow.Resources.Localization {
         internal static string SettingsPage_WhatsNew {
             get {
                 return ResourceManager.GetString("SettingsPage_WhatsNew", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Tabs cannot be exported unless Rosy Crow has permission to write to you device&apos;s storage.
+        ///
+        ///Try again after you&apos;ve granted the app permission to do so..
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnExportRequested_ {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnExportRequested_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not save the file.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnExportRequested_Could_not_save_the_file {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnExportRequested_Could_not_save_the_file", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lacking Permission.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnExportRequested_Lacking_Permission {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnExportRequested_Lacking_Permission", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Nothing was exported because something went wrong.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnExportRequested_Nothing_was_exported_because_something_went_wrong {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnExportRequested_Nothing_was_exported_because_something" +
+                        "_went_wrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnExportRequested_OK {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnExportRequested_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Failed to fetch the icon due to an error.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnFetchingIcon_Failed_to_fetch_the_icon_due_to_an_error {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnFetchingIcon_Failed_to_fetch_the_icon_due_to_an_error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Icon updated.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnFetchingIcon_Icon_updated {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnFetchingIcon_Icon_updated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No icon available.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnFetchingIcon_No_icon_available {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnFetchingIcon_No_icon_available", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imported {0} tabs.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_Imported__0__tabs {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_Imported__0__tabs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Imported a tab.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_Imported_a_tab {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_Imported_a_tab", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No tabs were imported because something went wrong.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_No_tabs_were_imported_because_something_went_wrong {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_No_tabs_were_imported_because_somethin" +
+                        "g_went_wrong", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Select a JSON File to Import.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_Select_a_JSON_File_to_Import {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_Select_a_JSON_File_to_Import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file is formatted incorrectly.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_The_file_is_formatted_incorrectly {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_The_file_is_formatted_incorrectly", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are no tabs to import.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnImportRequested_There_are_no_tabs_to_import {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnImportRequested_There_are_no_tabs_to_import", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to All tabs will be closed.
+        ///Proceed?.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnRemoveAllRequested_ {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnRemoveAllRequested_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Close All.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnRemoveAllRequested_Close_All {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnRemoveAllRequested_Close_All", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnRemoveAllRequested_No {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnRemoveAllRequested_No", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Yes.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnRemoveAllRequested_Yes {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnRemoveAllRequested_Yes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Go back or select a tab when finished.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnReorderingRequested_Go_back_or_select_a_tab_when_finished {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnReorderingRequested_Go_back_or_select_a_tab_when_finis" +
+                        "hed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The icon has been reset.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnResettingIcon_The_icon_has_been_reset {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnResettingIcon_The_icon_has_been_reset", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enter what you would like this tab&apos;s icon to be.
+        ///One or two letters or numbers may be entered, or a single emoji character..
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnSettingCustomIcon_ {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnSettingCustomIcon_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Custom Icon.
+        /// </summary>
+        internal static string TabCollection_BrowserTab_OnSettingCustomIcon_Custom_Icon {
+            get {
+                return ResourceManager.GetString("TabCollection_BrowserTab_OnSettingCustomIcon_Custom_Icon", resourceCulture);
             }
         }
         

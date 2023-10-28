@@ -6,9 +6,10 @@ using SQLite;
 
 namespace RosyCrow.Models;
 
-public class Identity : INotifyPropertyChanged
+public partial class Identity : INotifyPropertyChanged
 {
-    private static readonly Regex KeyReplacePattern = new("\\W", RegexOptions.Compiled);
+    [GeneratedRegex("\\W")]
+    private static partial Regex KeyReplacePattern();
 
     private bool _isActive;
 
@@ -34,14 +35,14 @@ public class Identity : INotifyPropertyChanged
 
     [Ignore]
     public string SanitizedName => 
-        KeyReplacePattern.Replace(Name, "_").ToLowerInvariant();
+        KeyReplacePattern().Replace(Name, "_").ToLowerInvariant();
 
     [Ignore]
     public string FriendlyFingerprint => Hash.ToFriendlyFingerprint();
 
     [Ignore]
     public string CertificatePath =>
-        Path.Combine(FileSystem.AppDataDirectory, Constants.CertificateDirectory, $"{SemanticKey}.pem");
+        Path.Combine(FileSystem.AppDataDirectory, Constants.CertificateDirectory, $@"{SemanticKey}.pem");
 
     public event PropertyChangedEventHandler PropertyChanged;
 

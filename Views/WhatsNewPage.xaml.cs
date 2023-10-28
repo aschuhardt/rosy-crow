@@ -15,7 +15,7 @@ public partial class WhatsNewPage : ContentPage
 
     private async void WhatsNewPage_OnAppearing(object sender, EventArgs e)
     {
-        var html = await _documentService.RenderInternalDocument("whats-new");
+        var html = await _documentService.RenderInternalDocument(@"whats-new");
         Browser.Source = new HtmlWebViewSource { Html = html };
     }
 

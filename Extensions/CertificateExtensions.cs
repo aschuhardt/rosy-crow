@@ -13,7 +13,7 @@ internal static class CertificateExtensions
     {
         try
         {
-            await writer.WriteLineAsync(PemEncoding.Write("CERTIFICATE", certificate.RawData));
+            await writer.WriteLineAsync(PemEncoding.Write(@"CERTIFICATE", certificate.RawData));
 
             if (password != null)
             {
@@ -21,12 +21,12 @@ internal static class CertificateExtensions
                 var key = certificate.GetRSAPrivateKey()?.ExportEncryptedPkcs8PrivateKey(convertedPassword,
                     new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA512,
                         EncryptionIterations));
-                await writer.WriteLineAsync(PemEncoding.Write("ENCRYPTED PRIVATE KEY", key));
+                await writer.WriteLineAsync(PemEncoding.Write(@"ENCRYPTED PRIVATE KEY", key));
             }
             else
             {
                 var key = certificate.GetRSAPrivateKey()?.ExportPkcs8PrivateKey();
-                await writer.WriteLineAsync(PemEncoding.Write("PRIVATE KEY", key));
+                await writer.WriteLineAsync(PemEncoding.Write(@"PRIVATE KEY", key));
             }
 
             await writer.FlushAsync();

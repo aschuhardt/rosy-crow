@@ -45,7 +45,7 @@ public partial class ImportIdentityPage : ContentPage
         CopyText = new Command(async value =>
         {
             await Clipboard.SetTextAsync((string)value);
-            await Toast.Make("Copied").Show();
+            await Toast.Make(Text.ImportIdentityPage_ImportIdentityPage_Copied).Show();
         });
     }
 
@@ -154,7 +154,7 @@ public partial class ImportIdentityPage : ContentPage
 
         try
         {
-            _logger.LogInformation(Text.ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__Subject_, _certificate.Subject);
+            _logger.LogInformation(@"Importing a new identity certificate with subject {Subject}", _certificate.Subject);
 
             // import
             var certWithPrivateKey = UsePassword
@@ -163,7 +163,7 @@ public partial class ImportIdentityPage : ContentPage
 
             if (!certWithPrivateKey.HasPrivateKey)
             {
-                _logger.LogInformation(Text.ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_private_key);
+                _logger.LogInformation(@"Attempted to load a certificate file that lacks a private key");
                 await DisplayAlert(Text.ImportIdentityPage_ImportKey_Missing_Private_Key,
                     Text.ImportIdentityPage_ImportKey_The_selected_certificate_file_lacks_a_private_key__and_therefore_cannot_be_imported_, Text.Global_OK);
                 await Navigation.PopModalAsync(true);
@@ -189,7 +189,7 @@ public partial class ImportIdentityPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while importing a certificate");
+            _logger.LogError(e, @"Exception thrown while importing a certificate");
         }
     }
 
@@ -232,7 +232,7 @@ public partial class ImportIdentityPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to read a certificate prior to importing it");
+            _logger.LogError(e, @"Exception thrown while attempting to read a certificate prior to importing it");
             await Toast.Make(Text.ImportIdentityPage_ImportIdentityPage_OnAppearing_Failed_to_read_the_certificate_file).Show();
             await Navigation.PopModalAsync(true);
         }

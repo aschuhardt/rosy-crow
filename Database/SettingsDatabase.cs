@@ -7,6 +7,7 @@ using SQLite;
 
 namespace RosyCrow.Database;
 
+[Localizable(false)]
 internal class SettingsDatabase : ISettingsDatabase
 {
     private readonly SQLiteConnection _database;
@@ -342,7 +343,7 @@ internal class SettingsDatabase : ISettingsDatabase
                 _database.Delete(entity);
             else if (value.HasValue)
             {
-                _logger.LogInformation("Setting {Name} to {Value}", name, value.GetValueOrDefault());
+                _logger.LogInformation(@"Setting {Name} to {Value}", name, value.GetValueOrDefault());
 
                 if (entity == null)
                 {
@@ -357,7 +358,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while setting the value of {Name}", name);
         }
     }
 
@@ -374,7 +375,7 @@ internal class SettingsDatabase : ISettingsDatabase
                 _database.Delete(entity);
             else if (!string.IsNullOrEmpty(value))
             {
-                _logger.LogInformation("Setting {Name} to \"{Value}\"", name, value);
+                _logger.LogInformation(@"Setting {Name} to ""{Value}""", name, value);
 
                 if (entity == null)
                 {
@@ -389,7 +390,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while setting the value of {Name}", name);
         }
     }
 
@@ -419,7 +420,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while setting the value of {Name}", name);
         }
     }
 
@@ -435,7 +436,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while reading the value of {Name}", name);
             return defaultValue;
         }
     }
@@ -452,7 +453,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while reading the value of {Name}", name);
             return defaultValue;
         }
     }
@@ -468,7 +469,7 @@ internal class SettingsDatabase : ISettingsDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while reading the value of {Name}", name);
+            _logger.LogError(e, @"Exception thrown while reading the value of {Name}", name);
             return defaultValue;
         }
     }

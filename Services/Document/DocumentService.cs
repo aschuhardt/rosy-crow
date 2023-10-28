@@ -14,6 +14,7 @@ using RosyCrow.Services.Cache;
 
 namespace RosyCrow.Services.Document;
 
+[Localizable(false)]
 internal class DocumentService : IDocumentService
 {
     private readonly ICacheService _cache;
@@ -242,10 +243,10 @@ internal class DocumentService : IDocumentService
         return output;
     }
 
-    private string CreateInlineImageDataUrl(MemoryStream data)
+    private static string CreateInlineImageDataUrl(MemoryStream data)
     {
         data.Seek(0, SeekOrigin.Begin);
-        return $"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
+        return $@"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
     }
 
     private async Task<string> TryLoadCachedImage(Uri uri)
@@ -256,13 +257,13 @@ internal class DocumentService : IDocumentService
 
             if (await _cache.TryRead(uri, image))
             {
-                _logger.LogDebug("Loaded cached image originally from {URI}", uri);
+                _logger.LogDebug(@"Loaded cached image originally from {URI}", uri);
                 return CreateInlineImageDataUrl(image);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
         }
 
         return null;
@@ -284,7 +285,7 @@ internal class DocumentService : IDocumentService
 
                     if (await client.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
-                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
+                        _logger.LogDebug(@"Successfully loaded an image of type {MimeType} to be inlined from {URI}",
                             success.MimeType,
                             uri);
 
@@ -293,7 +294,7 @@ internal class DocumentService : IDocumentService
                         if (image == null)
                         {
                             _logger.LogWarning(
-                                "Loaded an image to be inlined from {URI} but failed to create the preview",
+                                @"Loaded an image to be inlined from {URI} but failed to create the preview",
                                 uri);
                             break;
                         }
@@ -301,7 +302,7 @@ internal class DocumentService : IDocumentService
                         image.Seek(0, SeekOrigin.Begin);
                         await _cache.Write(uri, image);
 
-                        _logger.LogDebug("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
+                        _logger.LogDebug(@"Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
 
                         return CreateInlineImageDataUrl(image);
                     }
@@ -320,7 +321,7 @@ internal class DocumentService : IDocumentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to cache an image from {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while attempting to cache an image from {URI}", uri);
         }
 
         return null;
@@ -359,37 +360,37 @@ internal class DocumentService : IDocumentService
             {
                 var node = HtmlNode.CreateNode("<p></p>");
 
-                _logger.LogDebug("Attempting to render an image preview inline from {URI}", line.Uri);
+                _logger.LogDebug(@"Attempting to render an image preview inline from {URI}", line.Uri);
 
                 if (line.Uri.Scheme == Constants.GeminiScheme)
                 {
-                    _logger.LogDebug("The image URI specifies the gemini protocol");
+                    _logger.LogDebug(@"The image URI specifies the gemini protocol");
 
                     var cached = await TryLoadCachedImage(line.Uri);
 
                     if (cached != null)
                     {
-                        _logger.LogDebug("Loading the image preview from the cache");
+                        _logger.LogDebug(@"Loading the image preview from the cache");
                         node.AppendChild(RenderInlineImageFigure(line, cached));
                     }
                     else
                     {
                         _logger.LogDebug(
-                            "Queueing the image download to complete after the rest of the page has been rendered.");
+                            @"Queueing the image download to complete after the rest of the page has been rendered.");
                         _parallelRenderWorkload.Add(Task.Run(async () =>
                         {
                             var source = await FetchAndCacheInlinedImage(line.Uri);
 
                             if (!string.IsNullOrEmpty(source))
                             {
-                                _logger.LogDebug("Successfully created the image preview; rendering that now");
+                                _logger.LogDebug(@"Successfully created the image preview; rendering that now");
                                 node.AppendChild(RenderInlineImageFigure(line, source));
                             }
                             else
                             {
                                 // did not load the image preview; fallback to a simple link
                                 _logger.LogDebug(
-                                    "Could not create the image preview; falling-back to a simple gemtext link line");
+                                    @"Could not create the image preview; falling-back to a simple gemtext link line");
                                 node.AppendChild(HtmlNode.CreateNode(
                                     $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
                             }
@@ -400,7 +401,7 @@ internal class DocumentService : IDocumentService
                 {
                     // http, etc. can be handled by the browser
                     _logger.LogDebug(
-                        "The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
+                        @"The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
                     node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
                 }
 
@@ -408,14 +409,14 @@ internal class DocumentService : IDocumentService
             }
 
             _logger.LogDebug(
-                "The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
+                @"The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
                 line.Uri,
                 mimeType ?? "none");
             return RenderDefaultLinkLine(line);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while rendering an inline image preview from {URI}", line.Uri);
+            _logger.LogError(e, @"Exception thrown while rendering an inline image preview from {URI}", line.Uri);
             return null;
         }
     }

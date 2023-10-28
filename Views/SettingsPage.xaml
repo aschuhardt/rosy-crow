@@ -36,13 +36,13 @@
                 <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Show tabs" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="{x:Static localization:Text.SettingsPage_Show_tabs}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
             <toolkit:Expander IsExpanded="{Binding TabsEnabled}">
                 <VerticalStackLayout>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Tab button side" Grid.Column="0" VerticalTextAlignment="Center" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Tab_button_side}" Grid.Column="0" VerticalTextAlignment="Center" />
                         <Picker SelectedItem="{Binding TabSide}" Grid.Column="1" IsEnabled="{Binding TabsEnabled}">
                             <Picker.ItemsSource>
                                 <x:Array Type="{x:Type models:TabSide}">
@@ -53,33 +53,33 @@
                         </Picker>
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Text="Swipe to move between tabs" Grid.Column="0" VerticalTextAlignment="Center" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Swipe_to_move_between_tabs}" Grid.Column="0" VerticalTextAlignment="Center" />
                         <Switch IsToggled="{Binding EnableSwipe}" IsEnabled="{Binding TabsEnabled}" Grid.Column="1" />
                     </Grid>
                 </VerticalStackLayout>
             </toolkit:Expander>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Use a custom font size" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="{x:Static localization:Text.SettingsPage_Use_a_custom_font_size}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding UseCustomFontSize}" IsEnabled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
             <toolkit:Expander IsExpanded="{Binding UseCustomFontSize}" Padding="8,0,0,0">
                 <VerticalStackLayout>
-                    <Label Text="Font Sizes" />
+                    <Label Text="{x:Static localization:Text.SettingsPage_Font_Sizes}" />
                     <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
                         <!-- This syntax sucks -->
-                        <Label Text="Body" Grid.Column="0" Grid.Row="0" VerticalTextAlignment="Center" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Body}" Grid.Column="0" Grid.Row="0" VerticalTextAlignment="Center" />
                         <Slider Value="{Binding CustomFontSizeText}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="0" />
                         <Label Text="{Binding CustomFontSizeText}" Grid.Column="2" Grid.Row="0" />
 
-                        <Label Text="Heading 1" Grid.Column="0" Grid.Row="1" VerticalTextAlignment="Center" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_1}" Grid.Column="0" Grid.Row="1" VerticalTextAlignment="Center" />
                         <Slider Value="{Binding CustomFontSizeH1}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="1" />
                         <Label Text="{Binding CustomFontSizeH1}" Grid.Column="2" Grid.Row="1" />
 
-                        <Label Text="Heading 2" Grid.Column="0" Grid.Row="2" VerticalTextAlignment="Center" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_2}" Grid.Column="0" Grid.Row="2" VerticalTextAlignment="Center" />
                         <Slider Value="{Binding CustomFontSizeH2}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="2" />
                         <Label Text="{Binding CustomFontSizeH2}" Grid.Column="2" Grid.Row="2" />
 
-                        <Label Text="Heading 3" Grid.Column="0" VerticalTextAlignment="Center" Grid.Row="3" />
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_3}" Grid.Column="0" VerticalTextAlignment="Center" Grid.Row="3" />
                         <Slider Value="{Binding CustomFontSizeH3}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="3" />
                         <Label Text="{Binding CustomFontSizeH3}" Grid.Column="2" Grid.Row="3" />
                     </Grid>

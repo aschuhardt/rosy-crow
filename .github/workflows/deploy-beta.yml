@@ -1,15 +1,9 @@
 name: Draft a Beta Release
 on:
-  push:
-    branches: [ beta ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
-  pull_request:
+  workflow_run:
+    workflows: [ Build ]
     types:
-      - closed
-    branches: [ beta ]
+      - completed
   workflow_dispatch:
 permissions:
   contents: read

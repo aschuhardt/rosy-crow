@@ -347,6 +347,7 @@ public partial class SettingsPage : ContentPage
             case nameof(ISettingsDatabase.CustomFontSizeH1):
             case nameof(ISettingsDatabase.CustomFontSizeH2):
             case nameof(ISettingsDatabase.CustomFontSizeH3):
+                _mainPage.LoadPageOnAppearing = true;
                 await RefreshPreview();
                 break;
         }
@@ -427,7 +428,6 @@ public partial class SettingsPage : ContentPage
 
     private async Task RefreshPreview()
     {
-        _mainPage.LoadPageOnAppearing = true;
         var html = await _documentService.RenderInternalDocument(@"preview");
         ThemePreviewBrowser.Source = new HtmlWebViewSource { Html = html };
     }

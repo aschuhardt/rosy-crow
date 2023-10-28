@@ -33,10 +33,6 @@ jobs:
         branch: ${{ github.ref_name }}
         name: bundle-${{ steps.gitversion.outputs.semVer }}
         allow_forks: false
-    - name: Download Bundle
-      uses: actions/download-artifact@v3.0.2
-      with:
-        name: bundle-${{ steps.gitversion.outputs.semVer}}
     - name: Submit a Beta Release
       uses: r0adkll/upload-google-play@v1.0.19
       with:

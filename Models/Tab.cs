@@ -37,6 +37,7 @@ public class Tab : INotifyPropertyChanged
     {
         Url = url;
         Label = label;
+        RecentHistory = new Stack<Uri>();
     }
 
     [PrimaryKey] [AutoIncrement]

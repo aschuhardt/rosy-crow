@@ -754,7 +754,17 @@ public partial class MainPage : ContentPage
             TabCollection.ParentPage = this;
 
             if (!TabCollection.Tabs.Any())
-                await TabCollection.AddDefaultTab();
+            {
+                if (!string.IsNullOrWhiteSpace(_settingsDatabase.LastVisitedUrl) && 
+                    _settingsDatabase.LastVisitedUrl.ToGeminiUri() is { Scheme: Constants.GeminiScheme } geminiUri)
+                {
+                    await TabCollection.AddTab(geminiUri);
+                }
+                else
+                {
+                    await TabCollection.AddDefaultTab();
+                }
+            }
 
             PullTabVisible = !_settingsDatabase.HidePullTab;
         }

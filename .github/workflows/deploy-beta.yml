@@ -7,6 +7,8 @@ on:
       - '**/*.gitignore'
       - '**/*.gitattributes'
   pull_request:
+    types:
+      - closed
     branches: [ beta ]
   workflow_dispatch:
 permissions:

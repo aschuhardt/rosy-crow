@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Web;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,9 @@ internal class DocumentService : IDocumentService
     private readonly ILogger<DocumentService> _logger;
     private readonly List<Task> _parallelRenderWorkload;
     private readonly ISettingsDatabase _settingsDatabase;
+    private HtmlNode _customCssNode;
+    private HtmlNode _themeLinkNode;
+    private HtmlNode _fontSizeNode;
     private HtmlNode _templateNode;
 
     public DocumentService(ISettingsDatabase settingsDatabase, ICacheService cache, ILogger<DocumentService> logger)
@@ -28,13 +32,23 @@ internal class DocumentService : IDocumentService
         _logger = logger;
 
         _parallelRenderWorkload = new List<Task>();
+
+        _themeLinkNode = BuildThemeLinkNode();
+
+        if (_settingsDatabase.UseCustomCss)
+            _customCssNode = BuildCustomCssNode();
+
+        if (_settingsDatabase.UseCustomFontSize)
+            _fontSizeNode = BuildCustomFontSizeNode();
+
+        _settingsDatabase.PropertyChanged += SettingChanged;
     }
 
     public HtmlDocument CreateEmptyDocument()
     {
         var document = new HtmlDocument();
         document.DocumentNode.CopyFrom(_templateNode, true);
-        InjectStylesheet(document);
+        InjectStyleElements(document);
         return document;
     }
 
@@ -46,7 +60,10 @@ internal class DocumentService : IDocumentService
         // remove the old injected stylesheet so that the new one can be used
         document.DocumentNode.Descendants("link").FirstOrDefault(n => n.HasClass("injected-stylesheet"))?.Remove();
 
-        InjectStylesheet(document);
+        foreach (var node in document.DocumentNode.Descendants("style"))
+            node.Remove();
+
+        InjectStyleElements(document);
         return document;
     }
 
@@ -137,11 +154,71 @@ internal class DocumentService : IDocumentService
         return new RenderedGemtextDocument { HtmlContents = document.DocumentNode.OuterHtml, Title = title };
     }
 
-    private void InjectStylesheet(HtmlDocument document)
+    private void SettingChanged(object sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ISettingsDatabase.Theme):
+                _themeLinkNode = BuildThemeLinkNode();
+                break;
+            case nameof(ISettingsDatabase.CustomCss):
+                if (_settingsDatabase.UseCustomCss)
+                    _customCssNode = BuildCustomCssNode();
+                break;
+            case nameof(ISettingsDatabase.CustomFontSizeText):
+            case nameof(ISettingsDatabase.CustomFontSizeH1):
+            case nameof(ISettingsDatabase.CustomFontSizeH2):
+            case nameof(ISettingsDatabase.CustomFontSizeH3):
+                if (_settingsDatabase.UseCustomFontSize)
+                    _fontSizeNode = BuildCustomFontSizeNode();
+                break;
+        }
+    }
+
+    private void InjectStyleElements(HtmlDocument document)
     {
         var head = document.DocumentNode.ChildNodes.FindFirst("head");
-        head?.AppendChild(HtmlNode.CreateNode(
-            $"<link rel=\"stylesheet\" class=\"injected-stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
+        if (head == null)
+            return;
+
+        head.AppendChild(_themeLinkNode);
+
+        if (_settingsDatabase.UseCustomFontSize)
+        {
+            _fontSizeNode ??= BuildCustomFontSizeNode();
+            head.AppendChild(_fontSizeNode);
+        }
+
+        if (_settingsDatabase.UseCustomCss)
+        {
+            _customCssNode ??= BuildCustomCssNode();
+            head.AppendChild(_customCssNode);
+        }
+    }
+
+    private HtmlNode BuildThemeLinkNode()
+    {
+        return HtmlNode.CreateNode("<link rel=\"stylesheet\" class=\"injected-stylesheet\" " +
+                                   $"href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />");
+    }
+
+    private HtmlNode BuildCustomCssNode()
+    {
+        return HtmlNode.CreateNode($"<style class=\"custom-css\">{_settingsDatabase.CustomCss}</style>");
+    }
+
+    private HtmlNode BuildCustomFontSizeNode()
+    {
+        var textSize = _settingsDatabase.CustomFontSizeText;
+        var h1Size = _settingsDatabase.CustomFontSizeH1;
+        var h2Size = _settingsDatabase.CustomFontSizeH2;
+        var h3Size = _settingsDatabase.CustomFontSizeH3;
+        return HtmlNode.CreateNode("<style class=\"custom-fontsize\">" +
+                                   $"body {{ font-size: {textSize}px; }} " +
+                                   $"h1 {{ font-size: {h1Size}px; }} " +
+                                   $"h2 {{ font-size: {h2Size}px; }} " +
+                                   $"h3 {{ font-size: {h3Size}px; }} " +
+                                   "</style>");
     }
 
     private static async Task<MemoryStream> CreateInlinedImagePreview(Stream source, string mimetype)

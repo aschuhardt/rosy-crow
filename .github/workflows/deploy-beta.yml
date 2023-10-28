@@ -1,4 +1,4 @@
-name: Draft a Beta Release
+name: Publish a Beta Release
 on:
   workflow_run:
     workflows: [ Build ]
@@ -60,6 +60,6 @@ jobs:
         releaseName: ${{ steps.set_version.outputs.build_version }}
         track: beta
         mappingFile: mapping.txt
-        status: draft
+        status: completed
 
         

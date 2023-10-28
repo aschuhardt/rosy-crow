@@ -1,16 +1,15 @@
 name: Draft a Beta Release
 on:
-  push:
-    branches: [ beta ]
-    paths-ignore:
-      - '**/*.md'
-      - '**/*.gitignore'
-      - '**/*.gitattributes'
-  pull_request:
+  workflow_run:
+    workflows: [ Build ]
     types:
-      - closed
+      - completed
     branches: [ beta ]
   workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        description: Version to deploy
 permissions:
   contents: read
 jobs:
@@ -23,35 +22,44 @@ jobs:
       with:
         fetch-depth: 0
     - name: Install GitVersion
+      if: ${{ github.event.inputs.version == '' }}
       uses: gittools/actions/gitversion/setup@v0.10.2
       with:
         versionSpec: '5.x'
         preferLatestVersion: true
     - name: Determine Version
+      if: ${{ github.event.inputs.version == '' }}
       id: gitversion
       uses: gittools/actions/gitversion/execute@v0.10.2
       with:
         useConfigFile: true
+    - name: Set Version
+      id: set_version
+      run: |
+        if [[ -n "$MANUAL_VERSION" ]]; then
+          echo "build_version=$MANUAL_VERSION" >> "$GITHUB_OUTPUT"
+        elif [[ -n "$AUTO_VERSION" ]]; then
+          echo "build_version=$AUTO_VERSION" >> "$GITHUB_OUTPUT"
+        fi
+      env:
+        MANUAL_VERSION: ${{ github.event.inputs.version }}
+        AUTO_VERSION: ${{ steps.gitversion.outputs.semVer }}
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2.28.0
       with:
         workflow: build.yml
         branch: ${{ github.ref_name }}
-        name: bundle-${{ steps.gitversion.outputs.semVer }}
+        name: bundle-${{ steps.set_version.outputs.build_version }}
         allow_forks: false
-    - name: Download Bundle
-      uses: actions/download-artifact@v3.0.2
-      with:
-        name: bundle-${{ steps.gitversion.outputs.semVer}}
     - name: Submit a Beta Release
       uses: r0adkll/upload-google-play@v1.0.19
       with:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
         packageName: app.rosy_crow
-        releaseFile: app.rosy_crow-Signed.aab
-        releaseName: ${{ steps.gitversion.outputs.semVer }}
+        releaseFiles: app.rosy_crow-Signed.aab
+        releaseName: ${{ steps.set_version.outputs.build_version }}
         track: beta
-        mappingFile: mappings.txt
+        mappingFile: mapping.txt
         status: draft
 
         

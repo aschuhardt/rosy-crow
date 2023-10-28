@@ -56,7 +56,7 @@ jobs:
       with:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
         packageName: app.rosy_crow
-        releaseFile: app.rosy_crow-Signed.aab
+        releaseFiles: app.rosy_crow-Signed.aab
         releaseName: ${{ steps.set_version.outputs.build_version }}
         track: beta
         mappingFile: mappings.txt

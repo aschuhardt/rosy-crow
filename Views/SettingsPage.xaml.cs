@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Windows.Input;
@@ -40,6 +41,7 @@ public partial class SettingsPage : ContentPage
 
         BindingContext = this;
 
+        _settingsDatabase.PropertyChanged += SettingChanged;
         OpenAbout = new Command(async () => await Navigation.PushPageAsync<AboutPage>());
         OpenWhatsNew = new Command(async () => await Navigation.PushPageAsync<WhatsNewPage>());
         ExportLogs = new Command(async () => await ExportErrorLogArchive());
@@ -48,6 +50,23 @@ public partial class SettingsPage : ContentPage
             await Clipboard.SetTextAsync(VersionInfo);
             await Toast.Make("Copied").Show();
         });
+    }
+
+    private async void SettingChanged(object sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ISettingsDatabase.UseCustomCss):
+            case nameof(ISettingsDatabase.UseCustomFontSize):
+            case nameof(ISettingsDatabase.Theme):
+            case nameof(ISettingsDatabase.CustomCss):
+            case nameof(ISettingsDatabase.CustomFontSizeText):
+            case nameof(ISettingsDatabase.CustomFontSizeH1):
+            case nameof(ISettingsDatabase.CustomFontSizeH2):
+            case nameof(ISettingsDatabase.CustomFontSizeH3):
+                await RefreshPreview();
+                break;
+        }
     }
 
     public bool TabsEnabled
@@ -241,6 +260,97 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public bool UseCustomFontSize
+    {
+        get => _settingsDatabase?.UseCustomFontSize ?? false;
+        set
+        {
+            if (value == _settingsDatabase.UseCustomFontSize)
+                return;
+
+            _settingsDatabase.UseCustomFontSize = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int CustomFontSizeH1
+    {
+        get => _settingsDatabase?.CustomFontSizeH1 ?? 14;
+        set
+        {
+            if (value == _settingsDatabase.CustomFontSizeH1)
+                return;
+
+            _settingsDatabase.CustomFontSizeH1 = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int CustomFontSizeH2
+    {
+        get => _settingsDatabase?.CustomFontSizeH2 ?? 14;
+        set
+        {
+            if (value == _settingsDatabase.CustomFontSizeH2)
+                return;
+
+            _settingsDatabase.CustomFontSizeH2 = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int CustomFontSizeH3
+    {
+        get => _settingsDatabase?.CustomFontSizeH3 ?? 14;
+        set
+        {
+            if (value == _settingsDatabase.CustomFontSizeH3)
+                return;
+
+            _settingsDatabase.CustomFontSizeH3 = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public int CustomFontSizeText
+    {
+        get => _settingsDatabase?.CustomFontSizeText ?? 14;
+        set
+        {
+            if (value == _settingsDatabase.CustomFontSizeText)
+                return;
+
+            _settingsDatabase.CustomFontSizeText = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public bool UseCustomCss
+    {
+        get => _settingsDatabase?.UseCustomCss ?? false;
+        set
+        {
+            if (value == _settingsDatabase.UseCustomCss)
+                return;
+
+            _settingsDatabase.UseCustomCss = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public string CustomCss
+    {
+        get => _settingsDatabase?.CustomCss;
+        set
+        {
+            if (value == _settingsDatabase.CustomCss)
+                return;
+
+            _settingsDatabase.CustomCss = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async Task ExportErrorLogArchive()
     {
         // storage permission doesn't apply starting in 33
@@ -308,12 +418,13 @@ public partial class SettingsPage : ContentPage
         VersionInfo = $"Version {VersionTracking.Default.CurrentVersion}, build {VersionTracking.Default.CurrentBuild}";
         TabSide = _settingsDatabase.TabSide;
         TabsEnabled = _settingsDatabase.TabsEnabled;
+
+        await RefreshPreview();
     }
 
-    private async void Picker_OnSelectedIndexChanged(object sender, EventArgs e)
+    private async Task RefreshPreview()
     {
         _mainPage.LoadPageOnAppearing = true;
-
         var html = await _documentService.RenderInternalDocument("preview");
         ThemePreviewBrowser.Source = new HtmlWebViewSource { Html = html };
     }

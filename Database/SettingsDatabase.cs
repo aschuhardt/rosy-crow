@@ -26,6 +26,13 @@ internal class SettingsDatabase : ISettingsDatabase
     private TabSide? _tabSide;
     private bool? _tabsEnabled;
     private bool? _swipeEnabled;
+    private int? _customFontSizeText;
+    private int? _customFontSizeH1;
+    private int? _customFontSizeH2;
+    private int? _customFontSizeH3;
+    private bool? _useCustomFontSize;
+    private string _customCss;
+    private bool? _useCustomCss;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -221,6 +228,104 @@ internal class SettingsDatabase : ISettingsDatabase
         {
            if (SetField(ref _swipeEnabled, value))
                SetBoolValue(value);
+        }
+    }
+
+    public int CustomFontSizeText
+    {
+        get
+        {
+            _customFontSizeText ??= GetIntValue(16);
+            return _customFontSizeText.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _customFontSizeText, value))
+                SetIntValue(value);
+        }
+    }
+
+    public int CustomFontSizeH1
+    {
+        get
+        {
+            _customFontSizeH1 ??= GetIntValue(24);
+            return _customFontSizeH1.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _customFontSizeH1, value))
+                SetIntValue(value);
+        }
+    }
+
+    public int CustomFontSizeH2
+    {
+        get
+        {
+            _customFontSizeH2 ??= GetIntValue(20);
+            return _customFontSizeH2.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _customFontSizeH2, value))
+                SetIntValue(value);
+        }
+    }
+
+    public int CustomFontSizeH3
+    {
+        get
+        {
+            _customFontSizeH3 ??= GetIntValue(18);
+            return _customFontSizeH3.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _customFontSizeH3, value))
+                SetIntValue(value);
+        }
+    }
+
+    public bool UseCustomFontSize
+    {
+        get
+        {
+            _useCustomFontSize ??= GetBoolValue(false);
+            return _useCustomFontSize.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _useCustomFontSize, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public bool UseCustomCss
+    {
+        get
+        {
+            _useCustomCss ??= GetBoolValue(false);
+            return _useCustomCss.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _useCustomCss, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public string CustomCss
+    {
+        get
+        {
+            _customCss ??= GetStringValue();
+            return _customCss;
+        }
+        set
+        {
+            if (SetField(ref _customCss, value))
+                SetStringValue(value);
         }
     }
 

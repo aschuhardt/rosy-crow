@@ -1,5 +1,4 @@
-name: Build
-
+name: Draft a Beta Release
 on:
   push:
     branches: [ beta ]
@@ -35,7 +34,7 @@ jobs:
       uses: actions/download-artifact@v3.0.2
       with:
         name: bundle-${{ steps.gitversion.outputs.semVer}}
-    - name: Upload to Google Play Store
+    - name: Draft a Beta Release
       uses: r0adkll/upload-google-play@v1.0.19
       with:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
@@ -45,3 +44,10 @@ jobs:
         status: draft
         track: beta
         mappingFile: mappings.txt
+    - name: Create a Tag
+      uses: anothrNick/github-tag-action@1.67.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CUSTOM_TAG: v${{ steps.gitversion.outputs.semVer }}
+
+        

@@ -38,7 +38,7 @@ jobs:
       run: |
         if [[ -n "$MANUAL_VERSION" ]]; then
           echo "build_version=$MANUAL_VERSION" >> "$GITHUB_OUTPUT"
-        elif [[ -n "$AUTO_VERSION ]]; then
+        elif [[ -n "$AUTO_VERSION" ]]; then
           echo "build_version=$AUTO_VERSION" >> "$GITHUB_OUTPUT"
         fi
       env:

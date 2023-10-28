@@ -30,24 +30,26 @@ jobs:
       uses: gittools/actions/gitversion/execute@v0.10.2
       with:
         useConfigFile: true
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2.28.0
+      with:
+        workflow: build.yml
+        branch: ${{ github.ref_name }}
+        name: bundle-${{ steps.gitversion.outputs.semVer }}
+        allow_forks: false
     - name: Download Bundle
       uses: actions/download-artifact@v3.0.2
       with:
         name: bundle-${{ steps.gitversion.outputs.semVer}}
-    - name: Draft a Beta Release
+    - name: Submit a Beta Release
       uses: r0adkll/upload-google-play@v1.0.19
       with:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
         packageName: app.rosy_crow
         releaseFile: app.rosy_crow-Signed.aab
         releaseName: ${{ steps.gitversion.outputs.semVer }}
-        status: draft
         track: beta
         mappingFile: mappings.txt
-    - name: Create a Tag
-      uses: anothrNick/github-tag-action@1.67.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        CUSTOM_TAG: v${{ steps.gitversion.outputs.semVer }}
+        status: draft
 
         

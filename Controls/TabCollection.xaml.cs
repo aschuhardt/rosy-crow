@@ -568,6 +568,7 @@ public partial class TabCollection : ContentView
 
     protected virtual void OnSelectedTabChanged()
     {
+        OnPropertyChanged(nameof(SelectedTab));
         SelectedTabChanged?.Invoke(this, EventArgs.Empty);
     }
 

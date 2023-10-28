@@ -2,13 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, beta ]
     paths-ignore:
       - '**/*.md'
       - '**/*.gitignore'
       - '**/*.gitattributes'
   pull_request:
-    branches: [ main, develop ]
+    branches: [ main, beta ]
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,6 +35,7 @@ jobs:
           preferLatestVersion: true
 
       - name: Determine Version
+        id: gitversion
         uses: gittools/actions/gitversion/execute@v0.10.2
         with:
           useConfigFile: true
@@ -64,10 +65,11 @@ jobs:
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
 
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v2.3.1
+      - name: Upload Bundle
+        uses: actions/upload-artifact@v3.1.3
         with:
-          name: build-${{ github.run_number }}-${{ steps.gitversion.outputs.semVer }}
+          retention-days: 14
+          name: bundle-${{ steps.gitversion.outputs.semVer }}
           path: |
             bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
             bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk

@@ -33,24 +33,23 @@ jobs:
       uses: gittools/actions/gitversion/execute@v0.10.2
       with:
         useConfigFile: true
-    - name: Use GitVersion Version
+    - name: Set Version
+      id: set_version
       run: |
-        echo "build_version=$BUILD_VERSION" >> "$GITHUB_ENV"
-      if: ${{ github.event.inputs.version == '' }}
+        if [[ -n "$MANUAL_VERSION" ]]; then
+          echo "build_version=$MANUAL_VERSION" >> "$GITHUB_OUTPUT"
+        elif [[ -n "$AUTO_VERSION ]]; then
+          echo "build_version=$AUTO_VERSION" >> "$GITHUB_OUTPUT"
+        fi
       env:
-        BUILD_VERSION: ${{ steps.gitversion.outputs.semVer }}
-    - name: Use Manual Version
-      run: |
-        echo "build_version=$BUILD_VERSION" >> "$GITHUB_ENV"
-      if: ${{ github.event.inputs.version != '' }}
-      env:
-        BUILD_VERSION: ${{ github.event.inputs.version }}
+        MANUAL_VERSION: ${{ github.event.inputs.version }}
+        AUTO_VERSION: ${{ steps.gitversion.outputs.semVer }}
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2.28.0
       with:
         workflow: build.yml
         branch: ${{ github.ref_name }}
-        name: bundle-${{ build_version }}
+        name: bundle-${{ steps.set_version.outputs.build_version }}
         allow_forks: false
     - name: Submit a Beta Release
       uses: r0adkll/upload-google-play@v1.0.19
@@ -58,7 +57,7 @@ jobs:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
         packageName: app.rosy_crow
         releaseFile: app.rosy_crow-Signed.aab
-        releaseName: ${{ build_version }}
+        releaseName: ${{ steps.set_version.outputs.build_version }}
         track: beta
         mappingFile: mappings.txt
         status: draft

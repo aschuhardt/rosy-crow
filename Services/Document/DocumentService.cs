@@ -60,7 +60,8 @@ internal class DocumentService : IDocumentService
         // remove the old injected stylesheet so that the new one can be used
         document.DocumentNode.Descendants("link").FirstOrDefault(n => n.HasClass("injected-stylesheet"))?.Remove();
 
-        foreach (var node in document.DocumentNode.Descendants("style"))
+        var styleNodes = document.DocumentNode.Descendants("style").ToList();
+        foreach (var node in styleNodes)
             node.Remove();
 
         InjectStyleElements(document);

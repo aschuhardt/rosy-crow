@@ -1,4 +1,4 @@
-name: Draft a Beta Release
+name: Deploy a Beta Release
 on:
   push:
     branches: [ beta ]
@@ -50,6 +50,6 @@ jobs:
         releaseName: ${{ steps.gitversion.outputs.semVer }}
         track: beta
         mappingFile: mappings.txt
-        status: draft
+        status: completed
 
         

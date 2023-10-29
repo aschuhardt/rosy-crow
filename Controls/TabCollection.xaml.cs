@@ -200,9 +200,14 @@ public partial class TabCollection : ContentView
         tab.InitializedByTabCollection = true;
     }
 
+    private static Tab MakeDefaultTab()
+    {
+        return new Tab("rosy-crow://default", "🐦");
+    }
+
     public Task AddDefaultTab()
     {
-        return AddTab("rosy-crow://default", "🐦");
+        return AddTab(MakeDefaultTab());
     }
 
     public Task AddTab(Uri uri)
@@ -210,17 +215,25 @@ public partial class TabCollection : ContentView
         return AddTab(uri.ToString(), uri.Host[..1]);
     }
 
+
     [Localizable(false)]
     public Task AddTab(string url, string label)
     {
-        _logger.LogDebug(@"Adding a new tab for {URL} with label {Label}", url, label);
+        return AddTab(new Tab(url, label));
+    }
 
-        var tab = new Tab(url, label);
-
-        Tabs.Add(tab);
+    private Task AddTab(Tab tab)
+    {
+        AddTab(tab, Tabs);
         SelectTab(tab);
 
         return _browsingDatabase.UpdateTabOrder();
+    }
+
+    private void AddTab(Tab tab, ICollection<Tab> destination)
+    {
+        _logger.LogDebug(@"Adding a new tab for {URL} with label {Label}", tab.Url, tab.Label);
+        destination.Add(tab);
     }
 
     public Task ImportTabs(IEnumerable<Tab> tabs)
@@ -458,8 +471,19 @@ public partial class TabCollection : ContentView
                 Text.TabCollection_BrowserTab_OnRemoveAllRequested_Yes,
                 Text.TabCollection_BrowserTab_OnRemoveAllRequested_No))
         {
-            Tabs.Clear();
-            await AddDefaultTab();
+            // the carousel doesn't like it when we clear its items completely; so we will create a new bucket
+            // with a single default tab in it and have the UI display that while we clear the old one
+
+            // create a new list and store the default tab there, pass it to the UI (via binding to Tabs)
+            var newList = new ObservableCollection<Tab>();
+            AddTab(MakeDefaultTab(), newList);
+            Tabs = newList;
+
+            // clear the old list
+            _browsingDatabase.Tabs.Clear();
+
+            // browsing database will now use the new list
+            _browsingDatabase.Tabs = newList;
         }
     }
 

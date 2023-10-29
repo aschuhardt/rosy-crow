@@ -160,7 +160,6 @@
             VerticalOptions="End"
             SelectedTabChanged="Tabs_SelectedTabChanged"
             ZIndex="10"
-            ReorderingChanged="Tabs_OnReorderingChanged"
             IsVisible="{Binding TabsEnabled}"/>
     </AbsoluteLayout>
 </ContentPage>

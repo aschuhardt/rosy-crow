@@ -1,7 +1,6 @@
 using System.Windows.Input;
 using Android.Views;
 using CommunityToolkit.Maui.Alerts;
-using Microsoft.Extensions.Logging;
 using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
@@ -20,19 +19,16 @@ public partial class BrowserTab : ContentView
         BindableProperty.Create(nameof(ReorderingCommand), typeof(ICommand), typeof(BrowserTab));
 
     private readonly IBrowsingDatabase _browsingDatabase;
-    private readonly ILogger<BrowserTab> _logger;
     private bool _isReordering;
     private ICommand _tapped;
 
-    public BrowserTab() : this(MauiProgram.Services.GetRequiredService<IBrowsingDatabase>(),
-        MauiProgram.Services.GetRequiredService<ILogger<BrowserTab>>())
+    public BrowserTab() : this(MauiProgram.Services.GetRequiredService<IBrowsingDatabase>())
     {
     }
 
-    public BrowserTab(IBrowsingDatabase browsingDatabase, ILogger<BrowserTab> logger)
+    public BrowserTab(IBrowsingDatabase browsingDatabase)
     {
         _browsingDatabase = browsingDatabase;
-        _logger = logger;
 
         InitializeComponent();
 
@@ -116,64 +112,68 @@ public partial class BrowserTab : ContentView
             return;
 
         var url = tab.Url.ToGeminiUri();
-        menu.SetHeaderTitle(tab.Label.IsEmoji() ? url.Host : $"{tab.Label} {url.Host}");
+        menu.SetHeaderTitle(tab.Label.IsEmoji() ? url.Host : $@"{tab.Label} {url.Host}");
 
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
             menu.SetGroupDividerEnabled(true);
 
-        var allMenu = menu.AddSubMenu("All Tabs");
+        var allMenu = menu.AddSubMenu(Text.BrowserTab_BuildContextMenu_All_Tabs);
 
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
             allMenu?.SetGroupDividerEnabled(true);
 
-        allMenu?.Add("Import")?
+        allMenu?.Add(Text.BrowserTab_BuildContextMenu_Import)?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ImportRequested?.Invoke(this, EventArgs.Empty)));
-        allMenu?.Add("Export")?
+        allMenu?.Add(Text.BrowserTab_BuildContextMenu_Export)?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ExportRequested?.Invoke(this, EventArgs.Empty)));
-        allMenu?.Add("Arrange")?
+        allMenu?.Add(Text.BrowserTab_BuildContextMenu_Arrange)?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => ReorderingRequested?.Invoke(this, EventArgs.Empty)));
-        allMenu?.Add(1, IMenu.None, IMenu.None, "Close All")?
+        allMenu?.Add(1, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Close_All)?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveAllRequested?.Invoke(this, EventArgs.Empty)));
 
         if (url.Scheme != Constants.InternalScheme)
         {
-            var iconMenu = menu.AddSubMenu(2, IMenu.None, IMenu.None, "Icon");
+            var iconMenu = menu.AddSubMenu(2, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Icon);
 
-            iconMenu?.Add("Fetch (favicon.txt)")?
+            iconMenu?.Add(Text.BrowserTab_BuildContextMenu_Fetch__favicon_txt_)?
                 .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => FetchingIcon?.Invoke(this, new TabEventArgs(tab))));
-            iconMenu?.Add("Set Custom")?
+            iconMenu?.Add(Text.BrowserTab_BuildContextMenu_Set_Custom)?
                 .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => SettingCustomIcon?.Invoke(this, new TabEventArgs(tab))));
+
             if (tab.InitializedByTabCollection && _browsingDatabase.TryGetCapsule(url.Host, out var capsule))
             {
-                iconMenu?.Add("Reset")?
+                iconMenu?.Add(Text.BrowserTab_BuildContextMenu_Reset)?
                     .SetOnMenuItemClickListener(new ActionMenuClickHandler(() =>
                         ResettingIcon?.Invoke(this, new TabCapsuleEventArgs(tab, capsule))));
             }
 
             if (_browsingDatabase.TryGetBookmark(tab.Url, out var bookmark))
             {
-                menu.Add(2, IMenu.None, IMenu.None, "Remove Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
-                {
-                    _browsingDatabase.Bookmarks.Remove(bookmark);
-                    tab.OnBookmarkChanged();
-                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
-                }));
+                menu.Add(2, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Remove_Bookmark)?.SetOnMenuItemClickListener(
+                    new ActionMenuClickHandler(async () =>
+                    {
+                        _browsingDatabase.Bookmarks.Remove(bookmark);
+                        tab.OnBookmarkChanged();
+                        await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
+                    }));
             }
             else if (tab.InitializedByTabCollection)
             {
-                menu.Add(2, IMenu.None, IMenu.None, "Bookmark")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () =>
-                {
-                    bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
-                    _browsingDatabase.Bookmarks.Add(bookmark);
-                    tab.OnBookmarkChanged();
-                    await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_added).Show();
-                }));
+                menu.Add(2, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Bookmark)?.SetOnMenuItemClickListener(
+                    new ActionMenuClickHandler(async () =>
+                    {
+                        bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
+                        _browsingDatabase.Bookmarks.Add(bookmark);
+                        tab.OnBookmarkChanged();
+                        await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_added).Show();
+                    }));
             }
         }
 
-        menu.Add(2, IMenu.None, IMenu.None, "Copy URL")?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
+        menu.Add(2, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Copy_URL)
+            ?.SetOnMenuItemClickListener(new ActionMenuClickHandler(async () => await Clipboard.SetTextAsync(tab.Url)));
 
-        menu.Add(1, IMenu.None, IMenu.None, "Close")?
+        menu.Add(1, IMenu.None, IMenu.None, Text.BrowserTab_BuildContextMenu_Close)?
             .SetOnMenuItemClickListener(new ActionMenuClickHandler(() => RemoveRequested?.Invoke(this, new TabEventArgs(tab))));
     }
 #endif

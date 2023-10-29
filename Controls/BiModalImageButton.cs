@@ -12,12 +12,12 @@ namespace RosyCrow.Controls;
 /// </summary>
 public class BiModalImageButton : ImageButton
 {
-    public static BindableProperty LongCommandProperty =
+    public static readonly BindableProperty LongCommandProperty =
         BindableProperty.Create(nameof(LongCommand), typeof(ICommand), typeof(BiModalImageButton));
 
     public BiModalImageButton()
     {
-        ImageButtonHandler.Mapper.AppendToMapping("BiModalButtonHandler", (handler, button) =>
+        ImageButtonHandler.Mapper.AppendToMapping(@"BiModalButtonHandler", (handler, button) =>
         {
             if (button is not BiModalImageButton)
                 return;

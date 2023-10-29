@@ -14,7 +14,7 @@ public partial class AboutPage : ContentPage
 
     private async void AboutPage_OnAppearing(object sender, EventArgs e)
     {
-        var html = await _documentService.RenderInternalDocument("about");
+        var html = await _documentService.RenderInternalDocument(@"about");
         Browser.Source = new HtmlWebViewSource { Html = html };
     }
 

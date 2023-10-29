@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 
 namespace RosyCrow.Converters;
 
@@ -11,6 +12,7 @@ public class ExpandButtonImageConverter : IValueConverter
         _imageSourceConverter = new ImageSourceConverter();
     }
 
+    [Localizable(false)]
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var isExpanded = (bool)value;

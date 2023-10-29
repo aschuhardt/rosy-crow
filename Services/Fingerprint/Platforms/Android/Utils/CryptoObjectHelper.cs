@@ -1,4 +1,5 @@
-﻿using Android.Hardware.Biometrics;
+﻿using System.ComponentModel;
+using Android.Hardware.Biometrics;
 using Android.Security.Keystore;
 using Java.Security;
 using Javax.Crypto;
@@ -6,6 +7,7 @@ using Javax.Crypto.Spec;
 
 namespace RosyCrow.Services.Fingerprint.Platforms.Android.Utils
 {
+    [Localizable(false)]
     internal class CryptoObjectHelper
     {
         // Fixed Android KeyStore Name

@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Android.Content;
 using Android.Hardware.Biometrics;
 using Java.Lang;
@@ -6,6 +7,7 @@ using RosyCrow.Services.Fingerprint.Abstractions;
 
 namespace RosyCrow.Services.Fingerprint.Platforms.Android
 {
+    [Localizable(false)]
     public class AuthenticationHandler : BiometricPrompt.AuthenticationCallback, IDialogInterfaceOnClickListener
     {
         private readonly TaskCompletionSource<FingerprintAuthenticationResult> _taskCompletionSource;

@@ -1,4 +1,5 @@
-﻿using RosyCrow.Services.Fingerprint.Abstractions;
+﻿using System.ComponentModel;
+using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Fingerprint.Platforms.Android;
 
 namespace RosyCrow.Services.Fingerprint
@@ -6,9 +7,10 @@ namespace RosyCrow.Services.Fingerprint
     /// <summary>
     /// Cross Platform Fingerprint.
     /// </summary>
+    [Localizable(false)]
     public partial class CrossFingerprint
     {
-        private static Lazy<IFingerprint> _implementation = new Lazy<IFingerprint>(CreateFingerprint, LazyThreadSafetyMode.PublicationOnly);
+        private static Lazy<IFingerprint> _implementation = new(CreateFingerprint, LazyThreadSafetyMode.PublicationOnly);
 
         /// <summary>
         /// Current plugin implementation to use
@@ -40,11 +42,6 @@ namespace RosyCrow.Services.Fingerprint
             {
                 _implementation = new Lazy<IFingerprint>(CreateFingerprint, LazyThreadSafetyMode.PublicationOnly);
             }
-        }
-
-        private static Exception NotImplementedInReferenceAssembly()
-        {
-            return new NotImplementedException("This functionality is not implemented in the portable version of this assembly. You should reference the NuGet package from your main application project in order to reference the platform-specific implementation.");
         }
     }
 }

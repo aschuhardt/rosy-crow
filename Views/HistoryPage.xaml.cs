@@ -213,12 +213,12 @@ public partial class HistoryPage : ContentPage
                         ToastDuration.Short);
                 }
 
-                _logger.LogInformation("Cleared the {Count} visited page entries", deleted);
+                _logger.LogInformation(@"Cleared the {Count} visited page entries", deleted);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to clear the visited page history");
+            _logger.LogError(e, @"Exception thrown while attempting to clear the visited page history");
         }
     }
 
@@ -244,7 +244,7 @@ public partial class HistoryPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while loading a page of previously-visited URIs");
+            _logger.LogError(e, @"Exception thrown while loading a page of previously-visited URIs");
         }
     }
 

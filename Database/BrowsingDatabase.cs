@@ -113,7 +113,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
     public int ClearVisited()
     {
-        _logger.LogDebug("Clearing visited page history");
+        _logger.LogDebug(@"Clearing visited page history");
 
         try
         {
@@ -121,7 +121,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while clearing visited page history");
+            _logger.LogError(e, @"Exception thrown while clearing visited page history");
             return 0;
         }
     }
@@ -129,13 +129,13 @@ internal class BrowsingDatabase : IBrowsingDatabase
     public int GetVisitedPageCount()
     {
         var count = Math.Max(1, (int)Math.Ceiling(_database.Table<Visited>().Count() / (double)_settingsDatabase.HistoryPageSize));
-        _logger.LogDebug("{Count} pages visited", count);
+        _logger.LogDebug(@"{Count} pages visited", count);
         return count;
     }
 
     public void AddVisitedPage(Visited visited)
     {
-        _logger.LogDebug("Storing visited page {URI}", visited.Url);
+        _logger.LogDebug(@"Storing visited page {URI}", visited.Url);
 
         try
         {
@@ -143,7 +143,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while inserting a visited page");
+            _logger.LogError(e, @"Exception thrown while inserting a visited page");
         }
     }
 
@@ -165,13 +165,13 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while inserting a host certificate");
+            _logger.LogError(e, @"Exception thrown while inserting a host certificate");
         }
     }
 
     public bool TryGetHostCertificate(string host, out HostCertificate certificate)
     {
-        _logger.LogDebug("Checking for a stored certificate for host {Host}", host);
+        _logger.LogDebug(@"Checking for a stored certificate for host {Host}", host);
 
         try
         {
@@ -180,7 +180,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while performing a host certificate lookup");
+            _logger.LogError(e, @"Exception thrown while performing a host certificate lookup");
             certificate = null;
             return false;
         }
@@ -200,13 +200,13 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
             lastPage = result.Count < pageSize;
 
-            _logger.LogDebug("Found {Count} visited page entries on page {Page}.  Last page: {LastPage}", result.Count, page, lastPage);
+            _logger.LogDebug(@"Found {Count} visited page entries on page {Page}.  Last page: {LastPage}", result.Count, page, lastPage);
 
             return result;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while getting visited page history");
+            _logger.LogError(e, @"Exception thrown while getting visited page history");
             lastPage = true;
             return Enumerable.Empty<Visited>();
         }
@@ -215,19 +215,19 @@ internal class BrowsingDatabase : IBrowsingDatabase
     public void InsertOrReplace<T>(T obj)
     {
         var affected = _database.InsertOrReplace(obj, typeof(T));
-        _logger.LogDebug("Inserted or replaced {Count} object of type {Type}", affected, typeof(T).Name);
+        _logger.LogDebug(@"Inserted or replaced {Count} object of type {Type}", affected, typeof(T).Name);
     }
 
     public void Update<T>(T obj)
     {
         var affected = _database.Update(obj, typeof(T));
-        _logger.LogDebug("Updated {Count} object of type {Type}", affected, typeof(T).Name);
+        _logger.LogDebug(@"Updated {Count} object of type {Type}", affected, typeof(T).Name);
     }
 
     public void UpdateAll<T>(params T[] entities)
     {
         var affected = _database.UpdateAll(entities);
-        _logger.LogDebug("Updated {Count} objects of type {Type} (in bulk)", affected, typeof(T).Name);
+        _logger.LogDebug(@"Updated {Count} objects of type {Type} (in bulk)", affected, typeof(T).Name);
     }
 
     public bool TryGetCapsule(string hostname, out Capsule capsule)
@@ -240,11 +240,11 @@ internal class BrowsingDatabase : IBrowsingDatabase
     {
         if (!TryGetHostCertificate(host, out var cert))
         {
-            _logger.LogWarning("Cannot accept a host certificate for {Host} that has not yet been stored", host);
+            _logger.LogWarning(@"Cannot accept a host certificate for {Host} that has not yet been stored", host);
             return;
         }
 
-        _logger.LogDebug("Accepting new certificate for host {Host}", host);
+        _logger.LogDebug(@"Accepting new certificate for host {Host}", host);
 
         cert.Accepted = true;
 
@@ -254,7 +254,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while accepting a new host certificate");
+            _logger.LogError(e, @"Exception thrown while accepting a new host certificate");
         }
     }
 
@@ -263,11 +263,11 @@ internal class BrowsingDatabase : IBrowsingDatabase
         // Opal *should* be returning this version under the hood
         var cert = certificate as X509Certificate2 ?? new X509Certificate2(certificate);
 
-        _logger.LogDebug("Verifying certificate with fingerprint {Fingerprint} for {Host}", cert.Thumbprint, host);
+        _logger.LogDebug(@"Verifying certificate with fingerprint {Fingerprint} for {Host}", cert.Thumbprint, host);
 
         if (!cert.MatchesHostname(host))
         {
-            _logger.LogInformation("The name on certificate from {Host} does not match the host's name (found subject {Subject})", host, cert.SubjectName);
+            _logger.LogInformation(@"The name on certificate from {Host} does not match the host's name (found subject {Subject})", host, cert.SubjectName);
 
             result = InvalidCertificateReason.NameMismatch;
             return false;
@@ -275,7 +275,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         if (DateTime.UtcNow > cert.NotAfter)
         {
-            _logger.LogInformation("The certificate from {Host} expired as of {NotAfter}", host, cert.NotAfter);
+            _logger.LogInformation(@"The certificate from {Host} expired as of {NotAfter}", host, cert.NotAfter);
 
             result = InvalidCertificateReason.Expired;
             return false;
@@ -283,7 +283,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         if (DateTime.UtcNow < cert.NotBefore)
         {
-            _logger.LogInformation("The certificate from {Host} is not valid until {NotBefore}", host, cert.NotBefore);
+            _logger.LogInformation(@"The certificate from {Host} is not valid until {NotBefore}", host, cert.NotBefore);
 
             result = InvalidCertificateReason.NotYet;
             return false;
@@ -291,20 +291,20 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         if (!TryGetHostCertificate(host, out var stored))
         {
-            _logger.LogInformation("Received an unrecognized certificate from {Host}; It will be stored", host);
+            _logger.LogInformation(@"Received an unrecognized certificate from {Host}; It will be stored", host);
 
             // never seen this one; add a new entry for it
             SetHostCertificate(host, cert, !_settingsDatabase.StrictTofuMode);
 
             if (_settingsDatabase.StrictTofuMode)
             {
-                _logger.LogInformation("The certificate from {Host} needs to be be manually accepted by the user", host);
+                _logger.LogInformation(@"The certificate from {Host} needs to be be manually accepted by the user", host);
 
                 result = InvalidCertificateReason.TrustedMismatch;
                 return false;
             }
 
-            _logger.LogDebug("The certificate from {Host} is valid and will be trusted", host);
+            _logger.LogDebug(@"The certificate from {Host} is valid and will be trusted", host);
 
             result = InvalidCertificateReason.Other;
             return true;
@@ -312,7 +312,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
 
         if (stored == null)
         {
-            _logger.LogInformation("Failed to load the stored certificate for {Host} to validate against", host);
+            _logger.LogInformation(@"Failed to load the stored certificate for {Host} to validate against", host);
 
             result = InvalidCertificateReason.TrustedMismatch;
             return false;
@@ -322,15 +322,15 @@ internal class BrowsingDatabase : IBrowsingDatabase
         {
             // this is a different one from what we remember
             if (!stored.Accepted)
-                _logger.LogInformation("The certificate from {Host} has yet to be manually accepted by the user", host);
+                _logger.LogInformation(@"The certificate from {Host} has yet to be manually accepted by the user", host);
             else
-                _logger.LogInformation("The certificate from {Host} does not match the version previously stored", host);
+                _logger.LogInformation(@"The certificate from {Host} does not match the version previously stored", host);
 
             result = InvalidCertificateReason.TrustedMismatch;
             return false;
         }
 
-        _logger.LogDebug("The certificate received from {Host} matches what is stored", host);
+        _logger.LogDebug(@"The certificate received from {Host} matches what is stored", host);
 
         result = default;
         return true;
@@ -344,7 +344,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 _tabs[i].Order = i;
 
             var affected = _database.UpdateAll(_tabs);
-            _logger.LogInformation("{Count} tabs re-ordered", affected);
+            _logger.LogInformation(@"{Count} tabs re-ordered", affected);
         });
     }
 
@@ -356,7 +356,7 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 _bookmarks[i].Order = i;
 
             var affected = _database.UpdateAll(_bookmarks);
-            _logger.LogInformation("{Count} bookmarks re-ordered", affected);
+            _logger.LogInformation(@"{Count} bookmarks re-ordered", affected);
         });
     }
 
@@ -377,10 +377,10 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
                 var count = _database.DeleteAll<Identity>();
-                _logger.LogInformation("Deleted {Count} identities", count);
+                _logger.LogInformation(@"Deleted {Count} identities", count);
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(e));
         }
     }
 
@@ -401,10 +401,10 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
                 var count = _database.DeleteAll<Bookmark>();
-                _logger.LogInformation("Deleted {Count} bookmarks", count);
+                _logger.LogInformation(@"Deleted {Count} bookmarks", count);
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(e));
         }
     }
 
@@ -425,10 +425,10 @@ internal class BrowsingDatabase : IBrowsingDatabase
                 throw new NotImplementedException();
             case NotifyCollectionChangedAction.Reset:
                 var count = _database.DeleteAll<Tab>();
-                _logger.LogInformation("Deleted {Count} tabs", count);
+                _logger.LogInformation(@"Deleted {Count} tabs", count);
                 break;
             default:
-                throw new ArgumentOutOfRangeException();
+                throw new ArgumentOutOfRangeException(nameof(e));
         }
     }
 

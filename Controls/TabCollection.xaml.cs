@@ -16,6 +16,7 @@ using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Models.Serialization;
+using RosyCrow.Resources.Localization;
 using Tab = RosyCrow.Models.Tab;
 
 // ReSharper disable AsyncVoidLambda
@@ -181,13 +182,14 @@ public partial class TabCollection : ContentView
         }
 
         _selectedTab = tab;
-        OnSelectedTabChanged();
 
         if (tab != null)
         {
             tab.Selected = true;
             _browsingDatabase.Update(tab);
         }
+
+        OnSelectedTabChanged();
     }
 
     private void SetupTab(Tab tab)
@@ -208,14 +210,15 @@ public partial class TabCollection : ContentView
         return AddTab(uri.ToString(), uri.Host[..1]);
     }
 
+    [Localizable(false)]
     public Task AddTab(string url, string label)
     {
-        _logger.LogDebug("Adding a new tab for {URL} with label {Label}", url, label);
+        _logger.LogDebug(@"Adding a new tab for {URL} with label {Label}", url, label);
 
         var tab = new Tab(url, label);
-        SelectTab(tab);
 
         Tabs.Add(tab);
+        SelectTab(tab);
 
         return _browsingDatabase.UpdateTabOrder();
     }
@@ -234,7 +237,7 @@ public partial class TabCollection : ContentView
 
                 if (info.LengthInTextElements > 1)
                 {
-                    _logger.LogDebug("Truncating an imported tab's label (initially length {Length})", info.LengthInTextElements);
+                    _logger.LogDebug(@"Truncating an imported tab's label (initially length {Length})", info.LengthInTextElements);
                     tab.Label = info.SubstringByTextElements(0, 1);
                 }
             }
@@ -252,7 +255,7 @@ public partial class TabCollection : ContentView
 
     private async void BrowserTab_OnRemoveRequested(object sender, TabEventArgs e)
     {
-        _logger.LogInformation("Removing tab {Url}", e.Tab.Url);
+        _logger.LogInformation(@"Removing tab {Url}", e.Tab.Url);
 
         Tabs.Remove(e.Tab);
 
@@ -293,7 +296,7 @@ public partial class TabCollection : ContentView
 
             if (string.IsNullOrWhiteSpace(label))
             {
-                await Toast.Make("No icon available").Show();
+                await Toast.Make(Text.TabCollection_BrowserTab_OnFetchingIcon_No_icon_available).Show();
                 return;
             }
 
@@ -320,12 +323,12 @@ public partial class TabCollection : ContentView
                 });
             }
 
-            await Toast.Make("Icon updated").Show();
+            await Toast.Make(Text.TabCollection_BrowserTab_OnFetchingIcon_Icon_updated).Show();
         }
         catch (Exception ex)
         {
-            await Toast.Make("Failed to fetch the icon due to an error").Show();
-            _logger.LogError(ex, "Failed to fetch or set icon via favicon.txt for {Host}", host);
+            await Toast.Make(Text.TabCollection_BrowserTab_OnFetchingIcon_Failed_to_fetch_the_icon_due_to_an_error).Show();
+            _logger.LogError(ex, @"Failed to fetch or set icon via favicon.txt for {Host}", host);
         }
     }
 
@@ -333,23 +336,23 @@ public partial class TabCollection : ContentView
     {
         try
         {
-            _logger.LogInformation("Attempting to fetch favicon.txt for {Host}", host);
+            _logger.LogInformation(@"Attempting to fetch favicon.txt for {Host}", host);
 
             // do not follow redirects that the user isn't aware of
             var client = new OpalClient(new DummyCertificateDatabase(), RedirectBehavior.Ignore);
-            var response = await client.SendRequestAsync($"gemini://{host}/favicon.txt");
+            var response = await client.SendRequestAsync($@"gemini://{host}/favicon.txt");
 
-            if (response is SuccessfulResponse success && success.Body.CanRead && success.MimeType.StartsWith("text/"))
+            if (response is SuccessfulResponse success && success.Body.CanRead && success.MimeType.StartsWith(@"text/"))
             {
                 var buffer = new byte[8];
-                var size = await success.Body.ReadAsync(buffer, 0, buffer.Length);
+                var size = await success.Body.ReadAsync(buffer.AsMemory());
                 var label = Encoding.UTF8.GetString(buffer, 0, size);
                 if (!string.IsNullOrWhiteSpace(label))
                     return label;
             }
             else if (response is ErrorResponse error)
             {
-                _logger.LogInformation("Unsuccessful response to request for favicon.txt from {Host}: {Status} {Meta}",
+                _logger.LogInformation(@"Unsuccessful response to request for favicon.txt from {Host}: {Status} {Meta}",
                     error.Uri,
                     error.Status,
                     error.Message);
@@ -357,11 +360,11 @@ public partial class TabCollection : ContentView
         }
         catch (TaskCanceledException)
         {
-            _logger.LogWarning("Timed-out waiting for a request for favicon from {Host}", host);
+            _logger.LogWarning(@"Timed-out waiting for a request for favicon from {Host}", host);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to fetch favicon for {Host}", host);
+            _logger.LogError(e, @"Failed to fetch favicon for {Host}", host);
             throw;
         }
 
@@ -380,12 +383,12 @@ public partial class TabCollection : ContentView
         {
             if (_browsingDatabase.TryGetCapsule(host, out var capsule))
             {
-                _logger.LogInformation("Clearing the stored icon for {Host}", capsule.Host);
+                _logger.LogInformation(@"Clearing the stored icon for {Host}", capsule.Host);
 
                 capsule.Icon = null;
                 _browsingDatabase.Update(capsule);
 
-                await Toast.Make("The icon has been reset").Show();
+                await Toast.Make(Text.TabCollection_BrowserTab_OnResettingIcon_The_icon_has_been_reset).Show();
             }
 
             e.Tab.Label = e.Tab.DefaultLabel;
@@ -393,7 +396,7 @@ public partial class TabCollection : ContentView
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to reset icon for {Host}", host);
+            _logger.LogError(ex, @"Failed to reset icon for {Host}", host);
             throw;
         }
     }
@@ -404,13 +407,13 @@ public partial class TabCollection : ContentView
         if (string.IsNullOrWhiteSpace(host))
             return;
 
-        _logger.LogInformation("Prompting the user to enter a custom icon for {Host}", host);
+        _logger.LogInformation(@"Prompting the user to enter a custom icon for {Host}", host);
 
         try
         {
             var label = await ParentPage.DisplayPromptOnMainThread(
-                "Custom Icon",
-                "Enter what you would like this tab's icon to be.\nOne or two letters or numbers may be entered, or a single emoji character.",
+                Text.TabCollection_BrowserTab_OnSettingCustomIcon_Custom_Icon,
+                Text.TabCollection_BrowserTab_OnSettingCustomIcon_,
                 maxLength: 2,
                 keyboard: Keyboard.Chat);
 
@@ -437,20 +440,23 @@ public partial class TabCollection : ContentView
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to reset icon for {Host}", host);
+            _logger.LogError(ex, @"Failed to reset icon for {Host}", host);
             throw;
         }
     }
 
     private async void BrowserTab_OnReorderingRequested(object sender, EventArgs e)
     {
-        await Toast.Make("Go back or select a tab when finished").Show();
+        await Toast.Make(Text.TabCollection_BrowserTab_OnReorderingRequested_Go_back_or_select_a_tab_when_finished).Show();
         IsReordering = true;
     }
 
     private async void BrowserTab_OnRemoveAllRequested(object sender, EventArgs e)
     {
-        if (await ParentPage.DisplayAlertOnMainThread("Close All", "All tabs will be closed.\nProceed?", "Yes", "No"))
+        if (await ParentPage.DisplayAlertOnMainThread(Text.TabCollection_BrowserTab_OnRemoveAllRequested_Close_All,
+                Text.TabCollection_BrowserTab_OnRemoveAllRequested_,
+                Text.TabCollection_BrowserTab_OnRemoveAllRequested_Yes,
+                Text.TabCollection_BrowserTab_OnRemoveAllRequested_No))
         {
             Tabs.Clear();
             await AddDefaultTab();
@@ -462,17 +468,17 @@ public partial class TabCollection : ContentView
         var jsonFileType = new FilePickerFileType(
             new Dictionary<DevicePlatform, IEnumerable<string>>
             {
-                { DevicePlatform.Android, new[] { "application/json" } }
+                { DevicePlatform.Android, new[] { @"application/json" } }
             });
 
         try
         {
             var file = await FilePicker.Default.PickAsync(new PickOptions
-                { FileTypes = jsonFileType, PickerTitle = "Select a JSON File to Import" });
+                { FileTypes = jsonFileType, PickerTitle = Text.TabCollection_BrowserTab_OnImportRequested_Select_a_JSON_File_to_Import });
             if (file == null)
                 return;
 
-            _logger.LogInformation("Attempting to import tabs from {Path}", file.FullPath);
+            _logger.LogInformation(@"Attempting to import tabs from {Path}", file.FullPath);
 
             await using var fileStream = await file.OpenReadAsync();
             using var reader = new StreamReader(fileStream);
@@ -480,7 +486,7 @@ public partial class TabCollection : ContentView
 
             if (imported.Length == 0)
             {
-                await Toast.Make("There are no tabs to import").Show();
+                await Toast.Make(Text.TabCollection_BrowserTab_OnImportRequested_There_are_no_tabs_to_import).Show();
             }
 
             await ImportTabs(imported.Select(t => new Tab
@@ -489,22 +495,23 @@ public partial class TabCollection : ContentView
                 Label = t.Icon
             }));
 
-            _logger.LogInformation("Imported {Count} tabs from {Path}", imported.Length, file.FullPath);
+            _logger.LogInformation(@"Imported {Count} tabs from {Path}", imported.Length, file.FullPath);
 
             if (imported.Length == 1)
-                await Toast.Make("Imported a tab").Show();
+                await Toast.Make(Text.TabCollection_BrowserTab_OnImportRequested_Imported_a_tab).Show();
             else
-                await Toast.Make($"Imported {imported.Length} tabs").Show();
+                await Toast.Make(string.Format(Text.TabCollection_BrowserTab_OnImportRequested_Imported__0__tabs, imported.Length)).Show();
         }
         catch (JsonException ex)
         {
-            _logger.LogError(ex, "Failed to import tabs due to malformed JSON");
-            await Toast.Make("The file is formatted incorrectly", ToastDuration.Long).Show();
+            _logger.LogError(ex, @"Failed to import tabs due to malformed JSON");
+            await Toast.Make(Text.TabCollection_BrowserTab_OnImportRequested_The_file_is_formatted_incorrectly, ToastDuration.Long).Show();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to import tabs");
-            await Toast.Make("No tabs were imported because something went wrong", ToastDuration.Long).Show();
+            _logger.LogError(ex, @"Failed to import tabs");
+            await Toast.Make(Text.TabCollection_BrowserTab_OnImportRequested_No_tabs_were_imported_because_something_went_wrong,
+                ToastDuration.Long).Show();
         }
     }
 
@@ -513,21 +520,21 @@ public partial class TabCollection : ContentView
 #if ANDROID21_0_OR_GREATER
         try
         {
-            _logger.LogInformation("Exporting tabs");
+            _logger.LogInformation(@"Exporting tabs");
 
             // storage permission doesn't apply starting in 33
             if (!OperatingSystem.IsAndroidVersionAtLeast(33) &&
                 await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                _logger.LogInformation("Requesting permission to write to external storage");
+                _logger.LogInformation(@"Requesting permission to write to external storage");
 
                 var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 
                 if (status != PermissionStatus.Granted && Permissions.ShouldShowRationale<Permissions.StorageWrite>())
                 {
-                    await ParentPage.DisplayAlertOnMainThread("Lacking Permission",
-                        "Tabs cannot be exported unless Rosy Crow has permission to write to you device's storage.\n\nTry again after you've granted the app permission to do so.",
-                        "OK");
+                    await ParentPage.DisplayAlertOnMainThread(Text.TabCollection_BrowserTab_OnExportRequested_Lacking_Permission,
+                        Text.TabCollection_BrowserTab_OnExportRequested_,
+                        Text.TabCollection_BrowserTab_OnExportRequested_OK);
                     return;
                 }
             }
@@ -548,20 +555,21 @@ public partial class TabCollection : ContentView
                 }
 
                 buffer.Seek(0, SeekOrigin.Begin);
-                result = await FileSaver.Default.SaveAsync($"tabs_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.json",
+                result = await FileSaver.Default.SaveAsync($@"tabs_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.json",
                     buffer,
                     CancellationToken.None);
             }
 
             if (result.IsSuccessful)
-                _logger.LogInformation("Exported {Count} tabs to {Path}", tabs.Length, result.FilePath);
+                _logger.LogInformation(@"Exported {Count} tabs to {Path}", tabs.Length, result.FilePath);
             else
-                await Toast.Make("Could not save the file").Show();
+                await Toast.Make(Text.TabCollection_BrowserTab_OnExportRequested_Could_not_save_the_file).Show();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to export tabs");
-            await Toast.Make("Nothing was exported because something went wrong", ToastDuration.Long).Show();
+            _logger.LogError(ex, @"Failed to export tabs");
+            await Toast.Make(Text.TabCollection_BrowserTab_OnExportRequested_Nothing_was_exported_because_something_went_wrong,
+                ToastDuration.Long).Show();
         }
 #endif
     }

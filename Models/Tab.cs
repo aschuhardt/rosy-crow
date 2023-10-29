@@ -37,6 +37,7 @@ public class Tab : INotifyPropertyChanged
     {
         Url = url;
         Label = label;
+        RecentHistory = new Stack<Uri>();
     }
 
     [PrimaryKey] [AutoIncrement]
@@ -246,7 +247,7 @@ public class Tab : INotifyPropertyChanged
 
     public override string ToString()
     {
-        return $"{Id} : {Url} : {Label}";
+        return $@"{Id} : {Url} : {Label}";
     }
 
     public virtual void OnOpeningUrlInNewTab(UrlEventArgs e)

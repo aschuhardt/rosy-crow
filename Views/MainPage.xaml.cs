@@ -57,6 +57,7 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
+    private ICommand _carouselPositionChanged;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -104,6 +105,7 @@ public partial class MainPage : ContentPage
                 CurrentTab.FindNext.Execute(CurrentTab.FindNextQuery);
         });
         ShowPageCertificate = new Command(OpenMenuItem<CertificatePage>);
+        CarouselPositionChanged = new Command(OnCarouselPositionChanged);
 
         UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
         UrlEntry.GestureRecognizers.Add(SwipeUpRecognizer);
@@ -121,7 +123,7 @@ public partial class MainPage : ContentPage
         // TODO: delete me
         // Carousel.CurrentItemChanged += (sender, args) => Debugger.Break();
 
-        WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
+        WebViewHandler.Mapper.AppendToMapping(@"WebViewScrollingAware",
             (handler, _) =>
             {
 #if ANDROID
@@ -142,7 +144,7 @@ public partial class MainPage : ContentPage
 #endif
             });
 
-        EntryHandler.Mapper.AppendToMapping("HideUnderline",
+        EntryHandler.Mapper.AppendToMapping(@"HideUnderline",
             (handler, _) =>
             {
 #if ANDROID
@@ -150,7 +152,7 @@ public partial class MainPage : ContentPage
 #endif
             });
 
-        EditorHandler.Mapper.AppendToMapping("HideUnderline",
+        EditorHandler.Mapper.AppendToMapping(@"HideUnderline",
             (handler, _) =>
             {
 #if ANDROID
@@ -433,6 +435,18 @@ public partial class MainPage : ContentPage
         get => Carousel.Opacity > 0;
     }
 
+    public ICommand CarouselPositionChanged
+    {
+        get => _carouselPositionChanged;
+        set
+        {
+            if (Equals(value, _carouselPositionChanged)) return;
+
+            _carouselPositionChanged = value;
+            OnPropertyChanged();
+        }
+    }
+
     private void SettingsChanged(object sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(ISettingsDatabase.TabsEnabled) or nameof(ISettingsDatabase.SwipeEnabled))
@@ -447,7 +461,11 @@ public partial class MainPage : ContentPage
         // TODO: This won't be necessary (as we can just bind CurrentItem) once this PR is released: https://github.com/dotnet/maui/pull/16165
         // yuck
         if (!Carousel.IsScrolling && !TabCollection.IsReordering)
-            Carousel.ScrollTo(TabCollection.SelectedTab, animate: false);
+        {
+            var index = Tabs.IndexOf(CurrentTab);
+            Carousel.ScrollTo(index, animate: false);
+            Carousel.Position = index;
+        }
 
         IsNavBarVisible = true;
         if (UrlEntry.IsFocused)
@@ -457,7 +475,7 @@ public partial class MainPage : ContentPage
     private async Task TryLoadEnteredUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
-            url = $"{Constants.InternalScheme}://default";
+            url = $@"{Constants.InternalScheme}://default";
 
         UrlEntry.Unfocus();
 
@@ -469,7 +487,7 @@ public partial class MainPage : ContentPage
         }
         catch (UriFormatException)
         {
-            _logger.LogError("Invalid URL entered: \"{URL}\"", url);
+            _logger.LogError(@"Invalid URL entered: ""{URL}""", url);
             await Toast.Make(Text.MainPage_MainPage_That_address_is_invalid).Show();
         }
     }
@@ -525,7 +543,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while performing navbar animation");
+            _logger.LogError(e, @"Exception thrown while performing navbar animation");
         }
     }
 
@@ -534,13 +552,13 @@ public partial class MainPage : ContentPage
         try
         {
             if (IsMenuExpanded)
-                _menuShowAnimation.Commit(this, "ShowMenu");
+                _menuShowAnimation.Commit(this, @"ShowMenu");
             else
-                _menuHideAnimation.Commit(this, "HideMenu", length: 150);
+                _menuHideAnimation.Commit(this, @"HideMenu", length: 150);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while performing menu animation");
+            _logger.LogError(e, @"Exception thrown while performing menu animation");
         }
     }
 
@@ -576,7 +594,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating backward");
+            _logger.LogError(e, @"Exception thrown while navigating backward");
             return false;
         }
     }
@@ -590,7 +608,7 @@ public partial class MainPage : ContentPage
                 // collapse and then navigate
                 _isMenuExpanded = false;
                 _menuHideAnimation.Commit(this,
-                    "HideMenu",
+                    @"HideMenu",
                     length: 150,
                     finished: async (_, _) =>
                     {
@@ -613,7 +631,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while opening menu item {Name}", typeof(T).Name);
+            _logger.LogError(e, @"Exception thrown while opening menu item {Name}", typeof(T).Name);
         }
     }
 
@@ -621,7 +639,7 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            _logger.LogDebug("Attempting to load the home URI");
+            _logger.LogDebug(@"Attempting to load the home URI");
 
             if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
                 this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
@@ -630,7 +648,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to the home URI");
+            _logger.LogError(e, @"Exception thrown while navigating to the home URI");
         }
     }
 
@@ -643,7 +661,7 @@ public partial class MainPage : ContentPage
         {
             _settingsDatabase.HomeUrl = CurrentTab.Location.ToString();
 
-            _logger.LogInformation("Home URI set to {URI}", _settingsDatabase.HomeUrl);
+            _logger.LogInformation(@"Home URI set to {URI}", _settingsDatabase.HomeUrl);
 
             CurrentTab.OnBookmarkChanged(); // force buttons to update
 
@@ -651,7 +669,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the home URI to {URI}", CurrentTab.Location);
+            _logger.LogError(e, @"Exception thrown while setting the home URI to {URI}", CurrentTab.Location);
         }
     }
 
@@ -687,7 +705,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown attempting to find text in the page");
+            _logger.LogError(e, @"Exception thrown attempting to find text in the page");
         }
     }
 
@@ -703,7 +721,7 @@ public partial class MainPage : ContentPage
                 _browsingDatabase.Bookmarks.Remove(bookmark);
                 CurrentTab.OnBookmarkChanged(); // force buttons to update
 
-                _logger.LogInformation("Removing bookmarked location {URI}", bookmark.Url);
+                _logger.LogInformation(@"Removing bookmarked location {URI}", bookmark.Url);
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_removed, ToastDuration.Short);
             }
@@ -717,14 +735,14 @@ public partial class MainPage : ContentPage
 
                 CurrentTab.OnBookmarkChanged(); // force buttons to update
 
-                _logger.LogInformation("Set bookmarked location {URI}", bookmark.Url);
+                _logger.LogInformation(@"Set bookmarked location {URI}", bookmark.Url);
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown toggling the bookmark for {URI}", CurrentTab.Location);
+            _logger.LogError(e, @"Exception thrown toggling the bookmark for {URI}", CurrentTab.Location);
         }
     }
 
@@ -770,7 +788,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Exception thrown on MainPage loaded");
+            _logger.LogError(exception, @"Exception thrown on MainPage loaded");
         }
     }
 
@@ -799,7 +817,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Exception thrown on MainPage appearing");
+            _logger.LogError(exception, @"Exception thrown on MainPage appearing");
         }
     }
 
@@ -842,20 +860,41 @@ public partial class MainPage : ContentPage
 
     private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
     {
-        if (ShouldUpdateSelectedTab && !TabCollection.IsReordering && e.CurrentItem != null &&
-            (!TabCollection.SelectedTab?.Equals(e.CurrentItem) ?? false))
-            TabCollection.SelectedTab = (Tab)e.CurrentItem;
+        // if (ShouldUpdateSelectedTab && !TabCollection.IsReordering && e.CurrentItem != null &&
+        //     (!TabCollection.SelectedTab?.Equals(e.CurrentItem) ?? false) && Carousel.IsScrolling)
+        //     TabCollection.SelectedTab = (Tab)e.CurrentItem;
     }
 
     private void Carousel_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
     {
-        if (e.CenterItemIndex < 0 || TabCollection.SelectedTab == null)
-            return;
-
-        var itemAtIndex = TabCollection.Tabs[e.CenterItemIndex];
-        if (ShouldUpdateSelectedTab && !TabCollection.SelectedTab.Equals(itemAtIndex))
-            TabCollection.SelectedTab = itemAtIndex;
+        // if (e.CenterItemIndex < 0 || TabCollection.SelectedTab == null || e.HorizontalDelta == 0)
+        //     return;
+        //
+        // var itemAtIndex = TabCollection.Tabs[e.CenterItemIndex];
+        // if (ShouldUpdateSelectedTab && !TabCollection.SelectedTab.Equals(itemAtIndex))
+        //     TabCollection.SelectedTab = itemAtIndex;
     }
+
+    private void OnCarouselPositionChanged(object _)
+    {
+        var index = Carousel.Position;
+        if (index == 0 && Tabs.IndexOf(TabCollection.SelectedTab) > 1)
+        {
+            // the carousel likes to reset its position to zero sometimes
+            // (because this is MAUI and nothing can ever just work);
+            // so, i am catching that here and correcting it
+            Carousel.Position = Tabs.IndexOf(TabCollection.SelectedTab);
+            return;
+        }
+
+        if (index >= 0 && index < Tabs.Count)
+        {
+            var itemAtIndex = Tabs[index];
+                if (!itemAtIndex.Equals(TabCollection.SelectedTab))
+                TabCollection.SelectedTab = Tabs[index];
+        }
+    }
+
 
     private void Tabs_OnReorderingChanged(object sender, EventArgs e)
     {
@@ -867,7 +906,7 @@ public partial class MainPage : ContentPage
         {
             // done re-ordering
             Carousel.CurrentItem = TabCollection.SelectedTab;
-            CurrentTabViewTemplate = (DataTemplate)Resources["TabViewTemplate"];
+            CurrentTabViewTemplate = (DataTemplate)Resources[@"TabViewTemplate"];
             Tabs = TabCollection.Tabs;
             Carousel.FadeTo(1);
         }

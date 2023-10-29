@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Android.Views;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core;
@@ -92,7 +93,7 @@ public partial class BrowserView : ContentView
     {
         if (_tab.ParentPage == null)
         {
-            _logger.LogWarning("Unable to prompt the user to verify an unrecognized certificate because no ParentPage was set");
+            _logger.LogWarning(@"Unable to prompt the user to verify an unrecognized certificate because no ParentPage was set");
             return;
         }
 
@@ -128,7 +129,7 @@ public partial class BrowserView : ContentView
                 .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_invalid_,
             InvalidCertificateReason.MissingInformation => Text
                 .BrowserView_RemoteCertificateInvalidCallback_The_host_s_certificate_is_missing_required_information_,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(arg))
         };
 
         await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_RemoteCertificateInvalidCallback_Certificate_Problem,
@@ -158,7 +159,7 @@ public partial class BrowserView : ContentView
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to print the current page");
+            _logger.LogError(e, @"Exception thrown while attempting to print the current page");
         }
     }
 
@@ -180,7 +181,7 @@ public partial class BrowserView : ContentView
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating backward");
+            _logger.LogError(e, @"Exception thrown while navigating backward");
         }
     }
 
@@ -202,6 +203,7 @@ public partial class BrowserView : ContentView
         _resetFindNext = false;
     }
 
+    [Localizable(false)]
     private string RenderCachedHtml(Stream buffer)
     {
         var document = _documentService.LoadFromBuffer(buffer);
@@ -214,17 +216,15 @@ public partial class BrowserView : ContentView
     {
         // only retry requests that could potentially return a different result
 
-        switch (status)
+        return status switch
         {
-            case StatusCode.TemporaryFailure:
-            case StatusCode.ServerUnavailable:
-            case StatusCode.CgiError:
-            case StatusCode.ProxyError:
-            case StatusCode.SlowDown:
-                return true;
-            default:
-                return false;
-        }
+            StatusCode.TemporaryFailure => true,
+            StatusCode.ServerUnavailable => true,
+            StatusCode.CgiError => true,
+            StatusCode.ProxyError => true,
+            StatusCode.SlowDown => true,
+            _ => false
+        };
     }
 
     public async Task Upload(TitanPayload payload)
@@ -243,7 +243,7 @@ public partial class BrowserView : ContentView
             {
                 if (!string.IsNullOrWhiteSpace(_tab.Input))
                 {
-                    _logger.LogInformation("User provided input \"{Input}\"", _tab.Input);
+                    _logger.LogInformation(@"User provided input ""{Input}""", _tab.Input);
                     _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
                 }
 
@@ -257,14 +257,14 @@ public partial class BrowserView : ContentView
 
                 if (await HandleTitanResponse(response, attempts) == ResponseAction.Finished)
                 {
-                    _logger.LogInformation("Upload finished after {Attempts} attempt(s)", attempts + 1);
+                    _logger.LogInformation(@"Upload finished after {Attempts} attempt(s)", attempts + 1);
                     break;
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to {URI}", _tab.Location);
+            _logger.LogError(e, @"Exception thrown while navigating to {URI}", _tab.Location);
         }
 
         _tab.IsRefreshing = false;
@@ -280,9 +280,9 @@ public partial class BrowserView : ContentView
 
         if (_tab.Location == null || _tab.Location.Scheme == Constants.InternalScheme)
         {
-            await LoadInternalPage(_tab.Location?.Host ?? "default");
+            await LoadInternalPage(_tab.Location?.Host ?? @"default");
             if (_tab.Location != null)
-                _tab.RenderUrl = $"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
+                _tab.RenderUrl = $@"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
             _tab.IsRefreshing = false;
             _tab.CanShowHostCertificate = false;
             _isLoading = false;
@@ -309,7 +309,7 @@ public partial class BrowserView : ContentView
         if (HasFindNextQuery)
             ClearFindResults();
 
-        _logger.LogInformation("Navigating to {URI}", _tab.Location);
+        _logger.LogInformation(@"Navigating to {URI}", _tab.Location);
 
         try
         {
@@ -321,12 +321,12 @@ public partial class BrowserView : ContentView
 
                     if (await _cache.TryRead(_tab.Location, cached))
                     {
-                        _logger.LogInformation("Loading a cached copy of the page");
+                        _logger.LogInformation(@"Loading a cached copy of the page");
 
                         cached.Seek(0, SeekOrigin.Begin);
                         _tab.Html = RenderCachedHtml(cached);
                         _tab.CanShowHostCertificate = true;
-                        _tab.RenderUrl = $"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
+                        _tab.RenderUrl = $@"{_tab.Location.Host}{_tab.Location.PathAndQuery}";
                         StoreVisitedLocation(_tab.Location, false);
                         _tab.CanPrint = _printService != null;
                         break;
@@ -335,7 +335,7 @@ public partial class BrowserView : ContentView
 
                 if (!string.IsNullOrWhiteSpace(_tab.Input))
                 {
-                    _logger.LogInformation("User provided input \"{Input}\"", _tab.Input);
+                    _logger.LogInformation(@"User provided input ""{Input}""", _tab.Input);
                     _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
                 }
 
@@ -343,19 +343,19 @@ public partial class BrowserView : ContentView
 
                 var response = await _geminiClient.SendRequestAsync(_tab.Location);
 
-                _tab.RenderUrl = $"{response.Uri.Host}{response.Uri.PathAndQuery}";
-                _logger.LogInformation("Response was {Response}", response);
+                _tab.RenderUrl = $@"{response.Uri.Host}{response.Uri.PathAndQuery}";
+                _logger.LogInformation(@"Response was {Response}", response);
 
                 if (await HandleGeminiResponse(response, attempts) == ResponseAction.Finished)
                 {
-                    _logger.LogInformation("Request finished after {Attempts} attempt(s)", attempts + 1);
+                    _logger.LogInformation(@"Request finished after {Attempts} attempt(s)", attempts + 1);
                     break;
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to {URI}", _tab.Location);
+            _logger.LogError(e, @"Exception thrown while navigating to {URI}", _tab.Location);
         }
 
         _tab.IsRefreshing = false;
@@ -371,7 +371,7 @@ public partial class BrowserView : ContentView
             {
                 if (_tab.ParentPage == null)
                 {
-                    _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
+                    _logger.LogWarning(@"Unable to prompt the user for input because no ParentPage was set");
                     return ResponseAction.Finished;
                 }
 
@@ -388,11 +388,11 @@ public partial class BrowserView : ContentView
                 if (!error.CanRetry)
                     return ResponseAction.Finished;
 
-                _logger.LogInformation("{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
+                _logger.LogInformation(@"{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
 
                 if (Constants.MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
-                    _logger.LogInformation("No further attempts will be made");
+                    _logger.LogInformation(@"No further attempts will be made");
                     if (_tab.ParentPage != null)
                         await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
                             error.Message,
@@ -422,7 +422,7 @@ public partial class BrowserView : ContentView
             {
                 if (_tab.ParentPage == null)
                 {
-                    _logger.LogWarning("Unable to prompt the user for input because no ParentPage was set");
+                    _logger.LogWarning(@"Unable to prompt the user for input because no ParentPage was set");
                     return ResponseAction.Finished;
                 }
 
@@ -449,11 +449,11 @@ public partial class BrowserView : ContentView
                     return ResponseAction.Finished;
                 }
 
-                _logger.LogInformation("{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
+                _logger.LogInformation(@"{Attempts} attempt(s) remaining", Constants.MaxRequestAttempts - attempt);
 
                 if (Constants.MaxRequestAttempts - attempt <= 1 || !IsRetryAppropriate(error.Status))
                 {
-                    _logger.LogInformation("No further attempts will be made");
+                    _logger.LogInformation(@"No further attempts will be made");
 
                     if (_tab.ParentPage == null)
                     {
@@ -488,8 +488,8 @@ public partial class BrowserView : ContentView
     {
         var extension = MimeTypes.GetMimeTypeExtensions(mimeType).FirstOrDefault();
         return extension != null
-            ? $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.{extension}"
-            : $"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+            ? $@"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.{extension}"
+            : $@"file_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
     }
 
     private async Task HandleSuccessfulResponse(SuccessfulResponse response)
@@ -498,7 +498,7 @@ public partial class BrowserView : ContentView
 
         if (response is GemtextResponse gemtext)
         {
-            _logger.LogInformation("Response is a gemtext document");
+            _logger.LogInformation(@"Response is a gemtext document");
 
             var result = await _documentService.RenderGemtextAsHtml(gemtext);
             _tab.Html = result.HtmlContents;
@@ -513,7 +513,7 @@ public partial class BrowserView : ContentView
         else
         {
             _logger.LogInformation(
-                "Response is not a gemtext document, so it will be opened externally");
+                @"Response is not a gemtext document, so it will be opened externally");
 
             StoreVisitedLocation(_tab.Location, true);
 
@@ -527,7 +527,7 @@ public partial class BrowserView : ContentView
                 await response.Body.CopyToAsync(outputFile);
             }
 
-            _logger.LogInformation("Opening file {Path}", path);
+            _logger.LogInformation(@"Opening file {Path}", path);
 
             await Launcher.Default.OpenAsync(
                 new OpenFileRequest(fileName, new ReadOnlyFile(path, response.MimeType)));
@@ -557,7 +557,7 @@ public partial class BrowserView : ContentView
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while storing a visited page {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while storing a visited page {URI}", uri);
         }
     }
 
@@ -565,13 +565,13 @@ public partial class BrowserView : ContentView
     {
         try
         {
-            _logger.LogInformation("Loading internal page {Name}", name);
-            _tab.RenderUrl = $"{Constants.InternalScheme}://{name}";
+            _logger.LogInformation(@"Loading internal page {Name}", name);
+            _tab.RenderUrl = $@"{Constants.InternalScheme}://{name}";
             _tab.Html = await _documentService.RenderInternalDocument(name);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while loading internal page {Name}", name);
+            _logger.LogError(e, @"Exception thrown while loading internal page {Name}", name);
         }
     }
 
@@ -600,7 +600,7 @@ public partial class BrowserView : ContentView
     {
         if (_browsingDatabase.TryGetCapsule(_tab.Location.Host, out var capsule) && !string.IsNullOrEmpty(capsule.Icon))
         {
-            _logger.LogInformation("Capsule {Host} has a stored icon: {Icon}", _tab.Location.Host, capsule.Icon);
+            _logger.LogInformation(@"Capsule {Host} has a stored icon: {Icon}", _tab.Location.Host, capsule.Icon);
             return capsule.Icon;
         }
 
@@ -624,7 +624,7 @@ public partial class BrowserView : ContentView
 
             if (_settingsDatabase.TabsEnabled)
             {
-                menu.Add("Open in New Tab")?.SetOnMenuItemClickListener(
+                menu.Add(Text.BrowserView_BuildContextMenu_Open_in_New_Tab)?.SetOnMenuItemClickListener(
                     new ActionMenuClickHandler<string>(hitTest.Extra,
                         uri => OnOpeningUrlInNewTab(
                             new UrlEventArgs(uri.ToGeminiUri()))));
@@ -679,7 +679,7 @@ public partial class BrowserView : ContentView
         var refreshViewHandler = (sender as RefreshView)?.Handler as RefreshViewHandler;
 
         // having to access the window this way is weird and bad, hopefully GetVisualElementWindow() will work one day
-        if (Application.Current != null && Application.Current.Windows.FirstOrDefault() is { } window)
+        if (Application.Current != null && Application.Current.Windows[0] is { } window)
             refreshViewHandler?.PlatformView.SetProgressViewOffset(false, 0, (int)window.Height / 4);
 #endif
     }

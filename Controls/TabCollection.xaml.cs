@@ -200,6 +200,7 @@ public partial class TabCollection : ContentView
         tab.InitializedByTabCollection = true;
     }
 
+    [Localizable(false)]
     private static Tab MakeDefaultTab()
     {
         return new Tab("rosy-crow://default", "🐦");
@@ -212,14 +213,7 @@ public partial class TabCollection : ContentView
 
     public Task AddTab(Uri uri)
     {
-        return AddTab(uri.ToString(), uri.Host[..1]);
-    }
-
-
-    [Localizable(false)]
-    public Task AddTab(string url, string label)
-    {
-        return AddTab(new Tab(url, label));
+        return AddTab(new Tab(uri));
     }
 
     private Task AddTab(Tab tab)

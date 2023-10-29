@@ -1,12 +1,13 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using RosyCrow.Controls.Tabs;
 using SQLite;
 
 namespace RosyCrow.Models;
 
-public class Tab : INotifyPropertyChanged
+public partial class Tab : INotifyPropertyChanged
 {
     private bool _canPrint;
     private bool _canShowHostCertificate;
@@ -28,6 +29,9 @@ public class Tab : INotifyPropertyChanged
     private string _title;
     private Stack<Uri> _recentHistory;
 
+    [GeneratedRegex("([^\\p{P}\\p{Z}\\p{Cc}\\p{Cf}\\p{Co}\\p{Cn}]){1,2}", RegexOptions.CultureInvariant)]
+    private static partial Regex DefaultLabelPattern();
+
     public Tab()
     {
         _recentHistory = new Stack<Uri>();
@@ -38,6 +42,12 @@ public class Tab : INotifyPropertyChanged
         Url = url;
         Label = label;
         RecentHistory = new Stack<Uri>();
+    }
+
+    public Tab(Uri uri)
+    {
+        Url = uri.ToString();
+        Label = DefaultLabel;
     }
 
     [PrimaryKey] [AutoIncrement]
@@ -184,7 +194,19 @@ public class Tab : INotifyPropertyChanged
     [Ignore]
     public string DefaultLabel
     {
-        get => Title?[..1] ?? Location.Host[..1].ToUpperInvariant();
+        get
+        {
+            var titleMatch = DefaultLabelPattern().Match(Title);
+            if (titleMatch.Success)
+                return titleMatch.Value;
+
+            var hostMatch = DefaultLabelPattern().Match(Location.Host);
+            if (hostMatch.Success)
+                return hostMatch.Value;
+
+            // probably should never hit this since we can't have an empty host
+            return string.Empty;
+        }
     }
 
     [Ignore]

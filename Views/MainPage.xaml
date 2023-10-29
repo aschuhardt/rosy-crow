@@ -29,7 +29,8 @@
             ItemsSource="{Binding Tabs}"
             ItemTemplate="{Binding CurrentTabViewTemplate}"
             CurrentItemChanged="Carousel_OnCurrentItemChanged"
-            Scrolled="Carousel_OnScrolled" />
+            Scrolled="Carousel_OnScrolled"
+            PositionChangedCommand="{Binding CarouselPositionChanged}"/>
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
             AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">

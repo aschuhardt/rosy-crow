@@ -182,13 +182,14 @@ public partial class TabCollection : ContentView
         }
 
         _selectedTab = tab;
-        OnSelectedTabChanged();
 
         if (tab != null)
         {
             tab.Selected = true;
             _browsingDatabase.Update(tab);
         }
+
+        OnSelectedTabChanged();
     }
 
     private void SetupTab(Tab tab)
@@ -215,9 +216,9 @@ public partial class TabCollection : ContentView
         _logger.LogDebug(@"Adding a new tab for {URL} with label {Label}", url, label);
 
         var tab = new Tab(url, label);
-        SelectTab(tab);
 
         Tabs.Add(tab);
+        SelectTab(tab);
 
         return _browsingDatabase.UpdateTabOrder();
     }

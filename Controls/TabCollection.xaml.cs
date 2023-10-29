@@ -175,20 +175,15 @@ public partial class TabCollection : ContentView
             SetupTab(tab);
         }
 
-        if (_selectedTab != null)
-        {
-            _selectedTab.Selected = false;
-            _browsingDatabase.Update(_selectedTab);
-        }
+        if (tab != null)
+            tab.Selected = true;
+
+        foreach (var otherTab in Tabs.Where(t => !t.Equals(tab)))
+            otherTab.Selected = false;
+
+        _browsingDatabase.UpdateAll(Tabs.ToArray());
 
         _selectedTab = tab;
-
-        if (tab != null)
-        {
-            tab.Selected = true;
-            _browsingDatabase.Update(tab);
-        }
-
         OnSelectedTabChanged();
     }
 

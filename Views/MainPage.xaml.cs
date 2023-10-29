@@ -165,6 +165,11 @@ public partial class MainPage : ContentPage
             if (TabCollection.IsReordering)
                 return;
 
+            // don't try setting the selected tab until the tab collection has had
+            // a chance to load and select the appropriate target
+            if (TabCollection.SelectedTab == null)
+                return;
+
             SetValue(CurrentTabProperty, value);
         }
     }

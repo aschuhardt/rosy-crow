@@ -1,4 +1,4 @@
-name: Publish a Beta Release
+name: Deploy a Beta Release
 on:
   workflow_run:
     workflows: [ Build ]

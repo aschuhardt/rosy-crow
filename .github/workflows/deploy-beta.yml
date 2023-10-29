@@ -62,4 +62,3 @@ jobs:
         mappingFile: mapping.txt
         status: completed
 
-        

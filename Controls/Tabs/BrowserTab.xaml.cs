@@ -112,7 +112,7 @@ public partial class BrowserTab : ContentView
             return;
 
         var url = tab.Url.ToGeminiUri();
-        menu.SetHeaderTitle(tab.Label.IsEmoji() ? url.Host : $@"{tab.Label} {url.Host}");
+        menu.SetHeaderTitle($@"{tab.Label} {url.Host}");
 
         if (OperatingSystem.IsAndroidVersionAtLeast(28))
             menu.SetGroupDividerEnabled(true);

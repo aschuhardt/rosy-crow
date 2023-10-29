@@ -24,7 +24,7 @@ internal class DocumentService : IDocumentService
     private HtmlNode _customCssNode;
     private HtmlNode _themeLinkNode;
     private HtmlNode _fontSizeNode;
-    private HtmlNode _templateNode;
+    private HtmlDocument _templateDocument;
 
     public DocumentService(ISettingsDatabase settingsDatabase, ICacheService cache, ILogger<DocumentService> logger)
     {
@@ -48,7 +48,7 @@ internal class DocumentService : IDocumentService
     public HtmlDocument CreateEmptyDocument()
     {
         var document = new HtmlDocument();
-        document.DocumentNode.CopyFrom(_templateNode, true);
+        document.DocumentNode.CopyFrom(_templateDocument.DocumentNode, true);
         InjectStyleElements(document);
         return document;
     }
@@ -71,10 +71,18 @@ internal class DocumentService : IDocumentService
 
     public async Task LoadResources()
     {
-        await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
-        using var reader = new StreamReader(template);
-        _templateNode = new HtmlDocument().DocumentNode;
-        _templateNode.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
+        try
+        {
+            await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
+            using var reader = new StreamReader(template);
+            _templateDocument = new HtmlDocument();
+            _templateDocument.Load(template);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to load the document template");
+            throw;
+        }
     }
 
     public async Task<string> RenderInternalDocument(string name)

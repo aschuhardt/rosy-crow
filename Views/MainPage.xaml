@@ -11,7 +11,7 @@
              Loaded="MainPage_OnLoaded"
              Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False"
-             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference TabCollection}}"
+             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference TabCollection}, Mode=TwoWay}"
              views:MainPage.CurrentTabViewTemplate="{DynamicResource TabViewTemplate}"
              views:MainPage.Tabs="{Binding Tabs, Source={x:Reference TabCollection}}">
     <ContentPage.Resources>
@@ -28,9 +28,7 @@
             AbsoluteLayout.LayoutFlags="All" Loop="False"
             ItemsSource="{Binding Tabs}"
             ItemTemplate="{Binding CurrentTabViewTemplate}"
-            CurrentItemChanged="Carousel_OnCurrentItemChanged"
-            Scrolled="Carousel_OnScrolled"
-            PositionChangedCommand="{Binding CarouselPositionChanged}"/>
+            CurrentItem="{Binding CurrentTab, Mode=TwoWay}"/>
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
             AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
@@ -162,7 +160,6 @@
             VerticalOptions="End"
             SelectedTabChanged="Tabs_SelectedTabChanged"
             ZIndex="10"
-            ReorderingChanged="Tabs_OnReorderingChanged"
             IsVisible="{Binding TabsEnabled}"/>
     </AbsoluteLayout>
 </ContentPage>

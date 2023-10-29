@@ -57,7 +57,6 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
-    private ICommand _carouselPositionChanged;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -105,7 +104,6 @@ public partial class MainPage : ContentPage
                 CurrentTab.FindNext.Execute(CurrentTab.FindNextQuery);
         });
         ShowPageCertificate = new Command(OpenMenuItem<CertificatePage>);
-        CarouselPositionChanged = new Command(OnCarouselPositionChanged);
 
         UrlEntry.GestureRecognizers.Add(SwipeDownRecognizer);
         UrlEntry.GestureRecognizers.Add(SwipeUpRecognizer);
@@ -119,9 +117,6 @@ public partial class MainPage : ContentPage
             button.GestureRecognizers.Add(SwipeUpRecognizer);
             button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
         }
-
-        // TODO: delete me
-        // Carousel.CurrentItemChanged += (sender, args) => Debugger.Break();
 
         WebViewHandler.Mapper.AppendToMapping(@"WebViewScrollingAware",
             (handler, _) =>
@@ -164,7 +159,19 @@ public partial class MainPage : ContentPage
     public Tab CurrentTab
     {
         get => (Tab)GetValue(CurrentTabProperty);
-        set => SetValue(CurrentTabProperty, value);
+        set
+        {
+            // don't overwrite the selected tab while the user is rearranging tabs
+            if (TabCollection.IsReordering)
+                return;
+
+            // don't try setting the selected tab until the tab collection has had
+            // a chance to load and select the appropriate target
+            if (TabCollection.SelectedTab == null)
+                return;
+
+            SetValue(CurrentTabProperty, value);
+        }
     }
 
     public ObservableCollection<Tab> Tabs
@@ -435,18 +442,6 @@ public partial class MainPage : ContentPage
         get => Carousel.Opacity > 0;
     }
 
-    public ICommand CarouselPositionChanged
-    {
-        get => _carouselPositionChanged;
-        set
-        {
-            if (Equals(value, _carouselPositionChanged)) return;
-
-            _carouselPositionChanged = value;
-            OnPropertyChanged();
-        }
-    }
-
     private void SettingsChanged(object sender, PropertyChangedEventArgs e)
     {
         if (e.PropertyName is nameof(ISettingsDatabase.TabsEnabled) or nameof(ISettingsDatabase.SwipeEnabled))
@@ -454,22 +449,6 @@ public partial class MainPage : ContentPage
             TabsEnabled = _settingsDatabase.TabsEnabled;
             Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         }
-    }
-
-    private void Tabs_SelectedTabChanged(object sender, EventArgs e)
-    {
-        // TODO: This won't be necessary (as we can just bind CurrentItem) once this PR is released: https://github.com/dotnet/maui/pull/16165
-        // yuck
-        if (!Carousel.IsScrolling && !TabCollection.IsReordering)
-        {
-            var index = Tabs.IndexOf(CurrentTab);
-            Carousel.ScrollTo(index, animate: false);
-            Carousel.Position = index;
-        }
-
-        IsNavBarVisible = true;
-        if (UrlEntry.IsFocused)
-            UrlEntry.Unfocus();
     }
 
     private async Task TryLoadEnteredUrl(string url)
@@ -829,17 +808,6 @@ public partial class MainPage : ContentPage
         HomeButton.IsVisible = false;
         PageInfoButton.IsVisible = false;
         BookmarkButton.IsVisible = false;
-
-        // TODO it would be great if this wasn't broken anymore, but that's how it is with MAUI
-
-        // await Dispatcher.DispatchAsync(() =>
-        // {
-        //     new Animation
-        //     {
-        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 0, 1, Easing.CubicInOut) },
-        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
-        //     }.Commit(this, "ExpandUrlEntry");
-        // });
     }
 
     private void UrlEntry_OnUnfocused(object sender, FocusEventArgs e)
@@ -847,77 +815,12 @@ public partial class MainPage : ContentPage
         HomeButton.IsVisible = true;
         PageInfoButton.IsVisible = true;
         BookmarkButton.IsVisible = true;
-
-        // await Dispatcher.DispatchAsync(() =>
-        // {
-        //     new Animation
-        //     {
-        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 1, 0, Easing.CubicInOut) },
-        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
-        //     }.Commit(this, "ShrinkUrlEntry");
-        // });
     }
 
-    private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
+    private void Tabs_SelectedTabChanged(object sender, EventArgs e)
     {
-        // if (ShouldUpdateSelectedTab && !TabCollection.IsReordering && e.CurrentItem != null &&
-        //     (!TabCollection.SelectedTab?.Equals(e.CurrentItem) ?? false) && Carousel.IsScrolling)
-        //     TabCollection.SelectedTab = (Tab)e.CurrentItem;
-    }
-
-    private void Carousel_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
-    {
-        // if (e.CenterItemIndex < 0 || TabCollection.SelectedTab == null || e.HorizontalDelta == 0)
-        //     return;
-        //
-        // var itemAtIndex = TabCollection.Tabs[e.CenterItemIndex];
-        // if (ShouldUpdateSelectedTab && !TabCollection.SelectedTab.Equals(itemAtIndex))
-        //     TabCollection.SelectedTab = itemAtIndex;
-    }
-
-    private void OnCarouselPositionChanged(object _)
-    {
-        var index = Carousel.Position;
-        if (index == 0 && Tabs.IndexOf(TabCollection.SelectedTab) > 1)
-        {
-            // the carousel likes to reset its position to zero sometimes
-            // (because this is MAUI and nothing can ever just work);
-            // so, i am catching that here and correcting it
-            Carousel.Position = Tabs.IndexOf(TabCollection.SelectedTab);
-            return;
-        }
-
-        if (index >= 0 && index < Tabs.Count)
-        {
-            var itemAtIndex = Tabs[index];
-                if (!itemAtIndex.Equals(TabCollection.SelectedTab))
-                TabCollection.SelectedTab = Tabs[index];
-        }
-    }
-
-
-    private void Tabs_OnReorderingChanged(object sender, EventArgs e)
-    {
-#if ANDROID
-        var view = (Carousel.Handler as CarouselViewHandler)?.PlatformView;
-        view?.SuppressLayout(TabCollection.IsReordering);
-
-        if (!TabCollection.IsReordering)
-        {
-            // done re-ordering
-            Carousel.CurrentItem = TabCollection.SelectedTab;
-            CurrentTabViewTemplate = (DataTemplate)Resources[@"TabViewTemplate"];
-            Tabs = TabCollection.Tabs;
-            Carousel.FadeTo(1);
-        }
-        else
-        {
-            // currently re-ordering
-            Carousel.FadeTo(0);
-            Carousel.CurrentItem = null;
-            CurrentTabViewTemplate = null;
-            Tabs = null;
-        }
-#endif
+        IsNavBarVisible = true;
+        if (UrlEntry.IsFocused)
+            UrlEntry.Unfocus();
     }
 }

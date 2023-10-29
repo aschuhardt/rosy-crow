@@ -6,6 +6,7 @@ on:
       - '**/*.md'
       - '**/*.gitignore'
       - '**/*.gitattributes'
+      - '.github/**/*.yml'
   pull_request:
     branches: [ beta ]
   workflow_dispatch:

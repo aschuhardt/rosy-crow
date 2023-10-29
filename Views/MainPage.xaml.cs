@@ -159,7 +159,14 @@ public partial class MainPage : ContentPage
     public Tab CurrentTab
     {
         get => (Tab)GetValue(CurrentTabProperty);
-        set => SetValue(CurrentTabProperty, value);
+        set
+        {
+            // don't overwrite the selected tab while the user is rearranging tabs
+            if (TabCollection.IsReordering)
+                return;
+
+            SetValue(CurrentTabProperty, value);
+        }
     }
 
     public ObservableCollection<Tab> Tabs
@@ -810,31 +817,5 @@ public partial class MainPage : ContentPage
         IsNavBarVisible = true;
         if (UrlEntry.IsFocused)
             UrlEntry.Unfocus();
-    }
-
-
-    private void Tabs_OnReorderingChanged(object sender, EventArgs e)
-    {
-#if ANDROID
-        var view = (Carousel.Handler as CarouselViewHandler)?.PlatformView;
-        view?.SuppressLayout(TabCollection.IsReordering);
-
-        if (!TabCollection.IsReordering)
-        {
-            // done re-ordering
-            Carousel.CurrentItem = TabCollection.SelectedTab;
-            CurrentTabViewTemplate = (DataTemplate)Resources[@"TabViewTemplate"];
-            Tabs = TabCollection.Tabs;
-            Carousel.FadeTo(1);
-        }
-        else
-        {
-            // currently re-ordering
-            Carousel.FadeTo(0);
-            Carousel.CurrentItem = null;
-            CurrentTabViewTemplate = null;
-            Tabs = null;
-        }
-#endif
     }
 }

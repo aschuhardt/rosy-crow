@@ -34,17 +34,16 @@ public partial class Tab : INotifyPropertyChanged
 
     public Tab()
     {
-        _recentHistory = new Stack<Uri>();
-    }
-
-    public Tab(string url, string label)
-    {
-        Url = url;
-        Label = label;
         RecentHistory = new Stack<Uri>();
     }
 
-    public Tab(Uri uri)
+    public Tab(string url, string label) : this()
+    {
+        Url = url;
+        Label = label;
+    }
+
+    public Tab(Uri uri) : this()
     {
         Url = uri.ToString();
         Label = DefaultLabel;

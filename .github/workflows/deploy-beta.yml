@@ -94,7 +94,7 @@ jobs:
         cp ./**/*.apk .
         cp app.rosy_crow-Signed.apk fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk
     - name: Install Tools
-      run: 
+      run: |
         sudo add-apt-repository ppa:fdroid/fdroidserver
         sudo apt-get update
         sudo apt-get install fdroidserver

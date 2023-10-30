@@ -70,11 +70,9 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.FDROID_REPO_SSH_KEY }}" >> ~/.ssh/id_ed25519
-    - name: Install Tools
-      run: sudo apt install fdroidserver android-sdk-build-tools
     - name: Create Config File
       run: |
-        cd RosyCrow/fdroid
+        cd fdroid
         cp config_template.yml config.yml
         chmod 0600 config.yml
         echo "" >> config.yml
@@ -82,8 +80,8 @@ jobs:
         echo "keypass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
     - name: Get the Repo Contents
       run: |
-        cd RosyCrow/fdroid/repo
-        echo "get -R ." | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid/repo
+        cd fdroid/repo
+        echo "get -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -93,16 +91,18 @@ jobs:
     - name: Copy Package into Repo
       run: |
         cp ./**/*.apk .
-        cp app.rosy_crow-Signed.apk RosyCrow/fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk
+        cp app.rosy_crow-Signed.apk fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk
+    - name: Install Tools
+      run: sudo apt install fdroidserver android-sdk-build-tools
     - name: Update F-Droid Index
       run: |
-        cd RosyCrow/fdroid
+        cd fdroid
         fdroid update
         echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo
       run: |
-        cd RosyCrow/fdroid/repo
-        echo "put -R ." | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid/repo
+        cd fdroid/repo
+        echo "put -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
 
   create_tag:
     if: false

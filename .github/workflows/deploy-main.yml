@@ -97,6 +97,7 @@ jobs:
     - name: Update F-Droid Index
       run: |
         cd fdroid
+        fdroid update -c
         fdroid update
         echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo

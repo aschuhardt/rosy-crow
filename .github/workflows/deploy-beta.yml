@@ -72,7 +72,7 @@ jobs:
         echo "${{ secrets.FDROID_REPO_SSH_KEY }}" >> ~/.ssh/id_ed25519
     - name: Create Config File
       run: |
-        cd RosyCrow/fdroid
+        cd fdroid
         cp config_template.yml config.yml
         chmod 0600 config.yml
         echo "" >> config.yml
@@ -96,7 +96,7 @@ jobs:
       run: sudo apt install fdroidserver android-sdk-build-tools
     - name: Update F-Droid Index
       run: |
-        cd RosyCrow/fdroid
+        cd fdroid
         fdroid update
         echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo

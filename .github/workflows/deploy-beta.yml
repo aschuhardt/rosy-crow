@@ -80,7 +80,8 @@ jobs:
         echo "keypass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
     - name: Get the Repo Contents
       run: |
-        cd fdroid
+        mkdir -p fdroid/repo
+        cd fdroid/repo
         echo "get -R repo/*.apk" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2

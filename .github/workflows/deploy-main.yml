@@ -27,6 +27,11 @@ jobs:
         workflow: build.yml
         branch: main
         allow_forks: false
+    - name: Copy Files
+      run: |
+        cp ./**/*.apk .
+        cp ./**/*.aab .
+        cp ./**/version .
     - name: Read Version
       id: read_version
       run: echo "version=$(cat version)" >> "$GITHUB_OUTPUT"

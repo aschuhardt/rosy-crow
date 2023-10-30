@@ -31,7 +31,6 @@
 	  <AndroidSigningKeyAlias>signing-key</AndroidSigningKeyAlias>
 	  <AndroidSigningKeyPass>env:ROSYCROW_SIGNING_KEY_PASSWORD</AndroidSigningKeyPass>
 	  <TrimMode>link</TrimMode>
-	  <AndroidLinkTool>r8</AndroidLinkTool>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net8.0-android|AnyCPU'">

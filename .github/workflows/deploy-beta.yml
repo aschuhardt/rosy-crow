@@ -59,7 +59,5 @@ jobs:
         releaseFiles: app.rosy_crow-Signed.aab
         releaseName: ${{ steps.set_version.outputs.build_version }}
         track: beta
-        mappingFile: mapping.txt
         status: completed
 
-        

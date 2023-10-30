@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Windows.Input;
 using RosyCrow.Controls.Tabs;
+using RosyCrow.Extensions;
 using SQLite;
 
 namespace RosyCrow.Models;
@@ -195,13 +196,26 @@ public partial class Tab : INotifyPropertyChanged
     {
         get
         {
-            var titleMatch = DefaultLabelPattern().Match(Title);
-            if (titleMatch.Success)
-                return titleMatch.Value;
+            if (!string.IsNullOrWhiteSpace(Title))
+            {
+                var titleMatch = DefaultLabelPattern().Match(Title);
+                if (titleMatch.Success)
+                    return titleMatch.Value;
+            }
 
-            var hostMatch = DefaultLabelPattern().Match(Location.Host);
-            if (hostMatch.Success)
-                return hostMatch.Value;
+            if (Location != null && !string.IsNullOrWhiteSpace(Location.Host))
+            {
+                var hostMatch = DefaultLabelPattern().Match(Location.Host);
+                if (hostMatch.Success)
+                    return hostMatch.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(Url) && Url.ToGeminiUri() is { } uri)
+            {
+                var uriMatch = DefaultLabelPattern().Match(uri.Host);
+                if (uriMatch.Success)
+                    return uriMatch.Value;
+            }
 
             // probably should never hit this since we can't have an empty host
             return string.Empty;

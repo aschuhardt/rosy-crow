@@ -34,5 +34,32 @@ jobs:
       with:
         useConfigFile: true
     - name: Set Version
+      id: set_version
+      run: |
+        if [[ -n "$MANUAL_VERSION" ]]; then
+          echo "build_version=$MANUAL_VERSION" >> "$GITHUB_OUTPUT"
+        elif [[ -n "$AUTO_VERSION" ]]; then
+          echo "build_version=$AUTO_VERSION" >> "$GITHUB_OUTPUT"
+        fi
+      env:
+        MANUAL_VERSION: ${{ github.event.inputs.version }}
+        AUTO_VERSION: ${{ steps.gitversion.outputs.semVer }}
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2.28.0
+      with:
+        workflow: build.yml
+        branch: ${{ github.ref_name }}
+        name: bundle-${{ steps.set_version.outputs.build_version }}
+        allow_forks: false
+    - name: Submit a Beta Release
+      uses: r0adkll/upload-google-play@v1.0.19
+      with:
+        serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
+        packageName: app.rosy_crow
+        releaseFiles: app.rosy_crow-Signed.aab
+        releaseName: ${{ steps.set_version.outputs.build_version }}
+        track: beta
+        mappingFile: mapping.txt
+        status: completed
 
 

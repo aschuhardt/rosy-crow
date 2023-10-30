@@ -80,7 +80,7 @@ jobs:
         echo "keypass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
     - name: Get the Repo Contents
       run: |
-        cd fdroid/repo
+        cd fdroid
         echo "get -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2
@@ -101,7 +101,7 @@ jobs:
         echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo
       run: |
-        cd fdroid/repo
+        cd fdroid
         echo "put -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
 
   create_tag:

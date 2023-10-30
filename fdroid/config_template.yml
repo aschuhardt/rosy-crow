@@ -1,0 +1,10 @@
+---
+sdk_path: $ANDROID_HOME
+repo_url: https://rosy-crow.app/fdroid/repo
+repo_name: Rosy Crow F-Droid Repository
+repo_description: This is the F-Droid repository where Rosy Crow is hosted.
+repo_icon: rosy-crow-512.png
+archive_icon: rosy-crow-512.png
+keydname: CN=rosy-crow.app, OU=F-Droid
+repo_keyalias: signing-key
+keystore: ../rosy-crow.keystore

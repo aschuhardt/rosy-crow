@@ -9,9 +9,32 @@ on:
 permissions:
   contents: read
 jobs:
-  deploy:
+  read_version:
     runs-on: ubuntu-latest
-    name: Deploy to Beta (Google Play)
+    name: Get Version Number
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4.1.1
+      with:
+        fetch-depth: 0
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: build.yml
+        branch: beta
+        allow_forks: false
+    - name: Copy File
+      run: cp ./**/version .
+    - name: Read Version
+      id: read_version
+      run: echo "version=$(cat version)" >> "$GITHUB_OUTPUT"
+  deploy_google:
+    runs-on: ubuntu-latest
+    name: Deploy to Google Play
+    needs: read_version
+    if: false
     steps:
     - name: Checkout
       uses: actions/checkout@v4.1.1
@@ -24,25 +47,80 @@ jobs:
         branch: beta
         allow_forks: false
     - name: Copy Files
-      run: |
-        cp ./**/*.apk .
-        cp ./**/*.aab .
-        cp ./**/version .
-    - name: Read Version
-      id: read_version
-      run: echo "version=$(cat version)" >> "$GITHUB_OUTPUT"
+      run: cp ./**/*.aab .
     - name: Upload
       uses: r0adkll/upload-google-play@v1.0.19
       with:
         serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
         packageName: app.rosy_crow
         releaseFiles: app.rosy_crow-Signed.aab
-        releaseName: ${{ steps.read_version.outputs.version }}
+        releaseName: ${{ needs.read_version.outputs.version }}
         track: beta
         status: completed
+  deploy_fdroid:
+    runs-on: ubuntu-latest
+    name: Deploy to F-Droid
+    needs: read_version
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4.1.1
+      with:
+        fetch-depth: 0
+    - name: Store SSH Key
+      run: |
+        mkdir -p .ssh
+        echo "${{ secrets.FDROID_REPO_SSH_KEY }}" >> .ssh/id_ed25519
+    - name: Install Tools
+      run: sudo apt update && sudo apt install fdroidserver android-sdk-build-tools
+    - name: Create Config File
+      run: |
+        cd fdroid
+        cp config_template.yml config.yml
+        chmod 0600 config.yml
+        echo "" >> config.yml
+        echo "keystorepass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
+        echo "keypass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
+    - name: Get the Repo Contents
+      run: |
+        cd fdroid/repo
+        echo "get -R ." | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid/repo
+    - name: Download workflow artifact
+      uses: dawidd6/action-download-artifact@v2
+      with:
+        workflow: build.yml
+        branch: beta
+        allow_forks: false
+    - name: Copy Package into Repo
+      run: |
+        cp ./**/*.apk .
+        cp app.rosy_crow-Signed.apk fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk
+    - name: Update F-Droid Index
+      run: |
+        cd fdroid
+        fdroid update
+        echo "${{ needs.read_version.outputs.version }}" > repo/latest
+    - name: Upload Repo
+      run: |
+        cd fdroid/repo
+        echo "put -R ." | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid/repo
+
+  create_tag:
+    if: false
+    runs-on: ubuntu-latest
+    name: Tag Release
+    needs:
+    - read_version
+    - deploy_google
+    - deploy_fdroid
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4.1.1
+      with:
+        fetch-depth: 0
     - name: Create Tag
       uses: anothrNick/github-tag-action@1.67.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
         WITH_V: false
-        CUSTOM_TAG: ${{ steps.read_version.outputs.version }}
+        CUSTOM_TAG: ${{ needs.read_version.outputs.version }}
+

@@ -37,6 +37,8 @@ jobs:
         uses: gittools/actions/gitversion/execute@v0.10.2
         with:
           useConfigFile: true
+      - name: Write Version
+        run: echo "${{ steps.gitversion.outputs.semVer }}" >> version
       - name: Setup .NET 8
         uses: actions/setup-dotnet@v3.2.0
         with:
@@ -65,9 +67,4 @@ jobs:
           path: |
             bin\Release\net8.0-android\app.rosy_crow-Signed.aab
             bin\Release\net8.0-android\app.rosy_crow-Signed.apk
-      - name: Create Tag      
-        uses: rickstaa/action-create-tag@v1
-        if: ${{ github.ref_name == 'beta' || github.ref_name == 'main' }}
-        with:
-          tag: ${{ steps.gitversion.outputs.semVer }}
-          tag_exists_error: false
+            version

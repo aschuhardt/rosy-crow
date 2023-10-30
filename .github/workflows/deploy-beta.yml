@@ -29,7 +29,7 @@ jobs:
       run: cp ./**/version .
     - name: Read Version
       id: read_version
-      run: echo "version=$(cat version)" >> "$GITHUB_OUTPUT"
+      run: echo "version=$(cat version | xargs)" >> "$GITHUB_OUTPUT"
   deploy_google:
     runs-on: ubuntu-latest
     name: Deploy to Google Play

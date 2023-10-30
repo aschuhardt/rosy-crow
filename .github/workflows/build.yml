@@ -63,7 +63,7 @@ jobs:
         run: dotnet restore RosyCrow.csproj
 
       - name: Build
-        run: dotnet build RosyCrow.csproj -c Release -f net7.0-android33.0 --no-restore -p:ApplicationDisplayVersion=${{ steps.gitversion.outputs.semVer }}
+        run: dotnet build RosyCrow.csproj -c Release -f net8.0-android --no-restore -p:ApplicationDisplayVersion=${{ steps.gitversion.outputs.semVer }}
         env:
           ROSYCROW_SIGNING_KEY_PASSWORD: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}
 
@@ -73,6 +73,6 @@ jobs:
           retention-days: 14
           name: bundle-${{ steps.gitversion.outputs.semVer }}
           path: |
-            bin\Release\net7.0-android33.0\app.rosy_crow-Signed.aab
-            bin\Release\net7.0-android33.0\app.rosy_crow-Signed.apk
-            bin\Release\net7.0-android33.0\mapping.txt
+            bin\Release\net8.0-android\app.rosy_crow-Signed.aab
+            bin\Release\net8.0-android\app.rosy_crow-Signed.apk
+            bin\Release\net8.0-android\mapping.txt

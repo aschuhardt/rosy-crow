@@ -5,11 +5,7 @@ on:
     types:
       - completed
     branches: [ beta ]
-  workflow_dispatch:
-    inputs:
-      version:
-        type: string
-        description: Version to deploy
+  workflow_dispatch: {}
 permissions:
   contents: read
 jobs:
@@ -44,3 +40,9 @@ jobs:
         releaseName: ${{ steps.read_version.outputs.version }}
         track: beta
         status: completed
+    - name: Create Tag
+      uses: anothrNick/github-tag-action@1.67
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+        WITH_V: false
+        CUSTOM_TAG: ${{ steps.read_version.outputs.version }}

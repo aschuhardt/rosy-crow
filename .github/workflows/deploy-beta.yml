@@ -34,7 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy to Google Play
     needs: read_version
-    if: false
     steps:
     - name: Checkout
       uses: actions/checkout@v4.1.1
@@ -99,14 +98,12 @@ jobs:
       run: |
         cd fdroid
         fdroid update
-        echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo
       run: |
         cd fdroid
         echo "put -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
 
   create_tag:
-    if: false
     runs-on: ubuntu-latest
     name: Tag Release
     needs:

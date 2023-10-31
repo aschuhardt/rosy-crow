@@ -23,13 +23,13 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build.yml
-        branch: main 
+        branch: main
         allow_forks: false
     - name: Copy File
       run: cp ./**/version .
     - name: Read Version
       id: read_version
-      run: echo "version=$(cat version | xargs)" >> "$GITHUB_OUTPUT"
+      run: echo "version=$(cat version | tr -d '\r\n')" >> "$GITHUB_OUTPUT"
   deploy_google:
     runs-on: ubuntu-latest
     name: Deploy to Google Play
@@ -80,8 +80,9 @@ jobs:
         echo "keypass: ${{ secrets.ROSYCROW_SIGNING_KEY_PASSWORD }}" >> config.yml
     - name: Get the Repo Contents
       run: |
-        cd fdroid
-        echo "get -R repo" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
+        mkdir -p fdroid/repo
+        cd fdroid/repo
+        echo "get -R repo/*.apk" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
     - name: Download workflow artifact
       uses: dawidd6/action-download-artifact@v2
       with:
@@ -93,13 +94,21 @@ jobs:
         cp ./**/*.apk .
         cp app.rosy_crow-Signed.apk fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk
     - name: Install Tools
-      run: sudo apt install fdroidserver android-sdk-build-tools
+      run: |
+        sudo add-apt-repository ppa:fdroid/fdroidserver
+        sudo apt-get update
+        sudo apt-get install fdroidserver
+    - name: Set Current Version and VersionCode
+      run: |
+        export VERSION_CODE=$(aapt dump badging fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk | sed -E -e "s/.*versionCode='([0-9]+)'.*/\1/g" | head -n 1)
+        echo "Version: ${{ needs.read_version.outputs.version }} VersionCode: $VERSION_CODE"
+        echo "CurrentVersion: ${{ needs.read_version.outputs.version }}" >> fdroid/metadata/app.rosy_crow.yml
+        echo "CurrentVersionCode: $VERSION_CODE" >> fdroid/metadata/app.rosy_crow.yml
     - name: Update F-Droid Index
       run: |
         cd fdroid
         fdroid update -c
         fdroid update
-        echo "${{ needs.read_version.outputs.version }}" > repo/latest
     - name: Upload Repo
       run: |
         cd fdroid

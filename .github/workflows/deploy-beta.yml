@@ -110,10 +110,9 @@ jobs:
   create_tag:
     runs-on: ubuntu-latest
     name: Tag Release
+    permissions: write-all
     needs:
     - read_version
-    - deploy_google
-    - deploy_fdroid
     steps:
     - name: Checkout
       uses: actions/checkout@v4.1.1

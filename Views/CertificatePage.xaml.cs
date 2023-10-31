@@ -2,6 +2,7 @@ using System.Windows.Input;
 using CommunityToolkit.Maui.Alerts;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
+using RosyCrow.Resources.Localization;
 
 // ReSharper disable AsyncVoidLambda
 
@@ -31,7 +32,7 @@ public partial class CertificatePage : ContentPage
         CopyText = new Command(async value =>
         {
             await Clipboard.SetTextAsync((string)value);
-            await Toast.Make("Copied").Show();
+            await Toast.Make(Text.CertificatePage_CertificatePage_Copied).Show();
         });
     }
 

@@ -113,7 +113,7 @@ public class FingerprintImplementation : FingerprintImplementationBase
             return (null, null);
 
         if (string.IsNullOrWhiteSpace(authRequestConfig.Title))
-            throw new ArgumentException("Title must not be null or empty on Android.", nameof(authRequestConfig.Title));
+            throw new ArgumentException(@"Title must not be null or empty on Android.", nameof(authRequestConfig));
 
         try
         {

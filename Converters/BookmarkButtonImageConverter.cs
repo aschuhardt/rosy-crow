@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using RosyCrow.Interfaces;
 
 namespace RosyCrow.Converters;
@@ -19,6 +20,7 @@ public class BookmarkButtonImageConverter : IValueConverter
         _imageSourceConverter = new ImageSourceConverter();
     }
 
+    [Localizable(false)]
     public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
     {
         var isBookmark = false;

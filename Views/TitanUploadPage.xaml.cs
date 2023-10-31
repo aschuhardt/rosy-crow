@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text;
 using System.Windows.Input;
 using RosyCrow.Models;
@@ -40,6 +41,7 @@ public partial class TitanUploadPage : ContentPage
 
     public BrowserView Browser { get; set; }
 
+    [Localizable(false)]
     public IEnumerable<string> TextMimeTypeChoices
     {
         get => _textMimeTypeChoices;

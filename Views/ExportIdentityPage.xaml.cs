@@ -39,7 +39,7 @@ public partial class ExportIdentityPage : ContentPage
         CopyText = new Command(async value =>
         {
             await Clipboard.SetTextAsync((string)value);
-            await Toast.Make("Copied").Show();
+            await Toast.Make(Text.ExportIdentityPage_ExportIdentityPage_Copied).Show();
         });
     }
 
@@ -145,7 +145,7 @@ public partial class ExportIdentityPage : ContentPage
     {
         try
         {
-            _logger.LogInformation("Exporting the certificate for Identity {ID} ({Name})", Identity.Id, Identity.Name);
+            _logger.LogInformation(@"Exporting the certificate for Identity {ID} ({Name})", Identity.Id, Identity.Name);
 
             var cert = await _identityService.LoadCertificate(Identity);
 
@@ -161,15 +161,15 @@ public partial class ExportIdentityPage : ContentPage
             if (!OperatingSystem.IsAndroidVersionAtLeast(33) &&
                 await Permissions.CheckStatusAsync<Permissions.StorageWrite>() != PermissionStatus.Granted)
             {
-                _logger.LogInformation("Requesting permission to write to external storage");
+                _logger.LogInformation(@"Requesting permission to write to external storage");
 
                 var status = await Permissions.RequestAsync<Permissions.StorageWrite>();
 
                 if (status != PermissionStatus.Granted && Permissions.ShouldShowRationale<Permissions.StorageWrite>())
                 {
-                    await DisplayAlert("Lacking Permission",
-                        "Identities cannot be exported unless Rosy Crow has permission to write to you device's storage.\n\nTry again after you've granted the app permission to do so.",
-                        "OK");
+                    await DisplayAlert(Text.ExportIdentityPage_ExportKey_Lacking_Permission,
+                        Text.ExportIdentityPage_ExportKey_,
+                        Text.ExportIdentityPage_ExportKey_OK);
                     return;
                 }
             }
@@ -184,7 +184,7 @@ public partial class ExportIdentityPage : ContentPage
                 }
 
                 buffer.Seek(0, SeekOrigin.Begin);
-                result = await FileSaver.Default.SaveAsync($"{Identity.SanitizedName}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.pem",
+                result = await FileSaver.Default.SaveAsync($@"{Identity.SanitizedName}_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}.pem",
                     buffer,
                     CancellationToken.None);
             }
@@ -193,24 +193,24 @@ public partial class ExportIdentityPage : ContentPage
             {
                 if (password != null)
                 {
-                    _logger.LogInformation("Certificate for Identity {ID} exported encrypted to {Path}", Identity.Id, result.FilePath);
+                    _logger.LogInformation(@"Certificate for Identity {ID} exported encrypted to {Path}", Identity.Id, result.FilePath);
                     await Clipboard.Default.SetTextAsync(Password);
-                    await Toast.Make("Password copied to the clipboard").Show();
+                    await Toast.Make(Text.ExportIdentityPage_ExportKey_Password_copied_to_the_clipboard).Show();
                     Password = string.Empty;
                 }
                 else
                 {
-                    _logger.LogInformation("Certificate for Identity {ID} exported unencrypted to {Path}", Identity.Id, result.FilePath);
+                    _logger.LogInformation(@"Certificate for Identity {ID} exported unencrypted to {Path}", Identity.Id, result.FilePath);
                 }
             }
             else
             {
-                await Toast.Make("Could not save the file").Show();
+                await Toast.Make(Text.ExportIdentityPage_ExportKey_Could_not_save_the_file).Show();
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while exporting identity {ID}", Identity?.Id);
+            _logger.LogError(e, @"Exception thrown while exporting identity {ID}", Identity?.Id);
         }
         finally
         {

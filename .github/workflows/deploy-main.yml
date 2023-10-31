@@ -1,10 +1,10 @@
-name: Deploy a Beta Release
+name: Deploy a Production Release
 on:
   workflow_run:
     workflows: [ Build ]
     types:
       - completed
-    branches: [ beta ]
+    branches: [ main ]
   workflow_dispatch: {}
 permissions:
   contents: read
@@ -23,7 +23,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build.yml
-        branch: beta
+        branch: main
         allow_forks: false
     - name: Copy File
       run: cp ./**/version .
@@ -43,7 +43,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build.yml
-        branch: beta
+        branch: main
         allow_forks: false
     - name: Copy Files
       run: cp ./**/*.aab .
@@ -54,7 +54,7 @@ jobs:
         packageName: app.rosy_crow
         releaseFiles: app.rosy_crow-Signed.aab
         releaseName: ${{ needs.read_version.outputs.version }}
-        track: beta
+        track: production
         status: completed
   deploy_fdroid:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
       uses: dawidd6/action-download-artifact@v2
       with:
         workflow: build.yml
-        branch: beta
+        branch: main
         allow_forks: false
     - name: Copy Package into Repo
       run: |
@@ -98,9 +98,16 @@ jobs:
         sudo add-apt-repository ppa:fdroid/fdroidserver
         sudo apt-get update
         sudo apt-get install fdroidserver
+    - name: Set Current Version and VersionCode
+      run: |
+        export VERSION_CODE=$(aapt dump badging fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk | sed -E -e "s/.*versionCode='([0-9]+)'.*/\1/g" | head -n 1)
+        echo "Version: ${{ needs.read_version.outputs.version }} VersionCode: $VERSION_CODE"
+        echo "CurrentVersion: ${{ needs.read_version.outputs.version }}" >> fdroid/metadata/app.rosy_crow.yml
+        echo "CurrentVersionCode: $VERSION_CODE" >> fdroid/metadata/app.rosy_crow.yml
     - name: Update F-Droid Index
       run: |
         cd fdroid
+        fdroid update -c
         fdroid update
     - name: Upload Repo
       run: |

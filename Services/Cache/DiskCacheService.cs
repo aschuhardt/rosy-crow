@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.ComponentModel;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace RosyCrow.Services.Cache;
 
+[Localizable(false)]
 public class DiskCacheService : ICacheService
 {
     private readonly ILogger<DiskCacheService> _logger;
@@ -21,7 +23,7 @@ public class DiskCacheService : ICacheService
 
         var prunedCount = Prune();
         if (prunedCount > 0)
-            _logger.LogInformation("{Count} cache buckets pruned upon initialization", prunedCount);
+            _logger.LogInformation(@"{Count} cache buckets pruned upon initialization", prunedCount);
     }
 
     public async Task<bool> TryRead(Uri uri, Stream destination)
@@ -31,21 +33,21 @@ public class DiskCacheService : ICacheService
             if (!TryFindCachedByUri(uri, out var path))
                 return false;
 
-            _logger.LogDebug("Cached resource found at {Path}", path);
+            _logger.LogDebug(@"Cached resource found at {Path}", path);
 
             await using var file = File.OpenRead(path);
             await using var brotli = new BrotliStream(file, CompressionMode.Decompress);
 
             await brotli.CopyToAsync(destination);
 
-            _logger.LogDebug("Read {Compressed} bytes from the cache ({Uncompressed} bytes uncompressed)", file.Length,
+            _logger.LogDebug(@"Read {Compressed} bytes from the cache ({Uncompressed} bytes uncompressed)", file.Length,
                 destination.Length);
 
             return true;
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while loading cached page for {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while loading cached page for {URI}", uri);
             return false;
         }
     }
@@ -56,7 +58,7 @@ public class DiskCacheService : ICacheService
         {
             var path = GetCurrentPathFromUri(uri);
 
-            _logger.LogDebug("Cached page file path is {Path}", path);
+            _logger.LogDebug(@"Cached page file path is {Path}", path);
 
             var directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
@@ -67,19 +69,19 @@ public class DiskCacheService : ICacheService
 
             await contents.CopyToAsync(brotli);
 
-            _logger.LogDebug("Stored {Compressed} bytes in the cache ({Uncompressed} bytes uncompressed)", file.Length,
+            _logger.LogDebug(@"Stored {Compressed} bytes in the cache ({Uncompressed} bytes uncompressed)", file.Length,
                 contents.Length);
 
             if ((DateTimeOffset.UtcNow - _lastPruneTime).TotalMinutes >= CachePruneIntervalMinutes)
             {
                 var prunedCount = Prune();
                 if (prunedCount > 0)
-                    _logger.LogInformation("{Count} cache buckets pruned", prunedCount);
+                    _logger.LogInformation(@"{Count} cache buckets pruned", prunedCount);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while caching page for {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while caching page for {URI}", uri);
         }
     }
 
@@ -100,14 +102,14 @@ public class DiskCacheService : ICacheService
 
         foreach (var bucket in toPrune)
         {
-            _logger.LogDebug("Pruning cache bucket at {Path}", bucket);
+            _logger.LogDebug(@"Pruning cache bucket at {Path}", bucket);
             Directory.Delete(bucket, true);
         }
 
         return toPrune.Count;
     }
 
-    private string GetRootPath()
+    private static string GetRootPath()
     {
         return FileSystem.CacheDirectory;
     }
@@ -136,20 +138,20 @@ public class DiskCacheService : ICacheService
 
                 File.Move(path, newPath);
 
-                _logger.LogDebug("Moved cache entry from {OldPath} to {NewPath}", path, newPath);
+                _logger.LogDebug(@"Moved cache entry from {OldPath} to {NewPath}", path, newPath);
 
                 path = newPath;
                 return true;
             }
         }
 
-        _logger.LogDebug("No cache entry was found for {URI}", uri);
+        _logger.LogDebug(@"No cache entry was found for {URI}", uri);
 
         // didn't find it
         return false;
     }
 
-    private string GetCurrentPathFromUri(Uri uri)
+    private static string GetCurrentPathFromUri(Uri uri)
     {
         return Path.Combine(GetRootPath(), GetHourlyDirectoryName(), ComputeUriCachePath(uri));
     }

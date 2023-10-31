@@ -5,6 +5,7 @@
              xmlns:views="clr-namespace:RosyCrow.Views"
              xmlns:localization="clr-namespace:RosyCrow.Resources.Localization"
              xmlns:models="clr-namespace:RosyCrow.Models"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:Class="RosyCrow.Views.SettingsPage"
              x:DataType="views:SettingsPage"
              Title="{x:Static localization:Text.SettingsPage_Title}"
@@ -35,24 +36,55 @@
                 <Switch IsToggled="{Binding StrictTofuMode}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Show tabs" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="{x:Static localization:Text.SettingsPage_Show_tabs}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
+            <toolkit:Expander IsExpanded="{Binding TabsEnabled}">
+                <VerticalStackLayout>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{x:Static localization:Text.SettingsPage_Tab_button_side}" Grid.Column="0" VerticalTextAlignment="Center" />
+                        <Picker SelectedItem="{Binding TabSide}" Grid.Column="1" IsEnabled="{Binding TabsEnabled}">
+                            <Picker.ItemsSource>
+                                <x:Array Type="{x:Type models:TabSide}">
+                                    <models:TabSide>Right</models:TabSide>
+                                    <models:TabSide>Left</models:TabSide>
+                                </x:Array>
+                            </Picker.ItemsSource>
+                        </Picker>
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Text="{x:Static localization:Text.SettingsPage_Swipe_to_move_between_tabs}" Grid.Column="0" VerticalTextAlignment="Center" />
+                        <Switch IsToggled="{Binding EnableSwipe}" IsEnabled="{Binding TabsEnabled}" Grid.Column="1" />
+                    </Grid>
+                </VerticalStackLayout>
+            </toolkit:Expander>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Swipe to move between tabs" Grid.Column="0" VerticalTextAlignment="Center" />
-                <Switch IsToggled="{Binding EnableSwipe}" IsEnabled="{Binding TabsEnabled}" Grid.Column="1" />
+                <Label Text="{x:Static localization:Text.SettingsPage_Use_a_custom_font_size}" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Switch IsToggled="{Binding UseCustomFontSize}" IsEnabled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
-            <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Tab button side" Grid.Column="0" VerticalTextAlignment="Center" />
-                <Picker SelectedItem="{Binding TabSide}" Grid.Column="1" IsEnabled="{Binding TabsEnabled}">
-                    <Picker.ItemsSource>
-                        <x:Array Type="{x:Type models:TabSide}">
-                            <models:TabSide>Right</models:TabSide>
-                            <models:TabSide>Left</models:TabSide>
-                        </x:Array>
-                    </Picker.ItemsSource>
-                </Picker>
-            </Grid>
+            <toolkit:Expander IsExpanded="{Binding UseCustomFontSize}" Padding="8,0,0,0">
+                <VerticalStackLayout>
+                    <Label Text="{x:Static localization:Text.SettingsPage_Font_Sizes}" />
+                    <Grid ColumnDefinitions="Auto,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+                        <!-- This syntax sucks -->
+                        <Label Text="{x:Static localization:Text.SettingsPage_Body}" Grid.Column="0" Grid.Row="0" VerticalTextAlignment="Center" />
+                        <Slider Value="{Binding CustomFontSizeText}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="0" />
+                        <Label Text="{Binding CustomFontSizeText}" Grid.Column="2" Grid.Row="0" />
+
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_1}" Grid.Column="0" Grid.Row="1" VerticalTextAlignment="Center" />
+                        <Slider Value="{Binding CustomFontSizeH1}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="1" />
+                        <Label Text="{Binding CustomFontSizeH1}" Grid.Column="2" Grid.Row="1" />
+
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_2}" Grid.Column="0" Grid.Row="2" VerticalTextAlignment="Center" />
+                        <Slider Value="{Binding CustomFontSizeH2}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="2" />
+                        <Label Text="{Binding CustomFontSizeH2}" Grid.Column="2" Grid.Row="2" />
+
+                        <Label Text="{x:Static localization:Text.SettingsPage_Heading_3}" Grid.Column="0" VerticalTextAlignment="Center" Grid.Row="3" />
+                        <Slider Value="{Binding CustomFontSizeH3}" Minimum="8" Maximum="72" Grid.Column="1" Grid.Row="3" />
+                        <Label Text="{Binding CustomFontSizeH3}" Grid.Column="2" Grid.Row="3" />
+                    </Grid>
+                </VerticalStackLayout>
+            </toolkit:Expander>
             <Grid ColumnDefinitions="*,Auto">
                 <Label Text="{x:Static localization:Text.SettingsPage_Theme}" Grid.Column="0" VerticalOptions="Center" />
                 <!-- ReSharper disable once Xaml.BindingWithContextNotResolved -->
@@ -61,14 +93,31 @@
                     VerticalOptions="Center"
                     ItemsSource="{Binding Choices}"
                     ItemDisplayBinding="{Binding Path=Name}"
-                    SelectedItem="{Binding SelectedTheme}"
-                    SelectedIndexChanged="Picker_OnSelectedIndexChanged" />
+                    SelectedItem="{Binding SelectedTheme}" />
             </Grid>
             <WebView
                 x:Name="ThemePreviewBrowser" HeightRequest="400" Margin="4,16"
                 SemanticProperties.Description="{x:Static localization:Text.SettingsPage_Preview}"
                 SemanticProperties.Hint="{x:Static localization:Text.SettingsPage_PreviewHint}"
-                Navigating="ThemePreviewBrowser_OnNavigating"/>
+                Navigating="ThemePreviewBrowser_OnNavigating" />
+            <!-- TODO: flesh-out custom CSS eventually -->
+            <!-- <Grid ColumnDefinitions="*,Auto"> -->
+            <!--     <Label Text="Use custom CSS" Grid.Column="0" VerticalTextAlignment="Center" /> -->
+            <!--     <Switch IsToggled="{Binding UseCustomCss}" Grid.Column="1" /> -->
+            <!-- </Grid> -->
+            <!-- <toolkit:Expander IsExpanded="{Binding UseCustomCss}"> -->
+            <!--     <VerticalStackLayout> -->
+            <!--         <Grid ColumnDefinitions="*,Auto,Auto"> -->
+            <!--             <Label Text="Custom CSS" Grid.Column="0" VerticalTextAlignment="Center" /> -->
+            <!--             <Button Text="Load" Grid.Column="1" /> -->
+            <!--             <Button Text="Save" Grid.Column="2" /> -->
+            <!--         </Grid> -->
+            <!--         <Border> -->
+            <!--             <Editor Text="{Binding CustomCss}" AutoSize="TextChanges" VerticalTextAlignment="Start" -->
+            <!--                     HeightRequest="64" Placeholder="body { background: black; }" /> -->
+            <!--         </Border> -->
+            <!--     </VerticalStackLayout> -->
+            <!-- </toolkit:Expander> -->
             <Button Text="{x:Static localization:Text.SettingsPage_ExportErrorLogs}" Command="{Binding ExportLogs}" />
             <Button Text="{x:Static localization:Text.SettingsPage_WhatsNew}" Command="{Binding OpenWhatsNew}" />
             <Button Text="{x:Static localization:Text.SettingsPage_About}" Command="{Binding OpenAbout}" />

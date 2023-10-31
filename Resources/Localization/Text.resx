@@ -351,12 +351,6 @@
   <data name="ImportIdentityPage_PresentProtectionPrompt_Do_you_want_to_secure_the_imported_identity_with_your_device_credentials_" xml:space="preserve">
     <value>Do you want to secure the imported identity with your device credentials?</value>
   </data>
-  <data name="ImportIdentityPage_ImportKey_Importing_a_new_identity_certificate_with_subject__Subject_" xml:space="preserve">
-    <value>Importing a new identity certificate with subject {Subject}</value>
-  </data>
-  <data name="ImportIdentityPage_ImportKey_Attempted_to_load_a_certificate_file_that_lacks_a_private_key" xml:space="preserve">
-    <value>Attempted to load a certificate file that lacks a private key</value>
-  </data>
   <data name="ImportIdentityPage_ImportKey_Missing_Private_Key" xml:space="preserve">
     <value>Missing Private Key</value>
   </data>
@@ -473,5 +467,226 @@
   </data>
   <data name="SettingsPage_WhatsNew" xml:space="preserve">
 	  <value>What's New</value>
+  </data>
+  <data name="SettingsPage_Swipe_to_move_between_tabs" xml:space="preserve">
+    <value>Swipe to move between tabs</value>
+  </data>
+  <data name="SettingsPage_Use_a_custom_font_size" xml:space="preserve">
+    <value>Use a custom font size</value>
+  </data>
+  <data name="SettingsPage_Font_Sizes" xml:space="preserve">
+    <value>Font Sizes</value>
+  </data>
+  <data name="SettingsPage_Body" xml:space="preserve">
+    <value>Body</value>
+  </data>
+  <data name="SettingsPage_Heading_1" xml:space="preserve">
+    <value>Heading 1</value>
+  </data>
+  <data name="SettingsPage_Heading_2" xml:space="preserve">
+    <value>Heading 2</value>
+  </data>
+  <data name="SettingsPage_Heading_3" xml:space="preserve">
+    <value>Heading 3</value>
+  </data>
+  <data name="SettingsPage_Tab_button_side" xml:space="preserve">
+    <value>Tab button side</value>
+  </data>
+  <data name="SettingsPage_Show_tabs" xml:space="preserve">
+    <value>Show tabs</value>
+  </data>
+  <data name="BrowserView_BuildContextMenu_Open_in_New_Tab" xml:space="preserve">
+    <value>Open in New Tab</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_Import_Tabs" xml:space="preserve">
+    <value>Import Tabs</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_Do_you_want_to_import__0__tabs_" xml:space="preserve">
+    <value>Do you want to import {0} tabs?</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_The_file_contains_no_tabs" xml:space="preserve">
+    <value>The file contains no tabs</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_The_file_is_formatted_incorrectly" xml:space="preserve">
+    <value>The file is formatted incorrectly</value>
+  </data>
+  <data name="App_HandleImportTabsIntent_No_tabs_were_imported_because_something_went_wrong" xml:space="preserve">
+    <value>No tabs were imported because something went wrong</value>
+  </data>
+  <data name="App_HandleNavigationIntent_Something_went_wrong__so_the_link_could_not_be_opened" xml:space="preserve">
+    <value>Something went wrong, so the link could not be opened</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnFetchingIcon_No_icon_available" xml:space="preserve">
+    <value>No icon available</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnFetchingIcon_Icon_updated" xml:space="preserve">
+    <value>Icon updated</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnFetchingIcon_Failed_to_fetch_the_icon_due_to_an_error" xml:space="preserve">
+    <value>Failed to fetch the icon due to an error</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnResettingIcon_The_icon_has_been_reset" xml:space="preserve">
+    <value>The icon has been reset</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnSettingCustomIcon_Custom_Icon" xml:space="preserve">
+    <value>Custom Icon</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnSettingCustomIcon_" xml:space="preserve">
+    <value>Enter what you would like this tab's icon to be.
+One or two letters or numbers may be entered, or a single emoji character.</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnReorderingRequested_Go_back_or_select_a_tab_when_finished" xml:space="preserve">
+    <value>Go back or select a tab when finished</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnRemoveAllRequested_Close_All" xml:space="preserve">
+    <value>Close All</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnRemoveAllRequested_" xml:space="preserve">
+    <value>All tabs will be closed.
+Proceed?</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnRemoveAllRequested_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnRemoveAllRequested_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_Select_a_JSON_File_to_Import" xml:space="preserve">
+    <value>Select a JSON File to Import</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_There_are_no_tabs_to_import" xml:space="preserve">
+    <value>There are no tabs to import</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_Imported_a_tab" xml:space="preserve">
+    <value>Imported a tab</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_Imported__0__tabs" xml:space="preserve">
+    <value>Imported {0} tabs</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_The_file_is_formatted_incorrectly" xml:space="preserve">
+    <value>The file is formatted incorrectly</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnImportRequested_No_tabs_were_imported_because_something_went_wrong" xml:space="preserve">
+    <value>No tabs were imported because something went wrong</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnExportRequested_Lacking_Permission" xml:space="preserve">
+    <value>Lacking Permission</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnExportRequested_" xml:space="preserve">
+    <value>Tabs cannot be exported unless Rosy Crow has permission to write to you device's storage.
+
+Try again after you've granted the app permission to do so.</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnExportRequested_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnExportRequested_Could_not_save_the_file" xml:space="preserve">
+    <value>Could not save the file</value>
+  </data>
+  <data name="TabCollection_BrowserTab_OnExportRequested_Nothing_was_exported_because_something_went_wrong" xml:space="preserve">
+    <value>Nothing was exported because something went wrong</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_All_Tabs" xml:space="preserve">
+    <value>All Tabs</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Import" xml:space="preserve">
+    <value>Import</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Export" xml:space="preserve">
+    <value>Export</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Arrange" xml:space="preserve">
+    <value>Arrange</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Close_All" xml:space="preserve">
+    <value>Close All</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Icon" xml:space="preserve">
+    <value>Icon</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Fetch__favicon_txt_" xml:space="preserve">
+    <value>Fetch (favicon.txt)</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Set_Custom" xml:space="preserve">
+    <value>Set Custom</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Reset" xml:space="preserve">
+    <value>Reset</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Remove_Bookmark" xml:space="preserve">
+    <value>Remove Bookmark</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Bookmark" xml:space="preserve">
+    <value>Bookmark</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Copy_URL" xml:space="preserve">
+    <value>Copy URL</value>
+  </data>
+  <data name="BrowserTab_BuildContextMenu_Close" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="IdentityService_DerivePassword_Unlock_the_Identity" xml:space="preserve">
+    <value>Unlock the Identity</value>
+  </data>
+  <data name="IdentityService_DerivePassword_Unlock_the_identity_using_your_device_s_credential_" xml:space="preserve">
+    <value>Unlock the identity using your device's credential.</value>
+  </data>
+  <data name="IdentityService_DerivePassword_Could_not_unlock_the_identity" xml:space="preserve">
+    <value>Could not unlock the identity</value>
+  </data>
+  <data name="CertificatePage_CertificatePage_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ExportIdentityPage_ExportIdentityPage_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="ExportIdentityPage_ExportKey_Lacking_Permission" xml:space="preserve">
+    <value>Lacking Permission</value>
+  </data>
+  <data name="ExportIdentityPage_ExportKey_" xml:space="preserve">
+    <value>Identities cannot be exported unless Rosy Crow has permission to write to you device's storage.
+
+Try again after you've granted the app permission to do so.</value>
+  </data>
+  <data name="ExportIdentityPage_ExportKey_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="ExportIdentityPage_ExportKey_Could_not_save_the_file" xml:space="preserve">
+    <value>Could not save the file</value>
+  </data>
+  <data name="IdentityPage_TryOpeningExportKeyPage_Cannot_export_this_identity" xml:space="preserve">
+    <value>Cannot export this identity</value>
+  </data>
+  <data name="ImportIdentityPage_ImportIdentityPage_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="SettingsPage_SettingsPage_Copied" xml:space="preserve">
+    <value>Copied</value>
+  </data>
+  <data name="SettingsPage_ExportErrorLogArchive_Lacking_Permission" xml:space="preserve">
+    <value>Lacking Permission</value>
+  </data>
+  <data name="SettingsPage_ExportErrorLogArchive_" xml:space="preserve">
+    <value>Logs cannot be exported unless Rosy Crow has permission to write to you device's storage.
+
+Try again after you've granted the app permission to do so.</value>
+  </data>
+  <data name="SettingsPage_ExportErrorLogArchive_There_are_no_error_logs_to_export" xml:space="preserve">
+    <value>There are no error logs to export</value>
+  </data>
+  <data name="SettingsPage_ExportErrorLogArchive_Could_not_save_archive" xml:space="preserve">
+    <value>Could not save archive</value>
+  </data>
+  <data name="SettingsPage_SettingsPage_OnLoaded_Version__0___build__1_" xml:space="preserve">
+    <value>Version {0}, build {1}</value>
+  </data>
+  <data name="SettingsPage_ExportErrorLogArchive_OK" xml:space="preserve">
+    <value>OK</value>
   </data>
 </root>

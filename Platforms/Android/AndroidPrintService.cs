@@ -16,7 +16,7 @@ public class AndroidPrintService : IPrintService
 
     public void Print(string name)
     {
-        name ??= $"page_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+        name ??= $@"page_{DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
         var printManager = (PrintManager)Platform.CurrentActivity?.GetSystemService(Context.PrintService);
         printManager?.Print(name, _webView.CreatePrintDocumentAdapter(name), null);
     }

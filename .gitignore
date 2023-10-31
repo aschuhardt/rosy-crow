@@ -364,7 +364,6 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /app.db
-fdroid/
 *.pem
 *.db
 .env

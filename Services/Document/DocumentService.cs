@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.ComponentModel;
+using System.Text;
 using System.Web;
 using HtmlAgilityPack;
 using Microsoft.Extensions.Logging;
@@ -13,13 +14,17 @@ using RosyCrow.Services.Cache;
 
 namespace RosyCrow.Services.Document;
 
+[Localizable(false)]
 internal class DocumentService : IDocumentService
 {
     private readonly ICacheService _cache;
     private readonly ILogger<DocumentService> _logger;
     private readonly List<Task> _parallelRenderWorkload;
     private readonly ISettingsDatabase _settingsDatabase;
-    private HtmlNode _templateNode;
+    private HtmlNode _customCssNode;
+    private HtmlNode _themeLinkNode;
+    private HtmlNode _fontSizeNode;
+    private HtmlDocument _templateDocument;
 
     public DocumentService(ISettingsDatabase settingsDatabase, ICacheService cache, ILogger<DocumentService> logger)
     {
@@ -28,13 +33,23 @@ internal class DocumentService : IDocumentService
         _logger = logger;
 
         _parallelRenderWorkload = new List<Task>();
+
+        _themeLinkNode = BuildThemeLinkNode();
+
+        if (_settingsDatabase.UseCustomCss)
+            _customCssNode = BuildCustomCssNode();
+
+        if (_settingsDatabase.UseCustomFontSize)
+            _fontSizeNode = BuildCustomFontSizeNode();
+
+        _settingsDatabase.PropertyChanged += SettingChanged;
     }
 
     public HtmlDocument CreateEmptyDocument()
     {
         var document = new HtmlDocument();
-        document.DocumentNode.CopyFrom(_templateNode, true);
-        InjectStylesheet(document);
+        document.DocumentNode.CopyFrom(_templateDocument.DocumentNode, true);
+        InjectStyleElements(document);
         return document;
     }
 
@@ -46,16 +61,28 @@ internal class DocumentService : IDocumentService
         // remove the old injected stylesheet so that the new one can be used
         document.DocumentNode.Descendants("link").FirstOrDefault(n => n.HasClass("injected-stylesheet"))?.Remove();
 
-        InjectStylesheet(document);
+        var styleNodes = document.DocumentNode.Descendants("style").ToList();
+        foreach (var node in styleNodes)
+            node.Remove();
+
+        InjectStyleElements(document);
         return document;
     }
 
     public async Task LoadResources()
     {
-        await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
-        using var reader = new StreamReader(template);
-        _templateNode = new HtmlDocument().DocumentNode;
-        _templateNode.AppendChild(HtmlNode.CreateNode(await reader.ReadToEndAsync()));
+        try
+        {
+            await using var template = await FileSystem.OpenAppPackageFileAsync("template.html");
+            using var reader = new StreamReader(template);
+            _templateDocument = new HtmlDocument();
+            _templateDocument.Load(template);
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Failed to load the document template");
+            throw;
+        }
     }
 
     public async Task<string> RenderInternalDocument(string name)
@@ -137,11 +164,71 @@ internal class DocumentService : IDocumentService
         return new RenderedGemtextDocument { HtmlContents = document.DocumentNode.OuterHtml, Title = title };
     }
 
-    private void InjectStylesheet(HtmlDocument document)
+    private void SettingChanged(object sender, PropertyChangedEventArgs e)
+    {
+        switch (e.PropertyName)
+        {
+            case nameof(ISettingsDatabase.Theme):
+                _themeLinkNode = BuildThemeLinkNode();
+                break;
+            case nameof(ISettingsDatabase.CustomCss):
+                if (_settingsDatabase.UseCustomCss)
+                    _customCssNode = BuildCustomCssNode();
+                break;
+            case nameof(ISettingsDatabase.CustomFontSizeText):
+            case nameof(ISettingsDatabase.CustomFontSizeH1):
+            case nameof(ISettingsDatabase.CustomFontSizeH2):
+            case nameof(ISettingsDatabase.CustomFontSizeH3):
+                if (_settingsDatabase.UseCustomFontSize)
+                    _fontSizeNode = BuildCustomFontSizeNode();
+                break;
+        }
+    }
+
+    private void InjectStyleElements(HtmlDocument document)
     {
         var head = document.DocumentNode.ChildNodes.FindFirst("head");
-        head?.AppendChild(HtmlNode.CreateNode(
-            $"<link rel=\"stylesheet\" class=\"injected-stylesheet\" href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />"));
+        if (head == null)
+            return;
+
+        head.AppendChild(_themeLinkNode);
+
+        if (_settingsDatabase.UseCustomFontSize)
+        {
+            _fontSizeNode ??= BuildCustomFontSizeNode();
+            head.AppendChild(_fontSizeNode);
+        }
+
+        if (_settingsDatabase.UseCustomCss)
+        {
+            _customCssNode ??= BuildCustomCssNode();
+            head.AppendChild(_customCssNode);
+        }
+    }
+
+    private HtmlNode BuildThemeLinkNode()
+    {
+        return HtmlNode.CreateNode("<link rel=\"stylesheet\" class=\"injected-stylesheet\" " +
+                                   $"href=\"Themes/{_settingsDatabase.Theme}.css\" media=\"screen\" />");
+    }
+
+    private HtmlNode BuildCustomCssNode()
+    {
+        return HtmlNode.CreateNode($"<style class=\"custom-css\">{_settingsDatabase.CustomCss}</style>");
+    }
+
+    private HtmlNode BuildCustomFontSizeNode()
+    {
+        var textSize = _settingsDatabase.CustomFontSizeText;
+        var h1Size = _settingsDatabase.CustomFontSizeH1;
+        var h2Size = _settingsDatabase.CustomFontSizeH2;
+        var h3Size = _settingsDatabase.CustomFontSizeH3;
+        return HtmlNode.CreateNode("<style class=\"custom-fontsize\">" +
+                                   $"body {{ font-size: {textSize}px; }} " +
+                                   $"h1 {{ font-size: {h1Size}px; }} " +
+                                   $"h2 {{ font-size: {h2Size}px; }} " +
+                                   $"h3 {{ font-size: {h3Size}px; }} " +
+                                   "</style>");
     }
 
     private static async Task<MemoryStream> CreateInlinedImagePreview(Stream source, string mimetype)
@@ -164,10 +251,10 @@ internal class DocumentService : IDocumentService
         return output;
     }
 
-    private string CreateInlineImageDataUrl(MemoryStream data)
+    private static string CreateInlineImageDataUrl(MemoryStream data)
     {
         data.Seek(0, SeekOrigin.Begin);
-        return $"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
+        return $@"data:image/png;base64,{Convert.ToBase64String(data.ToArray())}";
     }
 
     private async Task<string> TryLoadCachedImage(Uri uri)
@@ -178,13 +265,13 @@ internal class DocumentService : IDocumentService
 
             if (await _cache.TryRead(uri, image))
             {
-                _logger.LogDebug("Loaded cached image originally from {URI}", uri);
+                _logger.LogDebug(@"Loaded cached image originally from {URI}", uri);
                 return CreateInlineImageDataUrl(image);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while attempting to load a cached image retrieved from {URI}", uri);
         }
 
         return null;
@@ -206,7 +293,7 @@ internal class DocumentService : IDocumentService
 
                     if (await client.SendRequestAsync(uri.ToString()) is SuccessfulResponse success)
                     {
-                        _logger.LogDebug("Successfully loaded an image of type {MimeType} to be inlined from {URI}",
+                        _logger.LogDebug(@"Successfully loaded an image of type {MimeType} to be inlined from {URI}",
                             success.MimeType,
                             uri);
 
@@ -215,7 +302,7 @@ internal class DocumentService : IDocumentService
                         if (image == null)
                         {
                             _logger.LogWarning(
-                                "Loaded an image to be inlined from {URI} but failed to create the preview",
+                                @"Loaded an image to be inlined from {URI} but failed to create the preview",
                                 uri);
                             break;
                         }
@@ -223,7 +310,7 @@ internal class DocumentService : IDocumentService
                         image.Seek(0, SeekOrigin.Begin);
                         await _cache.Write(uri, image);
 
-                        _logger.LogDebug("Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
+                        _logger.LogDebug(@"Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
 
                         return CreateInlineImageDataUrl(image);
                     }
@@ -242,7 +329,7 @@ internal class DocumentService : IDocumentService
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while attempting to cache an image from {URI}", uri);
+            _logger.LogError(e, @"Exception thrown while attempting to cache an image from {URI}", uri);
         }
 
         return null;
@@ -281,37 +368,37 @@ internal class DocumentService : IDocumentService
             {
                 var node = HtmlNode.CreateNode("<p></p>");
 
-                _logger.LogDebug("Attempting to render an image preview inline from {URI}", line.Uri);
+                _logger.LogDebug(@"Attempting to render an image preview inline from {URI}", line.Uri);
 
                 if (line.Uri.Scheme == Constants.GeminiScheme)
                 {
-                    _logger.LogDebug("The image URI specifies the gemini protocol");
+                    _logger.LogDebug(@"The image URI specifies the gemini protocol");
 
                     var cached = await TryLoadCachedImage(line.Uri);
 
                     if (cached != null)
                     {
-                        _logger.LogDebug("Loading the image preview from the cache");
+                        _logger.LogDebug(@"Loading the image preview from the cache");
                         node.AppendChild(RenderInlineImageFigure(line, cached));
                     }
                     else
                     {
                         _logger.LogDebug(
-                            "Queueing the image download to complete after the rest of the page has been rendered.");
+                            @"Queueing the image download to complete after the rest of the page has been rendered.");
                         _parallelRenderWorkload.Add(Task.Run(async () =>
                         {
                             var source = await FetchAndCacheInlinedImage(line.Uri);
 
                             if (!string.IsNullOrEmpty(source))
                             {
-                                _logger.LogDebug("Successfully created the image preview; rendering that now");
+                                _logger.LogDebug(@"Successfully created the image preview; rendering that now");
                                 node.AppendChild(RenderInlineImageFigure(line, source));
                             }
                             else
                             {
                                 // did not load the image preview; fallback to a simple link
                                 _logger.LogDebug(
-                                    "Could not create the image preview; falling-back to a simple gemtext link line");
+                                    @"Could not create the image preview; falling-back to a simple gemtext link line");
                                 node.AppendChild(HtmlNode.CreateNode(
                                     $"<a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a>"));
                             }
@@ -322,7 +409,7 @@ internal class DocumentService : IDocumentService
                 {
                     // http, etc. can be handled by the browser
                     _logger.LogDebug(
-                        "The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
+                        @"The image URI specifies the HTTP protocol; let the WebView figure out how to render it");
                     node.AppendChild(RenderInlineImageFigure(line, line.Uri.ToString()));
                 }
 
@@ -330,14 +417,14 @@ internal class DocumentService : IDocumentService
             }
 
             _logger.LogDebug(
-                "The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
+                @"The URI {URI} does not appear to point to an image (type: {MimeType}); an anchor tag will be rendered",
                 line.Uri,
                 mimeType ?? "none");
             return RenderDefaultLinkLine(line);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while rendering an inline image preview from {URI}", line.Uri);
+            _logger.LogError(e, @"Exception thrown while rendering an inline image preview from {URI}", line.Uri);
             return null;
         }
     }

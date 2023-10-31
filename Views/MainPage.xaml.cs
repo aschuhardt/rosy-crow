@@ -118,10 +118,7 @@ public partial class MainPage : ContentPage
             button.GestureRecognizers.Add(new TapGestureRecognizer { Command = button.Command });
         }
 
-        // TODO: delete me
-        // Carousel.CurrentItemChanged += (sender, args) => Debugger.Break();
-
-        WebViewHandler.Mapper.AppendToMapping("WebViewScrollingAware",
+        WebViewHandler.Mapper.AppendToMapping(@"WebViewScrollingAware",
             (handler, _) =>
             {
 #if ANDROID
@@ -142,7 +139,7 @@ public partial class MainPage : ContentPage
 #endif
             });
 
-        EntryHandler.Mapper.AppendToMapping("HideUnderline",
+        EntryHandler.Mapper.AppendToMapping(@"HideUnderline",
             (handler, _) =>
             {
 #if ANDROID
@@ -150,7 +147,7 @@ public partial class MainPage : ContentPage
 #endif
             });
 
-        EditorHandler.Mapper.AppendToMapping("HideUnderline",
+        EditorHandler.Mapper.AppendToMapping(@"HideUnderline",
             (handler, _) =>
             {
 #if ANDROID
@@ -162,7 +159,19 @@ public partial class MainPage : ContentPage
     public Tab CurrentTab
     {
         get => (Tab)GetValue(CurrentTabProperty);
-        set => SetValue(CurrentTabProperty, value);
+        set
+        {
+            // don't overwrite the selected tab while the user is rearranging tabs
+            if (TabCollection.IsReordering)
+                return;
+
+            // don't try setting the selected tab until the tab collection has had
+            // a chance to load and select the appropriate target
+            if (TabCollection.SelectedTab == null)
+                return;
+
+            SetValue(CurrentTabProperty, value);
+        }
     }
 
     public ObservableCollection<Tab> Tabs
@@ -442,22 +451,10 @@ public partial class MainPage : ContentPage
         }
     }
 
-    private void Tabs_SelectedTabChanged(object sender, EventArgs e)
-    {
-        // TODO: This won't be necessary (as we can just bind CurrentItem) once this PR is released: https://github.com/dotnet/maui/pull/16165
-        // yuck
-        if (!Carousel.IsScrolling && !TabCollection.IsReordering)
-            Carousel.ScrollTo(TabCollection.SelectedTab, animate: false);
-
-        IsNavBarVisible = true;
-        if (UrlEntry.IsFocused)
-            UrlEntry.Unfocus();
-    }
-
     private async Task TryLoadEnteredUrl(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
-            url = $"{Constants.InternalScheme}://default";
+            url = $@"{Constants.InternalScheme}://default";
 
         UrlEntry.Unfocus();
 
@@ -469,7 +466,7 @@ public partial class MainPage : ContentPage
         }
         catch (UriFormatException)
         {
-            _logger.LogError("Invalid URL entered: \"{URL}\"", url);
+            _logger.LogError(@"Invalid URL entered: ""{URL}""", url);
             await Toast.Make(Text.MainPage_MainPage_That_address_is_invalid).Show();
         }
     }
@@ -525,7 +522,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while performing navbar animation");
+            _logger.LogError(e, @"Exception thrown while performing navbar animation");
         }
     }
 
@@ -534,13 +531,13 @@ public partial class MainPage : ContentPage
         try
         {
             if (IsMenuExpanded)
-                _menuShowAnimation.Commit(this, "ShowMenu");
+                _menuShowAnimation.Commit(this, @"ShowMenu");
             else
-                _menuHideAnimation.Commit(this, "HideMenu", length: 150);
+                _menuHideAnimation.Commit(this, @"HideMenu", length: 150);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while performing menu animation");
+            _logger.LogError(e, @"Exception thrown while performing menu animation");
         }
     }
 
@@ -576,7 +573,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating backward");
+            _logger.LogError(e, @"Exception thrown while navigating backward");
             return false;
         }
     }
@@ -590,7 +587,7 @@ public partial class MainPage : ContentPage
                 // collapse and then navigate
                 _isMenuExpanded = false;
                 _menuHideAnimation.Commit(this,
-                    "HideMenu",
+                    @"HideMenu",
                     length: 150,
                     finished: async (_, _) =>
                     {
@@ -613,7 +610,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while opening menu item {Name}", typeof(T).Name);
+            _logger.LogError(e, @"Exception thrown while opening menu item {Name}", typeof(T).Name);
         }
     }
 
@@ -621,7 +618,7 @@ public partial class MainPage : ContentPage
     {
         try
         {
-            _logger.LogDebug("Attempting to load the home URI");
+            _logger.LogDebug(@"Attempting to load the home URI");
 
             if (string.IsNullOrEmpty(_settingsDatabase.HomeUrl))
                 this.ShowToast(Text.MainPage_TryLoadHomeUrl_No_home_set, ToastDuration.Long);
@@ -630,7 +627,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while navigating to the home URI");
+            _logger.LogError(e, @"Exception thrown while navigating to the home URI");
         }
     }
 
@@ -643,7 +640,7 @@ public partial class MainPage : ContentPage
         {
             _settingsDatabase.HomeUrl = CurrentTab.Location.ToString();
 
-            _logger.LogInformation("Home URI set to {URI}", _settingsDatabase.HomeUrl);
+            _logger.LogInformation(@"Home URI set to {URI}", _settingsDatabase.HomeUrl);
 
             CurrentTab.OnBookmarkChanged(); // force buttons to update
 
@@ -651,7 +648,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while setting the home URI to {URI}", CurrentTab.Location);
+            _logger.LogError(e, @"Exception thrown while setting the home URI to {URI}", CurrentTab.Location);
         }
     }
 
@@ -687,7 +684,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown attempting to find text in the page");
+            _logger.LogError(e, @"Exception thrown attempting to find text in the page");
         }
     }
 
@@ -703,7 +700,7 @@ public partial class MainPage : ContentPage
                 _browsingDatabase.Bookmarks.Remove(bookmark);
                 CurrentTab.OnBookmarkChanged(); // force buttons to update
 
-                _logger.LogInformation("Removing bookmarked location {URI}", bookmark.Url);
+                _logger.LogInformation(@"Removing bookmarked location {URI}", bookmark.Url);
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_removed, ToastDuration.Short);
             }
@@ -717,14 +714,14 @@ public partial class MainPage : ContentPage
 
                 CurrentTab.OnBookmarkChanged(); // force buttons to update
 
-                _logger.LogInformation("Set bookmarked location {URI}", bookmark.Url);
+                _logger.LogInformation(@"Set bookmarked location {URI}", bookmark.Url);
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown toggling the bookmark for {URI}", CurrentTab.Location);
+            _logger.LogError(e, @"Exception thrown toggling the bookmark for {URI}", CurrentTab.Location);
         }
     }
 
@@ -754,13 +751,23 @@ public partial class MainPage : ContentPage
             TabCollection.ParentPage = this;
 
             if (!TabCollection.Tabs.Any())
-                await TabCollection.AddDefaultTab();
+            {
+                if (!string.IsNullOrWhiteSpace(_settingsDatabase.LastVisitedUrl) && 
+                    _settingsDatabase.LastVisitedUrl.ToGeminiUri() is { Scheme: Constants.GeminiScheme } geminiUri)
+                {
+                    await TabCollection.AddTab(geminiUri);
+                }
+                else
+                {
+                    await TabCollection.AddDefaultTab();
+                }
+            }
 
             PullTabVisible = !_settingsDatabase.HidePullTab;
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Exception thrown on MainPage loaded");
+            _logger.LogError(exception, @"Exception thrown on MainPage loaded");
         }
     }
 
@@ -789,7 +796,7 @@ public partial class MainPage : ContentPage
         }
         catch (Exception exception)
         {
-            _logger.LogError(exception, "Exception thrown on MainPage appearing");
+            _logger.LogError(exception, @"Exception thrown on MainPage appearing");
         }
     }
 
@@ -801,17 +808,6 @@ public partial class MainPage : ContentPage
         HomeButton.IsVisible = false;
         PageInfoButton.IsVisible = false;
         BookmarkButton.IsVisible = false;
-
-        // TODO it would be great if this wasn't broken anymore, but that's how it is with MAUI
-
-        // await Dispatcher.DispatchAsync(() =>
-        // {
-        //     new Animation
-        //     {
-        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 0, 1, Easing.CubicInOut) },
-        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, 0, -HomeButton.Width, Easing.CubicInOut) }
-        //     }.Commit(this, "ExpandUrlEntry");
-        // });
     }
 
     private void UrlEntry_OnUnfocused(object sender, FocusEventArgs e)
@@ -819,56 +815,12 @@ public partial class MainPage : ContentPage
         HomeButton.IsVisible = true;
         PageInfoButton.IsVisible = true;
         BookmarkButton.IsVisible = true;
-
-        // await Dispatcher.DispatchAsync(() =>
-        // {
-        //     new Animation
-        //     {
-        //         { 0, 1, new Animation(v => FlexLayout.SetGrow(UrlEntryBorder, (float)v), 1, 0, Easing.CubicInOut) },
-        //         { 0, 1, new Animation(v => UrlEntryBorder.TranslationX = v, -HomeButton.Width, 0, Easing.CubicInOut) }
-        //     }.Commit(this, "ShrinkUrlEntry");
-        // });
     }
 
-    private void Carousel_OnCurrentItemChanged(object sender, CurrentItemChangedEventArgs e)
+    private void Tabs_SelectedTabChanged(object sender, EventArgs e)
     {
-        if (ShouldUpdateSelectedTab && !TabCollection.IsReordering && e.CurrentItem != null &&
-            (!TabCollection.SelectedTab?.Equals(e.CurrentItem) ?? false))
-            TabCollection.SelectedTab = (Tab)e.CurrentItem;
-    }
-
-    private void Carousel_OnScrolled(object sender, ItemsViewScrolledEventArgs e)
-    {
-        if (e.CenterItemIndex < 0 || TabCollection.SelectedTab == null)
-            return;
-
-        var itemAtIndex = TabCollection.Tabs[e.CenterItemIndex];
-        if (ShouldUpdateSelectedTab && !TabCollection.SelectedTab.Equals(itemAtIndex))
-            TabCollection.SelectedTab = itemAtIndex;
-    }
-
-    private void Tabs_OnReorderingChanged(object sender, EventArgs e)
-    {
-#if ANDROID
-        var view = (Carousel.Handler as CarouselViewHandler)?.PlatformView;
-        view?.SuppressLayout(TabCollection.IsReordering);
-
-        if (!TabCollection.IsReordering)
-        {
-            // done re-ordering
-            Carousel.CurrentItem = TabCollection.SelectedTab;
-            CurrentTabViewTemplate = (DataTemplate)Resources["TabViewTemplate"];
-            Tabs = TabCollection.Tabs;
-            Carousel.FadeTo(1);
-        }
-        else
-        {
-            // currently re-ordering
-            Carousel.FadeTo(0);
-            Carousel.CurrentItem = null;
-            CurrentTabViewTemplate = null;
-            Tabs = null;
-        }
-#endif
+        IsNavBarVisible = true;
+        if (UrlEntry.IsFocused)
+            UrlEntry.Unfocus();
     }
 }

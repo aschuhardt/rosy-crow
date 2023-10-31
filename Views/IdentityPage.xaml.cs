@@ -1,20 +1,11 @@
 using System.Collections.ObjectModel;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Text.RegularExpressions;
 using System.Windows.Input;
-using Android.App;
-using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using Microsoft.Extensions.Logging;
-using Opal.Authentication;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 using RosyCrow.Models;
 using RosyCrow.Resources.Localization;
-using RosyCrow.Services.Fingerprint;
-using RosyCrow.Services.Fingerprint.Abstractions;
 using RosyCrow.Services.Fingerprint.Platforms.Android.Utils;
 using RosyCrow.Services.Identity;
 
@@ -25,23 +16,21 @@ namespace RosyCrow.Views;
 public partial class IdentityPage : ContentPage
 {
     private readonly IBrowsingDatabase _browsingDatabase;
-    private readonly IFingerprint _fingerprint;
     private readonly IIdentityService _identityService;
-    private readonly ISettingsDatabase _settingsDatabase;
     private readonly ILogger<IdentityPage> _logger;
+    private readonly ISettingsDatabase _settingsDatabase;
 
     private ICommand _delete;
+    private ICommand _export;
     private ICommand _generateNew;
     private ObservableCollection<Identity> _identities;
-    private ICommand _toggleActive;
     private ICommand _import;
-    private ICommand _export;
+    private ICommand _toggleActive;
 
-    public IdentityPage(IBrowsingDatabase browsingDatabase, IFingerprint fingerprint,
+    public IdentityPage(IBrowsingDatabase browsingDatabase,
         IIdentityService identityService, ISettingsDatabase settingsDatabase, ILogger<IdentityPage> logger)
     {
         _browsingDatabase = browsingDatabase;
-        _fingerprint = fingerprint;
         _identityService = identityService;
         _settingsDatabase = settingsDatabase;
         _logger = logger;
@@ -63,6 +52,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _identities)) return;
+
             _identities = value;
             OnPropertyChanged();
         }
@@ -74,6 +64,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _generateNew)) return;
+
             _generateNew = value;
             OnPropertyChanged();
         }
@@ -85,6 +76,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _delete)) return;
+
             _delete = value;
             OnPropertyChanged();
         }
@@ -96,6 +88,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _toggleActive)) return;
+
             _toggleActive = value;
             OnPropertyChanged();
         }
@@ -107,6 +100,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _import)) return;
+
             _import = value;
             OnPropertyChanged();
         }
@@ -118,6 +112,7 @@ public partial class IdentityPage : ContentPage
         set
         {
             if (Equals(value, _export)) return;
+
             _export = value;
             OnPropertyChanged();
         }
@@ -135,18 +130,18 @@ public partial class IdentityPage : ContentPage
             {
                 ClearIdentityActiveIndicator();
                 _identityService.ClearActiveCertificate();
-                _logger.LogInformation("Deactivated identity {ID} ({Name})", identity.Id, identity.Name);
+                _logger.LogInformation(@"Deactivated identity {ID} ({Name})", identity.Id, identity.Name);
             }
             else
             {
                 SetIdentityActiveIndicator(id);
                 await _identityService.Activate(identity);
-                _logger.LogInformation("Activated identity {ID} ({Name})", identity.Id, identity.Name);
+                _logger.LogInformation(@"Activated identity {ID} ({Name})", identity.Id, identity.Name);
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while toggling the active status of identity {ID}", id);
+            _logger.LogError(e, @"Exception thrown while toggling the active status of identity {ID}", id);
         }
     }
 
@@ -170,8 +165,10 @@ public partial class IdentityPage : ContentPage
             if (identity == null)
                 return;
 
-            if (!await DisplayAlert(Text.IdentityPage_DeleteKey_Delete_Identity, Text.IdentityPage_DeleteKey_Confirm,
-                    Text.Global_Yes, Text.Global_No))
+            if (!await DisplayAlert(Text.IdentityPage_DeleteKey_Delete_Identity,
+                    Text.IdentityPage_DeleteKey_Confirm,
+                    Text.Global_Yes,
+                    Text.Global_No))
                 return;
 
             if (string.IsNullOrEmpty(identity.EncryptedPassword) || new CryptoObjectHelper(identity.SemanticKey).Delete())
@@ -182,22 +179,25 @@ public partial class IdentityPage : ContentPage
                 await Toast.Make(Text.IdentityPage_DeleteKey_Identity_deleted).Show();
             }
             else
+            {
                 await Toast.Make(Text.IdentityPage_DeleteKey_Failed_to_delete_identity).Show();
+            }
 
-            _logger.LogInformation("Deleted identity {ID} ({Name})", identity.Id, identity.Name);
+            _logger.LogInformation(@"Deleted identity {ID} ({Name})", identity.Id, identity.Name);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Exception thrown while deleting identity {ID}", id);
+            _logger.LogError(e, @"Exception thrown while deleting identity {ID}", id);
         }
     }
 
     private async Task TryOpeningExportKeyPage(int id)
     {
         var identity = _browsingDatabase.Identities.FirstOrDefault(i => i.Id == id);
+
         if (identity == null)
         {
-            await Toast.Make("Cannot export this identity").Show();
+            await Toast.Make(Text.IdentityPage_TryOpeningExportKeyPage_Cannot_export_this_identity).Show();
             return;
         }
 
@@ -207,7 +207,9 @@ public partial class IdentityPage : ContentPage
     private async Task<bool> PresentProtectionPrompt()
     {
         return await DisplayAlert(Text.IdentityPage_GenerateNewKey_Generate_Identity,
-            Text.IdentityPage_GenerateNewKey_Secure, Text.Global_Yes, Text.Global_No);
+            Text.IdentityPage_GenerateNewKey_Secure,
+            Text.Global_Yes,
+            Text.Global_No);
     }
 
     private async Task GenerateNewKey()
@@ -222,11 +224,11 @@ public partial class IdentityPage : ContentPage
 
             if (identity == null)
             {
-                _logger.LogInformation("No new identity was generated");
+                _logger.LogInformation(@"No new identity was generated");
                 return;
             }
 
-            _logger.LogInformation("Saved the new identity named {Name}", identity.Name);
+            _logger.LogInformation(@"Saved the new identity named {Name}", identity.Name);
         }
     }
 

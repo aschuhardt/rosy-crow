@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.Globalization;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
 
@@ -20,6 +21,7 @@ public class HomeButtonImageConverter : IValueConverter
         _imageSourceConverter = new ImageSourceConverter();
     }
 
+    [Localizable(false)]
     public object Convert(object values, Type targetType, object parameter, CultureInfo culture)
     {
         var isHome = false;

@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RosyCrow.Extensions;
 using RosyCrow.Models.Serialization;
+using RosyCrow.Resources.Localization;
 using RosyCrow.Views;
 using Tab = RosyCrow.Models.Tab;
 
@@ -37,7 +38,10 @@ public partial class App : Application
 
                 if (tabs?.Any() ?? false)
                 {
-                    if (!await page.DisplayAlertOnMainThread("Import Tabs", $"Do you want to import {tabs.Length} tabs?", "Yes", "No"))
+                    if (!await page.DisplayAlertOnMainThread(Text.App_HandleImportTabsIntent_Import_Tabs,
+                            string.Format(Text.App_HandleImportTabsIntent_Do_you_want_to_import__0__tabs_, tabs.Length),
+                            Text.App_HandleImportTabsIntent_Yes,
+                            Text.App_HandleImportTabsIntent_No))
                         return;
 
                     await page.TabCollection.ImportTabs(tabs.Select(t => new Tab
@@ -48,23 +52,23 @@ public partial class App : Application
                 }
                 else
                 {
-                    page.ShowToast("The file contains no tabs", ToastDuration.Short);
+                    page.ShowToast(Text.App_HandleImportTabsIntent_The_file_contains_no_tabs, ToastDuration.Short);
                 }
             }
             catch (JsonException)
             {
-                page.ShowToast("The file is formatted incorrectly", ToastDuration.Long);
+                page.ShowToast(Text.App_HandleImportTabsIntent_The_file_is_formatted_incorrectly, ToastDuration.Long);
                 throw;
             }
             catch (Exception)
             {
-                page.ShowToast("No tabs were imported because something went wrong", ToastDuration.Long);
+                page.ShowToast(Text.App_HandleImportTabsIntent_No_tabs_were_imported_because_something_went_wrong, ToastDuration.Long);
                 throw;
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Could not handle tab import intent");
+            _logger.LogError(e, @"Could not handle tab import intent");
         }
         finally
         {
@@ -76,9 +80,9 @@ public partial class App : Application
     {
         try
         {
-            _logger.LogInformation("Handling intent to navigate to {URL}", uri);
+            _logger.LogInformation(@"Handling intent to navigate to {URL}", uri);
 
-            if (!string.IsNullOrWhiteSpace(uri) && (MainPage as NavigationPage)?.RootPage is MainPage page)
+            if (!string.IsNullOrWhiteSpace(uri) && MainPage is NavigationPage { RootPage: MainPage page })
             {
                 try
                 {
@@ -94,14 +98,14 @@ public partial class App : Application
                 }
                 catch (Exception)
                 {
-                    page.ShowToast("Something went wrong, so the link could not be opened", ToastDuration.Long);
+                    page.ShowToast(Text.App_HandleNavigationIntent_Something_went_wrong__so_the_link_could_not_be_opened, ToastDuration.Long);
                     throw;
                 }
             }
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Could not handle navigation intent for {URL}", uri);
+            _logger.LogError(e, @"Could not handle navigation intent for {URL}", uri);
         }
     }
 }

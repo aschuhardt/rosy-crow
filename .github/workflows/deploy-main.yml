@@ -102,6 +102,7 @@ jobs:
       run: |
         export VERSION_CODE=$(aapt dump badging fdroid/repo/app.rosy_crow-Signed_${{ needs.read_version.outputs.version }}.apk | sed -E -e "s/.*versionCode='([0-9]+)'.*/\1/g" | head -n 1)
         echo "Version: ${{ needs.read_version.outputs.version }} VersionCode: $VERSION_CODE"
+        echo "" >> fdroid/metadata/app.rosy_crow.yml
         echo "CurrentVersion: ${{ needs.read_version.outputs.version }}" >> fdroid/metadata/app.rosy_crow.yml
         echo "CurrentVersionCode: $VERSION_CODE" >> fdroid/metadata/app.rosy_crow.yml
     - name: Update F-Droid Index

@@ -191,7 +191,6 @@ public partial class TabCollection : ContentView
     {
         tab.ParentPage = ParentPage;
         tab.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
-        tab.BookmarkChanged += BookmarkChanged;
         tab.InitializedByTabCollection = true;
     }
 

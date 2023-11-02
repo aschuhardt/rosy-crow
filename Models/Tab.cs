@@ -247,7 +247,6 @@ public partial class Tab : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler PropertyChanged;
     public event EventHandler<UrlEventArgs> OpeningUrlInNewTab;
-    public event EventHandler BookmarkChanged;
 
     protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
     {
@@ -262,11 +261,6 @@ public partial class Tab : INotifyPropertyChanged
         field = value;
         OnPropertyChanged(propertyName);
         return true;
-    }
-
-    public void SetLocationWithoutLoading(Uri location)
-    {
-        _location = location;
     }
 
     public override int GetHashCode()
@@ -290,8 +284,8 @@ public partial class Tab : INotifyPropertyChanged
         OpeningUrlInNewTab?.Invoke(this, e);
     }
 
-    public virtual void OnBookmarkChanged()
+    public virtual void OnLocationChanged()
     {
-        BookmarkChanged?.Invoke(this, EventArgs.Empty);
+        OnPropertyChanged(nameof(Location));
     }
 }

@@ -153,7 +153,7 @@ public partial class BrowserTab : ContentView
                     new ActionMenuClickHandler(async () =>
                     {
                         _browsingDatabase.Bookmarks.Remove(bookmark);
-                        tab.OnBookmarkChanged();
+                        tab.OnLocationChanged();
                         await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_removed).Show();
                     }));
             }
@@ -164,7 +164,7 @@ public partial class BrowserTab : ContentView
                     {
                         bookmark = new Bookmark { Url = tab.Location.ToString(), Title = tab.Title };
                         _browsingDatabase.Bookmarks.Add(bookmark);
-                        tab.OnBookmarkChanged();
+                        tab.OnLocationChanged();
                         await Toast.Make(Text.MainPage_TryToggleBookmarked_Bookmark_added).Show();
                     }));
             }

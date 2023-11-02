@@ -689,4 +689,7 @@ Try again after you've granted the app permission to do so.</value>
   <data name="SettingsPage_ExportErrorLogArchive_OK" xml:space="preserve">
     <value>OK</value>
   </data>
+  <data name="MainPage_TrySetHomeUrl_Home_URL_cleared" xml:space="preserve">
+    <value>Home URL cleared</value>
+  </data>
 </root>

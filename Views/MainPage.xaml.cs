@@ -638,13 +638,22 @@ public partial class MainPage : ContentPage
 
         try
         {
-            _settingsDatabase.HomeUrl = CurrentTab.Location.ToString();
+            var currentHomeUrl = _settingsDatabase.HomeUrl;
 
-            _logger.LogInformation(@"Home URI set to {URI}", _settingsDatabase.HomeUrl);
+            if (!string.IsNullOrWhiteSpace(currentHomeUrl) && CurrentTab.Location.AreGeminiUrlsEqual(currentHomeUrl))
+            {
+                _settingsDatabase.HomeUrl = null;
+                _logger.LogInformation(@"Home URI cleared");
+                this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_URL_cleared, ToastDuration.Short);
+            }
+            else
+            {
+                _settingsDatabase.HomeUrl = CurrentTab.Location.ToString();
+                _logger.LogInformation(@"Home URI set to {URI}", _settingsDatabase.HomeUrl);
+                this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
+            }
 
-            CurrentTab.OnBookmarkChanged(); // force buttons to update
-
-            this.ShowToast(Text.MainPage_TrySetHomeUrl_Home_set, ToastDuration.Short);
+            CurrentTab.OnLocationChanged(); // force buttons to update
         }
         catch (Exception e)
         {
@@ -698,7 +707,7 @@ public partial class MainPage : ContentPage
             if (_browsingDatabase.TryGetBookmark(CurrentTab.Location, out var bookmark))
             {
                 _browsingDatabase.Bookmarks.Remove(bookmark);
-                CurrentTab.OnBookmarkChanged(); // force buttons to update
+                CurrentTab.OnLocationChanged(); // force buttons to update
 
                 _logger.LogInformation(@"Removing bookmarked location {URI}", bookmark.Url);
 
@@ -706,15 +715,15 @@ public partial class MainPage : ContentPage
             }
             else
             {
-                _browsingDatabase.Bookmarks.Add(new Bookmark
+                bookmark = new Bookmark
                 {
                     Title = CurrentTab.Title ?? CurrentTab.Location.Segments.LastOrDefault() ?? CurrentTab.Location.Host,
                     Url = CurrentTab.Location.ToString()
-                });
+                };
 
-                CurrentTab.OnBookmarkChanged(); // force buttons to update
-
+                _browsingDatabase.Bookmarks.Add(bookmark);
                 _logger.LogInformation(@"Set bookmarked location {URI}", bookmark.Url);
+                CurrentTab.OnLocationChanged(); // force buttons to update
 
                 this.ShowToast(Text.MainPage_TryToggleBookmarked_Bookmark_added, ToastDuration.Short);
             }

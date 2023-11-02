@@ -1209,6 +1209,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Home URL cleared.
+        /// </summary>
+        internal static string MainPage_TrySetHomeUrl_Home_URL_cleared {
+            get {
+                return ResourceManager.GetString("MainPage_TrySetHomeUrl_Home_URL_cleared", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Bookmark added.
         /// </summary>
         internal static string MainPage_TryToggleBookmarked_Bookmark_added {

@@ -577,13 +577,19 @@ public partial class BrowserView : ContentView
 
     private async void PageWebView_OnNavigating(object sender, WebNavigatingEventArgs e)
     {
+        // don't ever let the default navigation behavior happen
+        e.Cancel = true;
+
         var uri = e.Url.ToUri();
         if (!uri.IsAbsoluteUri || uri.Scheme is Constants.GeminiScheme or Constants.TitanScheme or Constants.InternalScheme)
             _tab.Location = uri;
-        else
-            await Launcher.Default.OpenAsync(uri);
-
-        e.Cancel = true;
+        else if (!await Launcher.Default.TryOpenAsync(uri))
+        {
+            await _tab.ParentPage.DisplayAlertOnMainThread(
+                Text.BrowserView_PageWebView_OnNavigating_Cannot_Open_URL, 
+                string.Format(Text.BrowserView_PageWebView_OnNavigating_No_app_is_configured_to_open__0__links_, uri.Scheme),
+                Text.BrowserView_PageWebView_OnNavigating_OK);
+        }
     }
 
     protected virtual void OnFindNext()

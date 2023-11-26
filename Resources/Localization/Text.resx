@@ -692,4 +692,13 @@ Try again after you've granted the app permission to do so.</value>
   <data name="MainPage_TrySetHomeUrl_Home_URL_cleared" xml:space="preserve">
     <value>Home URL cleared</value>
   </data>
+  <data name="BrowserView_PageWebView_OnNavigating_Cannot_Open_URL" xml:space="preserve">
+    <value>Cannot Open URL</value>
+  </data>
+  <data name="BrowserView_PageWebView_OnNavigating_No_app_is_configured_to_open__0__links_" xml:space="preserve">
+    <value>No app is configured to open {0} links.</value>
+  </data>
+  <data name="BrowserView_PageWebView_OnNavigating_OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

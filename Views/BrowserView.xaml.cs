@@ -585,7 +585,7 @@ public partial class BrowserView : ContentView
         var uri = e.Url.ToUri();
         if (!uri.IsAbsoluteUri || uri.Scheme is Constants.GeminiScheme or Constants.TitanScheme or Constants.InternalScheme)
             _tab.Location = uri;
-        else if (!await Launcher.Default.TryOpenAsync(uri))
+        else if (!await Browser.Default.OpenAsync(uri))
         {
             await _tab.ParentPage.DisplayAlertOnMainThread(
                 Text.BrowserView_PageWebView_OnNavigating_Cannot_Open_URL, 

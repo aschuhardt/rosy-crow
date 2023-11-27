@@ -614,13 +614,15 @@ public partial class BrowserView : ContentView
     }
 
 #if ANDROID
-    private void BuildContextMenu(IMenu menu, WebView view)
+    private void BuildContextMenu(IContextMenu menu, WebView view)
     {
         var hitTest = view.GetHitTestResult();
 
         if (hitTest.Type is HitTestResult.AnchorType or HitTestResult.SrcAnchorType or HitTestResult.SrcImageAnchorType &&
             !string.IsNullOrWhiteSpace(hitTest.Extra))
         {
+            menu.SetHeaderTitle(hitTest.Extra.ToUri().ToString());
+
             menu.Add(Text.BrowserView_BuildContextMenu_Copy_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Clipboard.Default.SetTextAsync(uri)));

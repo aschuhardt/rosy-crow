@@ -10,6 +10,22 @@
         }
     </style>
     
+  <h4>Version 1.4.3 - November 27th, 2023</h4>
+  <ul>
+    <li>Visually annotate links with non-Gemini URLs when the link URL is not visible
+      <ul>
+        <li>This can be disabled in Settings</li>
+      </ul>
+    </li>
+    <li>Link context menus now show the link's URL</li>
+    <li>Fixed an issue causing the selected tab to stutter when swiping between tabs</li>
+    <li>Rosy Crow will no longer attempt to load each tab's page on startup
+      <ul>
+        <li>Page contents will be fetched for the first time only once the tab has been selected</li>
+        <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/41">#41</a> This makes it so that multiple tabs won't all spam overlapping alerts on startup</li>
+      </ul>
+    </li>
+  </ul>
   <h4>Version 1.4.2 - November 26th, 2023</h4>
   <ul>
     <li><a class="tracker-id" href="gemini://bbs.geminispace.org/s/Rosy-Crow-Issues/36">#36</a> Modified the swipe-style tab navigation so that it doesn't interfere with horizontal scrolling. <b>Swipe left or right on the navigation bar to navigate between tabs.</b></li>
@@ -22,12 +38,13 @@
   <ul>
     <li>Tabs will now appear along the bottom of the screen</li>
     <li>Swiping left and right in the app will navigate through the open tabs</li>
-    <li>A number of tab-related features can be accessed by long-pressing on a tab</li>
-    <ul>
-      <li>Tab icons can be manually set or fetched from the capsule's favicon.txt file if one exists</li>
-      <li>Tabs can be imported or exported as JSON files</li>
-      <li>Tabs can be visually rearranged</li>
-    </ul>
+    <li>A number of tab-related features can be accessed by long-pressing on a tab
+      <ul>
+        <li>Tab icons can be manually set or fetched from the capsule's favicon.txt file if one exists</li>
+        <li>Tabs can be imported or exported as JSON files</li>
+        <li>Tabs can be visually rearranged</li>
+      </ul>
+    </li>
     <li>Tabs can be disabled in the Settings menu</li>
     <li>Swipe-style tab navigation can also disabled in the Settings menu</li>
   </ul>

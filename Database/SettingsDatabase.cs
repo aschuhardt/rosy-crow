@@ -34,6 +34,7 @@ internal class SettingsDatabase : ISettingsDatabase
     private bool? _useCustomFontSize;
     private string _customCss;
     private bool? _useCustomCss;
+    private bool? _annotateLinkScheme;
 
     public SettingsDatabase(ILogger<SettingsDatabase> logger, SQLiteConnection database)
     {
@@ -312,6 +313,20 @@ internal class SettingsDatabase : ISettingsDatabase
         set
         {
             if (SetField(ref _useCustomCss, value))
+                SetBoolValue(value);
+        }
+    }
+
+    public bool AnnotateLinkScheme
+    {
+        get
+        {
+            _annotateLinkScheme ??= GetBoolValue(true);
+            return _annotateLinkScheme.GetValueOrDefault();
+        }
+        set
+        {
+            if (SetField(ref _annotateLinkScheme, value))
                 SetBoolValue(value);
         }
     }

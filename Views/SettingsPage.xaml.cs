@@ -335,6 +335,19 @@ public partial class SettingsPage : ContentPage
         }
     }
 
+    public bool AnnotateLinkScheme
+    {
+        get => _settingsDatabase?.AnnotateLinkScheme ?? false;
+        set
+        {
+            if (value == _settingsDatabase.AnnotateLinkScheme)
+                return;
+
+            _settingsDatabase.AnnotateLinkScheme = value;
+            OnPropertyChanged();
+        }
+    }
+
     private async void SettingChanged(object sender, PropertyChangedEventArgs e)
     {
         switch (e.PropertyName)

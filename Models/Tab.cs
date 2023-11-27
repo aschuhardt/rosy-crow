@@ -29,6 +29,7 @@ public partial class Tab : INotifyPropertyChanged
     private bool _selected;
     private string _title;
     private Stack<Uri> _recentHistory;
+    private ICommand _afterSelected;
 
     [GeneratedRegex("([^\\p{P}\\p{Z}\\p{Cc}\\p{Cf}\\p{Co}\\p{Cn}]){1,2}", RegexOptions.CultureInvariant)]
     private static partial Regex DefaultLabelPattern();
@@ -86,6 +87,13 @@ public partial class Tab : INotifyPropertyChanged
     {
         get => _load;
         set => SetField(ref _load, value);
+    }
+
+    [Ignore]
+    public ICommand AfterSelected
+    {
+        get => _afterSelected;
+        set => SetField(ref _afterSelected, value);
     }
 
     [Ignore]

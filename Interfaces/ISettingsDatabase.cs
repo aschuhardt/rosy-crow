@@ -25,4 +25,5 @@ public interface ISettingsDatabase : INotifyPropertyChanged
     int CustomFontSizeH2 { get; set; }
     int CustomFontSizeH3 { get; set; }
     bool UseCustomCss { get; set; }
+    bool AnnotateLinkScheme { get; set; }
 }

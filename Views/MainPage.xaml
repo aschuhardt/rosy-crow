@@ -28,7 +28,8 @@
             AbsoluteLayout.LayoutFlags="All" Loop="False"
             ItemsSource="{Binding Tabs}"
             ItemTemplate="{Binding CurrentTabViewTemplate}"
-            CurrentItem="{Binding CurrentTab, Mode=TwoWay}"/>
+            CurrentItem="{Binding CurrentTab, Mode=TwoWay}"
+            IsSwipeEnabled="False" />
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"
             AbsoluteLayout.LayoutBounds="0,48,0.98,AutoSize" AbsoluteLayout.LayoutFlags="WidthProportional">
@@ -61,6 +62,9 @@
             <VerticalStackLayout.GestureRecognizers>
                 <SwipeGestureRecognizer x:Name="SwipeDownRecognizer" Direction="Down" Command="{Binding ExpandMenu}" />
                 <SwipeGestureRecognizer x:Name="SwipeUpRecognizer" Direction="Up" Command="{Binding HideMenu}" />
+                <SwipeGestureRecognizer x:Name="SwipeRightRecognizer" Direction="Right"
+                                        Command="{Binding NavigateLeft}" />
+                <SwipeGestureRecognizer x:Name="SwipeLeftRecognizer" Direction="Left" Command="{Binding NavigateRight}" />
             </VerticalStackLayout.GestureRecognizers>
             <Grid Padding="0,2,0,0" x:Name="NavigationGrid" ColumnDefinitions="Auto,*,Auto,Auto,Auto">
                 <ImageButton
@@ -157,6 +161,6 @@
             VerticalOptions="End"
             SelectedTabChanged="Tabs_SelectedTabChanged"
             ZIndex="10"
-            IsVisible="{Binding TabsEnabled}"/>
+            IsVisible="{Binding TabsEnabled}" />
     </AbsoluteLayout>
 </ContentPage>

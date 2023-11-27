@@ -18,6 +18,7 @@ internal class IdentityService : IIdentityService
     private readonly IFingerprint _fingerprint;
     private readonly ILogger<IdentityService> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
+    private bool _unlockingIdentity = false;
 
     public IdentityService(IFingerprint fingerprint, ISettingsDatabase settingsDatabase,
         IBrowsingDatabase browsingDatabase, ILogger<IdentityService> logger)
@@ -125,12 +126,25 @@ internal class IdentityService : IIdentityService
     {
         try
         {
+            // don't attempt to load the identity we're already doing so
+            if (_unlockingIdentity)
+                return;
+
+            // the identity has already been loaded
+            if (ActiveCertificate != null)
+                return;
+
+            _unlockingIdentity = true;
             _settingsDatabase.ActiveIdentityId = identity.Id;
             ActiveCertificate = await LoadActiveCertificate();
         }
         catch (Exception e)
         {
             _logger.LogError(e, @"Exception thrown while activating identity {ID} ({Name})", identity.Id, identity.Name);
+        }
+        finally
+        {
+            _unlockingIdentity = false;
         }
     }
 

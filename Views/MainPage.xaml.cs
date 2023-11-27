@@ -6,7 +6,6 @@ using Android.Views;
 using CommunityToolkit.Maui.Alerts;
 using CommunityToolkit.Maui.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Controls.Handlers.Items;
 using Microsoft.Maui.Handlers;
 using RosyCrow.Extensions;
 using RosyCrow.Interfaces;
@@ -32,7 +31,6 @@ public partial class MainPage : ContentPage
     private readonly IBrowsingDatabase _browsingDatabase;
     private readonly ILogger<MainPage> _logger;
     private readonly ISettingsDatabase _settingsDatabase;
-    private readonly IDispatcherTimer _swipeTimer;
 
     private ICommand _expandMenu;
     private ICommand _findInPage;
@@ -57,6 +55,8 @@ public partial class MainPage : ContentPage
     private ICommand _toggleBookmarked;
     private ICommand _toggleMenuExpanded;
     private bool _whatsNewShown;
+    private ICommand _navigateLeft;
+    private ICommand _navigateRight;
 
     public MainPage(ISettingsDatabase settingsDatabase, IBrowsingDatabase browsingDatabase, ILogger<MainPage> logger)
     {
@@ -67,24 +67,16 @@ public partial class MainPage : ContentPage
         _settingsDatabase.PropertyChanged += SettingsChanged;
         TabsEnabled = _settingsDatabase.TabsEnabled;
 
-        _swipeTimer = Dispatcher.CreateTimer();
-        _swipeTimer.Interval = TimeSpan.FromMilliseconds(500);
-        _swipeTimer.IsRepeating = false;
-        _swipeTimer.Tick += (_, _) =>
-        {
-            if (Carousel != null)
-                Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
-        };
-
         InitializeComponent();
 
         BindingContext = this;
 
-        Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         LoadEnteredUrl = new Command<string>(async url => await TryLoadEnteredUrl(url));
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
+        NavigateLeft = new Command(() => Carousel.Position--, () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position > 0);
+        NavigateRight = new Command(() => Carousel.Position++, () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position < Tabs.Count - 1);
         LoadHomeUrl = new Command(TryLoadHomeUrl);
         SetHomeUrl = new Command(TrySetHomeUrl);
         ToggleBookmarked = new Command(TryToggleBookmarked);
@@ -111,6 +103,12 @@ public partial class MainPage : ContentPage
         HomeButton.GestureRecognizers.Add(SwipeUpRecognizer);
         BookmarkButton.GestureRecognizers.Add(SwipeDownRecognizer);
         BookmarkButton.GestureRecognizers.Add(SwipeUpRecognizer);
+        UrlEntry.GestureRecognizers.Add(SwipeLeftRecognizer);
+        UrlEntry.GestureRecognizers.Add(SwipeRightRecognizer);
+        HomeButton.GestureRecognizers.Add(SwipeLeftRecognizer);
+        HomeButton.GestureRecognizers.Add(SwipeRightRecognizer);
+        BookmarkButton.GestureRecognizers.Add(SwipeLeftRecognizer);
+        BookmarkButton.GestureRecognizers.Add(SwipeRightRecognizer);
 
         foreach (var button in ExpandableMenu.Children.Where(v => v is Button).Cast<Button>())
         {
@@ -128,13 +126,6 @@ public partial class MainPage : ContentPage
                         IsNavBarVisible = false;
                     else if (args.ScrollY < args.OldScrollY - 20 || args.ScrollY == 0)
                         IsNavBarVisible = true;
-
-                    if (TabsEnabled)
-                    {
-                        Carousel.IsSwipeEnabled = false;
-                        _swipeTimer.Stop();
-                        _swipeTimer.Start();
-                    }
                 };
 #endif
             });
@@ -334,6 +325,30 @@ public partial class MainPage : ContentPage
         }
     }
 
+    public ICommand NavigateLeft
+    {
+        get => _navigateLeft;
+        set
+        {
+            if (Equals(value, _navigateLeft)) return;
+
+            _navigateLeft = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ICommand NavigateRight
+    {
+        get => _navigateRight;
+        set
+        {
+            if (Equals(value, _navigateRight)) return;
+
+            _navigateRight = value;
+            OnPropertyChanged();
+        }
+    }
+
     public ICommand LoadEnteredUrl
     {
         get => _loadEnteredUrl;
@@ -447,7 +462,6 @@ public partial class MainPage : ContentPage
         if (e.PropertyName is nameof(ISettingsDatabase.TabsEnabled) or nameof(ISettingsDatabase.SwipeEnabled))
         {
             TabsEnabled = _settingsDatabase.TabsEnabled;
-            Carousel.IsSwipeEnabled = TabsEnabled && _settingsDatabase.SwipeEnabled;
         }
     }
 

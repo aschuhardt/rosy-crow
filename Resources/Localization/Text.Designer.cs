@@ -367,6 +367,33 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot Open URL.
+        /// </summary>
+        internal static string BrowserView_PageWebView_OnNavigating_Cannot_Open_URL {
+            get {
+                return ResourceManager.GetString("BrowserView_PageWebView_OnNavigating_Cannot_Open_URL", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No app is configured to open {0} links..
+        /// </summary>
+        internal static string BrowserView_PageWebView_OnNavigating_No_app_is_configured_to_open__0__links_ {
+            get {
+                return ResourceManager.GetString("BrowserView_PageWebView_OnNavigating_No_app_is_configured_to_open__0__links_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string BrowserView_PageWebView_OnNavigating_OK {
+            get {
+                return ResourceManager.GetString("BrowserView_PageWebView_OnNavigating_OK", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cancel.
         /// </summary>
         internal static string BrowserView_RemoteCertificateInvalidCallback_Cancel {

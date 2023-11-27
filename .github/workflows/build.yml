@@ -7,8 +7,6 @@ on:
       - '**/*.md'
       - '**/*.gitignore'
       - '**/*.gitattributes'
-  pull_request:
-    branches: [ main, beta ]
   workflow_dispatch:
 permissions:
   contents: read

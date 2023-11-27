@@ -75,8 +75,8 @@ public partial class MainPage : ContentPage
         ToggleMenuExpanded = new Command(() => IsMenuExpanded = !IsMenuExpanded);
         HideMenu = new Command(() => IsMenuExpanded = false);
         ExpandMenu = new Command(() => IsMenuExpanded = true);
-        NavigateLeft = new Command(() => Carousel.Position--, () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position > 0);
-        NavigateRight = new Command(() => Carousel.Position++, () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position < Tabs.Count - 1);
+        NavigateLeft = new Command(() => Carousel.ScrollTo(Carousel.Position - 1), () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position > 0);
+        NavigateRight = new Command(() => Carousel.ScrollTo(Carousel.Position + 1), () => TabsEnabled && _settingsDatabase.SwipeEnabled && Carousel.Position < Tabs.Count - 1);
         LoadHomeUrl = new Command(TryLoadHomeUrl);
         SetHomeUrl = new Command(TrySetHomeUrl);
         ToggleBookmarked = new Command(TryToggleBookmarked);
@@ -845,5 +845,8 @@ public partial class MainPage : ContentPage
         IsNavBarVisible = true;
         if (UrlEntry.IsFocused)
             UrlEntry.Unfocus();
+
+        if (CurrentTab?.AfterSelected?.CanExecute(null) ?? false)
+            CurrentTab.AfterSelected.Execute(null);
     }
 }

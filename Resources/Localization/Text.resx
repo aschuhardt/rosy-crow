@@ -701,4 +701,7 @@ Try again after you've granted the app permission to do so.</value>
   <data name="BrowserView_PageWebView_OnNavigating_OK" xml:space="preserve">
     <value>OK</value>
   </data>
+  <data name="SettingsPage_Annotate_links" xml:space="preserve">
+    <value>Annotate non-Gemini links</value>
+  </data>
 </root>

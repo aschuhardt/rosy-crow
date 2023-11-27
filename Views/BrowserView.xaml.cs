@@ -40,6 +40,7 @@ public partial class BrowserView : ContentView
     private IPrintService _printService;
     private bool _resetFindNext;
     private Tab _tab;
+    private bool _hasEverLoaded;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -277,6 +278,7 @@ public partial class BrowserView : ContentView
             return;
 
         _tab.CanShowHostCertificate = false;
+        _hasEverLoaded = true;
 
         if (_tab.Location == null || _tab.Location.Scheme == Constants.InternalScheme)
         {
@@ -614,13 +616,15 @@ public partial class BrowserView : ContentView
     }
 
 #if ANDROID
-    private void BuildContextMenu(IMenu menu, WebView view)
+    private void BuildContextMenu(IContextMenu menu, WebView view)
     {
         var hitTest = view.GetHitTestResult();
 
         if (hitTest.Type is HitTestResult.AnchorType or HitTestResult.SrcAnchorType or HitTestResult.SrcImageAnchorType &&
             !string.IsNullOrWhiteSpace(hitTest.Extra))
         {
+            menu.SetHeaderTitle(hitTest.Extra.ToUri().ToString());
+
             menu.Add(Text.BrowserView_BuildContextMenu_Copy_URL)?.SetOnMenuItemClickListener(
                 new ActionMenuClickHandler<string>(hitTest.Extra,
                     async uri => await Clipboard.Default.SetTextAsync(uri)));
@@ -701,13 +705,17 @@ public partial class BrowserView : ContentView
             throw new InvalidOperationException();
 
         _tab = tab;
-        tab.Refresh = new Command(async () => await LoadPage(true));
+        tab.Refresh = new Command(async () => await LoadPage(true).ConfigureAwait(false));
         tab.FindNext = new Command(query => FindTextInPage((string)query));
         tab.Print = new Command(Print, () => _tab.CanPrint);
         tab.GoBack = new Command(GoBack, () => _tab.RecentHistory.TryPeek(out _));
         tab.ClearFind = new Command(ClearFindResults, () => HasFindNextQuery);
-        tab.Load = new Command(async () => await LoadPage(false, true), () => !_isLoading);
+        tab.Load = new Command(async () => await LoadPage(false, true).ConfigureAwait(false), () => !_isLoading && _tab.Selected);
         tab.Location = tab.Url.ToGeminiUri();
+
+        // After the tab has been selected AND its contents have never been loaded, then immediately force a load
+        // This is the preferable alternative to fetching every tab's page from the host at startup
+        tab.AfterSelected = new Command(async () => await LoadPage(false, true), () => !_hasEverLoaded);
     }
 
     private enum ResponseAction

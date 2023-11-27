@@ -342,12 +342,14 @@ internal class DocumentService : IDocumentService
             : RenderDefaultLinkLine(line);
     }
 
-    private static HtmlNode RenderDefaultLinkLine(LinkLine line)
+    private HtmlNode RenderDefaultLinkLine(LinkLine line)
     {
         var node = HtmlNode.CreateNode(
             $"<p><a href=\"{line.Uri}\">{HttpUtility.HtmlEncode(line.Text ?? line.Uri.ToString())}</a></p>");
 
-        if (string.IsNullOrWhiteSpace(line.Text) && !line.Uri.Scheme.Equals(Constants.GeminiScheme, StringComparison.OrdinalIgnoreCase))
+        if (_settingsDatabase.AnnotateLinkScheme &&
+            !string.IsNullOrWhiteSpace(line.Text) &&
+            !line.Uri.Scheme.Equals(Constants.GeminiScheme, StringComparison.OrdinalIgnoreCase))
         {
             node.PrependChild(HtmlNode.CreateNode($"<sup>({HttpUtility.HtmlEncode(line.Uri.Scheme.ToUpperInvariant())})&nbsp;</sup>"));
         }

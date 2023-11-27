@@ -1290,6 +1290,15 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Annotate non-Gemini links.
+        /// </summary>
+        internal static string SettingsPage_Annotate_links {
+            get {
+                return ResourceManager.GetString("SettingsPage_Annotate_links", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Body.
         /// </summary>
         internal static string SettingsPage_Body {

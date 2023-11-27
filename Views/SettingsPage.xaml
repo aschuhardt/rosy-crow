@@ -40,7 +40,7 @@
                 <Switch IsToggled="{Binding TabsEnabled}" Grid.Column="1" />
             </Grid>
             <Grid ColumnDefinitions="*,Auto">
-                <Label Text="Annotate non-Gemini links" Grid.Column="0" VerticalTextAlignment="Center" />
+                <Label Text="{x:Static localization:Text.SettingsPage_Annotate_links}" Grid.Column="0" VerticalTextAlignment="Center" />
                 <Switch IsToggled="{Binding AnnotateLinkScheme}" Grid.Column="1" />
             </Grid>
             <toolkit:Expander IsExpanded="{Binding TabsEnabled}">

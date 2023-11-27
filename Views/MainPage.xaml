@@ -11,7 +11,7 @@
              Loaded="MainPage_OnLoaded"
              Appearing="MainPage_OnAppearing"
              NavigationPage.HasNavigationBar="False"
-             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference TabCollection}, Mode=TwoWay}"
+             views:MainPage.CurrentTab="{Binding SelectedTab, Source={x:Reference TabCollection}, Mode=OneWay}"
              views:MainPage.CurrentTabViewTemplate="{DynamicResource TabViewTemplate}"
              views:MainPage.Tabs="{Binding Tabs, Source={x:Reference TabCollection}}">
     <ContentPage.Resources>
@@ -28,7 +28,7 @@
             AbsoluteLayout.LayoutFlags="All" Loop="False"
             ItemsSource="{Binding Tabs}"
             ItemTemplate="{Binding CurrentTabViewTemplate}"
-            CurrentItem="{Binding CurrentTab, Mode=TwoWay}"
+            CurrentItem="{Binding SelectedTab, Source={x:Reference TabCollection}, Mode=OneWayToSource}"
             IsSwipeEnabled="False" />
         <Grid
             x:Name="PullTab" ColumnDefinitions="*,Auto" IsVisible="{Binding PullTabVisible}"

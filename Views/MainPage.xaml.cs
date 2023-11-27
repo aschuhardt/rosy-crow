@@ -845,5 +845,8 @@ public partial class MainPage : ContentPage
         IsNavBarVisible = true;
         if (UrlEntry.IsFocused)
             UrlEntry.Unfocus();
+
+        if (CurrentTab?.AfterSelected?.CanExecute(null) ?? false)
+            CurrentTab.AfterSelected.Execute(null);
     }
 }

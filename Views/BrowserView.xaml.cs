@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Android.Content;
 using Android.Views;
 using Android.Webkit;
 using CommunityToolkit.Maui.Core;
@@ -583,14 +584,27 @@ public partial class BrowserView : ContentView
         e.Cancel = true;
 
         var uri = e.Url.ToUri();
+
         if (!uri.IsAbsoluteUri || uri.Scheme is Constants.GeminiScheme or Constants.TitanScheme or Constants.InternalScheme)
+        {
             _tab.Location = uri;
-        else if (!await Launcher.Default.TryOpenAsync(uri))
+            return;
+        }
+
+        try
+        {
+            await Browser.Default.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+        }
+        catch (ActivityNotFoundException)
         {
             await _tab.ParentPage.DisplayAlertOnMainThread(
-                Text.BrowserView_PageWebView_OnNavigating_Cannot_Open_URL, 
+                Text.BrowserView_PageWebView_OnNavigating_Cannot_Open_URL,
                 string.Format(Text.BrowserView_PageWebView_OnNavigating_No_app_is_configured_to_open__0__links_, uri.Scheme),
                 Text.BrowserView_PageWebView_OnNavigating_OK);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, @"Failed to open non-Gemini URL {URL}", uri);
         }
     }
 

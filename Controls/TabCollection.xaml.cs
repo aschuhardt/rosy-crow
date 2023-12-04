@@ -163,6 +163,7 @@ public partial class TabCollection : ContentView
     public event EventHandler BookmarkChanged;
     public event EventHandler SelectedTabChanged;
     public event EventHandler ReorderingChanged;
+    public event EventHandler ParentPageNeeded;
 
     public void SelectTab(Tab tab)
     {
@@ -189,6 +190,12 @@ public partial class TabCollection : ContentView
 
     private void SetupTab(Tab tab)
     {
+        // if the parent page hasn't been assigned yet, then have MainPage set it for us;
+        // this is necessary for the tab views to display prompts, etc. but this method is
+        // called too early in startup for the value to have been properly set yet
+        if (ParentPage == null)
+            OnParentPageNeeded();
+
         tab.ParentPage = ParentPage;
         tab.OpeningUrlInNewTab += (_, arg) => AddTab(arg.Uri);
         tab.InitializedByTabCollection = true;
@@ -595,5 +602,10 @@ public partial class TabCollection : ContentView
     protected virtual void OnReorderingChanged()
     {
         ReorderingChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    protected virtual void OnParentPageNeeded()
+    {
+        ParentPageNeeded?.Invoke(this, EventArgs.Empty);
     }
 }

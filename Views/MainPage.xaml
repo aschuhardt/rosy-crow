@@ -161,6 +161,7 @@
             VerticalOptions="End"
             SelectedTabChanged="Tabs_SelectedTabChanged"
             ZIndex="10"
-            IsVisible="{Binding TabsEnabled}" />
+            IsVisible="{Binding TabsEnabled}"
+            ParentPageNeeded="TabCollection_OnParentTabNeeded"/>
     </AbsoluteLayout>
 </ContentPage>

@@ -771,8 +771,6 @@ public partial class MainPage : ContentPage
         {
             AddMenuAnimations();
 
-            TabCollection.ParentPage = this;
-
             if (!TabCollection.Tabs.Any())
             {
                 if (!string.IsNullOrWhiteSpace(_settingsDatabase.LastVisitedUrl) && 
@@ -848,5 +846,10 @@ public partial class MainPage : ContentPage
 
         if (CurrentTab?.AfterSelected?.CanExecute(null) ?? false)
             CurrentTab.AfterSelected.Execute(null);
+    }
+
+    private void TabCollection_OnParentTabNeeded(object sender, EventArgs e)
+    {
+        TabCollection.ParentPage = this;
     }
 }

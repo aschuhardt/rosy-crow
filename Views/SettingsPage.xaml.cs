@@ -394,16 +394,17 @@ public partial class SettingsPage : ContentPage
         }
 
         FileSaverResult result;
-
         await using (var buffer = new MemoryStream())
         {
-            await using var gzip = new GZipStream(buffer, CompressionLevel.Optimal);
-            await TarFile.CreateFromDirectoryAsync(logsDir, gzip, false);
+            using (var archive = new ZipArchive(buffer, ZipArchiveMode.Create, true))
+            {
+                foreach (var logPath in Directory.GetFiles(logsDir))
+                    archive.CreateEntryFromFile(logPath, Path.GetFileName(logPath));
+            }
 
             buffer.Seek(0, SeekOrigin.Begin);
-            result = await FileSaver.Default.SaveAsync($@"rosycrow_logs_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.tar.gz",
-                buffer,
-                CancellationToken.None);
+            result = await FileSaver.Default.SaveAsync($@"rosycrow_logs_{DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()}.zip",
+                buffer, CancellationToken.None);
         }
 
         if (result.IsSuccessful)

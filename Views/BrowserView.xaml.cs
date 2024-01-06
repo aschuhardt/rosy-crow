@@ -336,7 +336,7 @@ public partial class BrowserView : ContentView
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(_tab.Input))
+                if (_tab.Input != null)
                 {
                     _logger.LogInformation(@"User provided input ""{Input}""", _tab.Input);
                     _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
@@ -381,8 +381,8 @@ public partial class BrowserView : ContentView
                 _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
-                if (string.IsNullOrEmpty(_tab.Input))
-                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+                if (_tab.Input == null)
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue (empty string is valid)
 
                 return ResponseAction.Retry;
             }
@@ -431,12 +431,11 @@ public partial class BrowserView : ContentView
 
                 _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
-                ;
 
-                if (string.IsNullOrEmpty(_tab.Input))
+                if (_tab.Input == null)
                 {
                     _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
-                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue (empty string is valid)
                 }
 
                 return ResponseAction.Retry;

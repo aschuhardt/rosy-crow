@@ -26,11 +26,11 @@ public class DiskCacheService : ICacheService
             _logger.LogInformation(@"{Count} cache buckets pruned upon initialization", prunedCount);
     }
 
-    public async Task<bool> TryRead(Uri uri, Stream destination)
+    public async Task<bool> TryRead(Uri uri, Stream destination, bool isImage)
     {
         try
         {
-            if (!TryFindCachedByUri(uri, out var path))
+            if (!TryFindCachedByUri(uri, isImage, out var path))
                 return false;
 
             _logger.LogDebug(@"Cached resource found at {Path}", path);
@@ -52,11 +52,11 @@ public class DiskCacheService : ICacheService
         }
     }
 
-    public async Task Write(Uri uri, Stream contents)
+    public async Task Write(Uri uri, Stream contents, bool isImage)
     {
         try
         {
-            var path = GetCurrentPathFromUri(uri);
+            var path = GetCurrentPathFromUri(uri, isImage);
 
             _logger.LogDebug(@"Cached page file path is {Path}", path);
 
@@ -114,15 +114,15 @@ public class DiskCacheService : ICacheService
         return FileSystem.CacheDirectory;
     }
 
-    private bool TryFindCachedByUri(Uri uri, out string path)
+    private bool TryFindCachedByUri(Uri uri, bool isImage, out string path)
     {
         // happy path: resource exists in the current hourly bucket
-        path = GetCurrentPathFromUri(uri);
+        path = GetCurrentPathFromUri(uri, isImage);
 
         if (File.Exists(path))
             return true;
 
-        var key = ComputeUriCachePath(uri);
+        var key = ComputeUriCachePath(uri, isImage);
         foreach (var bucket in Directory.GetDirectories(GetRootPath()))
         {
             path = Path.Combine(bucket, key);
@@ -130,7 +130,7 @@ public class DiskCacheService : ICacheService
             if (File.Exists(path))
             {
                 // move this file into the current bucket so we find it more quickly next time
-                var newPath = GetCurrentPathFromUri(uri);
+                var newPath = GetCurrentPathFromUri(uri, isImage);
 
                 var directory = Path.GetDirectoryName(newPath);
                 if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
@@ -151,9 +151,9 @@ public class DiskCacheService : ICacheService
         return false;
     }
 
-    private static string GetCurrentPathFromUri(Uri uri)
+    private static string GetCurrentPathFromUri(Uri uri, bool isImage)
     {
-        return Path.Combine(GetRootPath(), GetHourlyDirectoryName(), ComputeUriCachePath(uri));
+        return Path.Combine(GetRootPath(), GetHourlyDirectoryName(), ComputeUriCachePath(uri, isImage));
     }
 
     private static string ComputeCachePath(string bucket, string key)
@@ -163,9 +163,10 @@ public class DiskCacheService : ICacheService
             Convert.ToHexString(MD5.HashData(Encoding.Default.GetBytes(key)))[..12] + ".dat");
     }
 
-    private static string ComputeUriCachePath(Uri uri)
+    private static string ComputeUriCachePath(Uri uri, bool isImage)
     {
-        return ComputeCachePath(uri.Host.ToUpperInvariant(), uri.PathAndQuery);
+        var path = ComputeCachePath(uri.Host.ToUpperInvariant(), uri.PathAndQuery);
+        return isImage ? Path.Combine("images/", path) : path;
     }
 
     private static string GetHourlyDirectoryName()

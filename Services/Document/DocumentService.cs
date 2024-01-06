@@ -158,7 +158,7 @@ internal class DocumentService : IDocumentService
 
         // cache the page prior to injecting the stylesheet
         await using var pageBuffer = new MemoryStream(Encoding.UTF8.GetBytes(document.DocumentNode.OuterHtml));
-        await _cache.Write(gemtext.Uri, pageBuffer);
+        await _cache.Write(gemtext.Uri, pageBuffer, false);
 
 
         return new RenderedGemtextDocument { HtmlContents = document.DocumentNode.OuterHtml, Title = title };
@@ -246,7 +246,7 @@ internal class DocumentService : IDocumentService
         using var downsized = image.Downsize(256.0f, true);
 
         var output = new MemoryStream();
-        await downsized.SaveAsync(output);
+        await downsized.SaveAsync(output, ImageFormat.Jpeg, 0.75f);
 
         return output;
     }
@@ -263,7 +263,7 @@ internal class DocumentService : IDocumentService
         {
             var image = new MemoryStream();
 
-            if (await _cache.TryRead(uri, image))
+            if (await _cache.TryRead(uri, image, true))
             {
                 _logger.LogDebug(@"Loaded cached image originally from {URI}", uri);
                 return CreateInlineImageDataUrl(image);
@@ -308,7 +308,7 @@ internal class DocumentService : IDocumentService
                         }
 
                         image.Seek(0, SeekOrigin.Begin);
-                        await _cache.Write(uri, image);
+                        await _cache.Write(uri, image, true);
 
                         _logger.LogDebug(@"Loaded an inlined image from {URI} after {Attempt} attempt(s)", uri, i + 1);
 

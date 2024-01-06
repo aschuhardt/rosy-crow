@@ -131,7 +131,7 @@ internal class IdentityService : IIdentityService
                 return;
 
             // the identity has already been loaded
-            if (ActiveCertificate != null)
+            if (ActiveCertificate?.Thumbprint == identity.Hash)
                 return;
 
             _unlockingIdentity = true;

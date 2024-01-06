@@ -322,7 +322,7 @@ public partial class BrowserView : ContentView
                 {
                     var cached = new MemoryStream();
 
-                    if (await _cache.TryRead(_tab.Location, cached))
+                    if (await _cache.TryRead(_tab.Location, cached, false))
                     {
                         _logger.LogInformation(@"Loading a cached copy of the page");
 

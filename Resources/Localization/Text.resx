@@ -704,4 +704,7 @@ Try again after you've granted the app permission to do so.</value>
   <data name="SettingsPage_Annotate_links" xml:space="preserve">
     <value>Annotate non-Gemini links</value>
   </data>
+  <data name="BrowserView_HandleGeminiResponse_A_fatal_error_occurred_when_requesting_the_page___0_" xml:space="preserve">
+      <value>A fatal error occurred when requesting the page: {0}</value>
+  </data>
 </root>

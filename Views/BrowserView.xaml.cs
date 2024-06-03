@@ -448,6 +448,16 @@ public partial class BrowserView : ContentView
                     //
                     // Currently this only happens in the case of invalid or rejected remote
                     // certificates, where re-sending the request would not make sense
+
+                    if (_tab.ParentPage != null)
+                    {
+                        await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
+                            string.Format(Text.BrowserView_HandleGeminiResponse_A_fatal_error_occurred_when_requesting_the_page___0_, error.Message),
+                            Text.BrowserView_LoadPage_OK);
+                    }
+
+                    _logger.LogError(@"A fatal exception occurred when sending the request: {Message}", error.Message);
+
                     return ResponseAction.Finished;
                 }
 

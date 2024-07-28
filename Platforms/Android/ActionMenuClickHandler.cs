@@ -15,8 +15,6 @@ internal class ActionMenuClickHandler<T> : Object, IMenuItemOnMenuItemClickListe
         _action = action;
     }
 
-    public IntPtr Handle { get; }
-
     public bool OnMenuItemClick(IMenuItem item)
     {
         _action?.Invoke(_argument);
@@ -32,8 +30,6 @@ internal class ActionMenuClickHandler : Object, IMenuItemOnMenuItemClickListener
     {
         _action = action;
     }
-
-    public IntPtr Handle { get; }
 
     public bool OnMenuItemClick(IMenuItem item)
     {

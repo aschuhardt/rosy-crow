@@ -42,6 +42,8 @@ public partial class BrowserView : ContentView
     private bool _resetFindNext;
     private Tab _tab;
     private bool _hasEverLoaded;
+    private bool _newCertAccepted;
+    private bool _newCertRejected;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -72,25 +74,6 @@ public partial class BrowserView : ContentView
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
     }
 
-    public bool HasFindNextQuery
-    {
-        get => !string.IsNullOrEmpty(FindNextQuery);
-    }
-
-    public string FindNextQuery
-    {
-        get => _findNextQuery;
-        private set
-        {
-            if (value == _findNextQuery)
-                return;
-
-            _findNextQuery = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(HasFindNextQuery));
-        }
-    }
-
     private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
     {
         if (_tab.ParentPage == null)
@@ -109,7 +92,14 @@ public partial class BrowserView : ContentView
             Text.BrowserView_RemoteCertificateUnrecognizedCallback_No);
 
         if (arg.AcceptAndTrust)
-            _browsingDatabase.AcceptHostCertificate(arg.Host);
+        {
+            _browsingDatabase.RemoveHostCertificate(arg.Host);
+            _newCertAccepted = true;
+        }
+        else
+        {
+            _newCertRejected = true;
+        }
     }
 
     private async Task RemoteCertificateInvalidCallback(RemoteCertificateInvalidArgs arg)
@@ -189,17 +179,17 @@ public partial class BrowserView : ContentView
 
     public void ClearFindResults()
     {
-        FindNextQuery = null;
+        _tab.FindNextQuery = null;
         OnClearFindNext();
     }
 
     public void FindTextInPage(string query)
     {
         // if the query is different from the last time, then start the search over from the top of the page
-        if (query != FindNextQuery)
+        if (query != _tab.FindNextQuery)
             _resetFindNext = true;
 
-        FindNextQuery = query;
+        _tab.FindNextQuery = query;
 
         OnFindNext();
         _resetFindNext = false;
@@ -280,6 +270,8 @@ public partial class BrowserView : ContentView
 
         _tab.CanShowHostCertificate = false;
         _hasEverLoaded = true;
+        _newCertRejected = false;
+        _newCertAccepted = false;
 
         if (_tab.Location == null || _tab.Location.Scheme == Constants.InternalScheme)
         {
@@ -309,20 +301,20 @@ public partial class BrowserView : ContentView
 
         _tab.CanPrint = false;
 
-        if (HasFindNextQuery)
+        if (_tab.HasFindNextQuery)
             ClearFindResults();
 
         _logger.LogInformation(@"Navigating to {URI}", _tab.Location);
 
         try
         {
-            for (var attempts = 0; attempts < Constants.MaxRequestAttempts; attempts++)
+            for (var attempts = 0; attempts < Constants.MaxRequestAttempts || _newCertAccepted; attempts++)
             {
                 if (useCache && !triggeredByRefresh)
                 {
                     var cached = new MemoryStream();
 
-                    if (await _cache.TryRead(_tab.Location, cached))
+                    if (await _cache.TryRead(_tab.Location, cached, false))
                     {
                         _logger.LogInformation(@"Loading a cached copy of the page");
 
@@ -336,7 +328,7 @@ public partial class BrowserView : ContentView
                     }
                 }
 
-                if (!string.IsNullOrWhiteSpace(_tab.Input))
+                if (_tab.Input != null)
                 {
                     _logger.LogInformation(@"User provided input ""{Input}""", _tab.Input);
                     _tab.Location = new UriBuilder(_tab.Location) { Query = _tab.Input }.Uri;
@@ -353,6 +345,13 @@ public partial class BrowserView : ContentView
                 {
                     _logger.LogInformation(@"Request finished after {Attempts} attempt(s)", attempts + 1);
                     break;
+                }
+
+                if (_newCertAccepted)
+                {
+                    // the host's certificate changed and was accepted by the user; we should try the request again
+                    _newCertAccepted = false;
+                    continue;
                 }
             }
         }
@@ -381,8 +380,8 @@ public partial class BrowserView : ContentView
                 _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
 
-                if (string.IsNullOrEmpty(_tab.Input))
-                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+                if (_tab.Input == null)
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue (empty string is valid)
 
                 return ResponseAction.Retry;
             }
@@ -431,12 +430,11 @@ public partial class BrowserView : ContentView
 
                 _tab.Input = await _tab.ParentPage.DisplayPromptOnMainThread(Text.BrowserView_LoadPage_Input_Required,
                     inputRequired.Message);
-                ;
 
-                if (string.IsNullOrEmpty(_tab.Input))
+                if (_tab.Input == null)
                 {
                     _settingsDatabase.LastVisitedUrl = response.Uri.ToString();
-                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue
+                    return ResponseAction.Finished; // if no user-input was provided, then we cannot continue (empty string is valid)
                 }
 
                 return ResponseAction.Retry;
@@ -449,6 +447,15 @@ public partial class BrowserView : ContentView
                     //
                     // Currently this only happens in the case of invalid or rejected remote
                     // certificates, where re-sending the request would not make sense
+
+                    if (_tab.ParentPage != null && !_newCertRejected)
+                    {
+                        await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
+                            "The page could not be displayed due to a fatal error.", Text.BrowserView_LoadPage_OK);
+                    }
+
+                    _logger.LogError(@"A fatal exception occurred when sending the request: {Message}", error.Message);
+
                     return ResponseAction.Finished;
                 }
 
@@ -616,6 +623,7 @@ public partial class BrowserView : ContentView
     protected virtual void OnClearFindNext()
     {
         ClearMatches?.Invoke(this, EventArgs.Empty);
+        _tab.OnHasFindNextQueryChanged();
     }
 
     private string CreateTabLabel()
@@ -673,7 +681,7 @@ public partial class BrowserView : ContentView
         FindNext += (_, _) =>
         {
             if (_resetFindNext) // new query
-                webViewHandler.PlatformView.FindAllAsync(FindNextQuery);
+                webViewHandler.PlatformView.FindAllAsync(_tab.FindNextQuery);
             else // existing query; continue forward
                 webViewHandler.PlatformView.FindNext(true);
         };
@@ -686,7 +694,7 @@ public partial class BrowserView : ContentView
             if (count == 0)
             {
                 _tab.ParentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
-                FindNextQuery = null;
+                _tab.FindNextQuery = null;
             }
             else
             {
@@ -723,7 +731,7 @@ public partial class BrowserView : ContentView
         tab.FindNext = new Command(query => FindTextInPage((string)query));
         tab.Print = new Command(Print, () => _tab.CanPrint);
         tab.GoBack = new Command(GoBack, () => _tab.RecentHistory.TryPeek(out _));
-        tab.ClearFind = new Command(ClearFindResults, () => HasFindNextQuery);
+        tab.ClearFind = new Command(ClearFindResults, () => _tab.HasFindNextQuery);
         tab.Load = new Command(async () => await LoadPage(false, true).ConfigureAwait(false), () => !_isLoading && _tab.Selected);
         tab.Location = tab.Url.ToGeminiUri();
 

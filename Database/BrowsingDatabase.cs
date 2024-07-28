@@ -236,25 +236,23 @@ internal class BrowsingDatabase : IBrowsingDatabase
         return capsule != null;
     }
 
-    public void AcceptHostCertificate(string host)
+    public void RemoveHostCertificate(string host)
     {
         if (!TryGetHostCertificate(host, out var cert))
         {
-            _logger.LogWarning(@"Cannot accept a host certificate for {Host} that has not yet been stored", host);
+            _logger.LogWarning(@"Cannot removed stored certificate metadata for unknown host {Host}", host);
             return;
         }
 
-        _logger.LogDebug(@"Accepting new certificate for host {Host}", host);
-
-        cert.Accepted = true;
+        _logger.LogDebug(@"Removing certificate metadata for host {Host}", host);
 
         try
         {
-            _database.Update(cert);
+            _database.Delete(cert);
         }
         catch (Exception e)
         {
-            _logger.LogError(e, @"Exception thrown while accepting a new host certificate");
+            _logger.LogError(e, @"Exception thrown while removing a host certificate");
         }
     }
 

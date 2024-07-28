@@ -2,26 +2,26 @@
 <resources>
     <!-- Base application theme. -->
     <style name="Maui.MainTheme" parent="Theme.MaterialComponents.DayNight">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="appBarLayoutStyle">@style/ThemeOverlay.AppCompat.Dark.ActionBar</item>
-        <item name="bottomNavigationViewStyle">@style/Widget.Design.BottomNavigationView</item>
-        <item name="materialButtonStyle">@style/MauiMaterialButton</item>
-        <item name="checkboxStyle">@style/MauiCheckBox</item>
+        <item name="android:colorPrimary">@color/colorPrimary</item>
+        <item name="android:colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="android:colorAccent">@color/colorAccent</item>
+        <!--<item name="android:appBarLayoutStyle">@style/Base.Theme.MaterialComponents.Light.DarkActionBar</item>-->
+        <!--<item name="android:bottomNavigationViewStyle">@style/Widget.Design.BottomNavigationView</item>-->
+        <!--<item name="android:materialButtonStyle">@style/MauiMaterialButton</item>-->
+        <item name="android:checkboxStyle">@style/MauiCheckBox</item>
         <item name="android:textAllCaps">false</item>
     </style>
     <style name="Maui.MainTheme.NoActionBar" parent="Maui.MainTheme">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-        <item name="windowActionModeOverlay">true</item>
-        <item name="android:actionModeBackground">?attr/colorPrimary</item>
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionModeOverlay">true</item>
+        <item name="android:actionModeBackground">@color/colorPrimary</item>
         <item name="android:actionModeStyle">@style/ActionMode</item>
     </style>
 
     <style name="ActionMode">
-      <item name="android:background">?attr/colorPrimary</item>
-      <item name="android:height">?attr/actionBarSize</item>
+      <item name="android:background">@color/colorPrimary</item>
+      <item name="android:height">?android:attr/actionBarSize</item>
     </style>
   
     <!-- Splash theme -->

@@ -42,6 +42,8 @@ public partial class BrowserView : ContentView
     private bool _resetFindNext;
     private Tab _tab;
     private bool _hasEverLoaded;
+    private bool _newCertAccepted;
+    private bool _newCertRejected;
 
     public BrowserView()
         : this(MauiProgram.Services.GetRequiredService<IOpalClient>(),
@@ -109,7 +111,14 @@ public partial class BrowserView : ContentView
             Text.BrowserView_RemoteCertificateUnrecognizedCallback_No);
 
         if (arg.AcceptAndTrust)
-            _browsingDatabase.AcceptHostCertificate(arg.Host);
+        {
+            _browsingDatabase.RemoveHostCertificate(arg.Host);
+            _newCertAccepted = true;
+        }
+        else
+        {
+            _newCertRejected = true;
+        }
     }
 
     private async Task RemoteCertificateInvalidCallback(RemoteCertificateInvalidArgs arg)
@@ -280,6 +289,8 @@ public partial class BrowserView : ContentView
 
         _tab.CanShowHostCertificate = false;
         _hasEverLoaded = true;
+        _newCertRejected = false;
+        _newCertAccepted = false;
 
         if (_tab.Location == null || _tab.Location.Scheme == Constants.InternalScheme)
         {
@@ -316,7 +327,7 @@ public partial class BrowserView : ContentView
 
         try
         {
-            for (var attempts = 0; attempts < Constants.MaxRequestAttempts; attempts++)
+            for (var attempts = 0; attempts < Constants.MaxRequestAttempts || _newCertAccepted; attempts++)
             {
                 if (useCache && !triggeredByRefresh)
                 {
@@ -353,6 +364,13 @@ public partial class BrowserView : ContentView
                 {
                     _logger.LogInformation(@"Request finished after {Attempts} attempt(s)", attempts + 1);
                     break;
+                }
+
+                if (_newCertAccepted)
+                {
+                    // the host's certificate changed and was accepted by the user; we should try the request again
+                    _newCertAccepted = false;
+                    continue;
                 }
             }
         }
@@ -449,11 +467,10 @@ public partial class BrowserView : ContentView
                     // Currently this only happens in the case of invalid or rejected remote
                     // certificates, where re-sending the request would not make sense
 
-                    if (_tab.ParentPage != null)
+                    if (_tab.ParentPage != null && !_newCertRejected)
                     {
                         await _tab.ParentPage.DisplayAlertOnMainThread(Text.BrowserView_LoadPage_Error,
-                            string.Format(Text.BrowserView_HandleGeminiResponse_A_fatal_error_occurred_when_requesting_the_page___0_, error.Message),
-                            Text.BrowserView_LoadPage_OK);
+                            "The page could not be displayed due to a fatal error.", Text.BrowserView_LoadPage_OK);
                     }
 
                     _logger.LogError(@"A fatal exception occurred when sending the request: {Message}", error.Message);

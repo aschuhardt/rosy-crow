@@ -19,7 +19,7 @@ public interface IBrowsingDatabase : INotifyPropertyChanged, ICertificateDatabas
     IEnumerable<Visited> GetVisitedPage(int page, out bool lastPage);
     void AddVisitedPage(Visited visited);
     bool TryGetHostCertificate(string host, out HostCertificate certificate);
-    void AcceptHostCertificate(string host);
+    void RemoveHostCertificate(string host);
     Task UpdateBookmarkOrder();
     Task UpdateTabOrder();
     void Update<T>(T obj);

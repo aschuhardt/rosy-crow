@@ -340,16 +340,6 @@ namespace RosyCrow.Resources.Localization {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fatal error occurred when requesting the page: {0}.
-        /// </summary>
-        internal static string BrowserView_HandleGeminiResponse_A_fatal_error_occurred_when_requesting_the_page___0_ {
-            get {
-                return ResourceManager.GetString("BrowserView_HandleGeminiResponse_A_fatal_error_occurred_when_requesting_the_page_" +
-                        "__0_", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         internal static string BrowserView_LoadPage_Error {

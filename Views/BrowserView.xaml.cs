@@ -74,25 +74,6 @@ public partial class BrowserView : ContentView
         _geminiClient.RemoteCertificateUnrecognizedCallback = RemoteCertificateUnrecognizedCallback;
     }
 
-    public bool HasFindNextQuery
-    {
-        get => !string.IsNullOrEmpty(FindNextQuery);
-    }
-
-    public string FindNextQuery
-    {
-        get => _findNextQuery;
-        private set
-        {
-            if (value == _findNextQuery)
-                return;
-
-            _findNextQuery = value;
-            OnPropertyChanged();
-            OnPropertyChanged(nameof(HasFindNextQuery));
-        }
-    }
-
     private async Task RemoteCertificateUnrecognizedCallback(RemoteCertificateUnrecognizedArgs arg)
     {
         if (_tab.ParentPage == null)
@@ -198,17 +179,17 @@ public partial class BrowserView : ContentView
 
     public void ClearFindResults()
     {
-        FindNextQuery = null;
+        _tab.FindNextQuery = null;
         OnClearFindNext();
     }
 
     public void FindTextInPage(string query)
     {
         // if the query is different from the last time, then start the search over from the top of the page
-        if (query != FindNextQuery)
+        if (query != _tab.FindNextQuery)
             _resetFindNext = true;
 
-        FindNextQuery = query;
+        _tab.FindNextQuery = query;
 
         OnFindNext();
         _resetFindNext = false;
@@ -320,7 +301,7 @@ public partial class BrowserView : ContentView
 
         _tab.CanPrint = false;
 
-        if (HasFindNextQuery)
+        if (_tab.HasFindNextQuery)
             ClearFindResults();
 
         _logger.LogInformation(@"Navigating to {URI}", _tab.Location);
@@ -642,6 +623,7 @@ public partial class BrowserView : ContentView
     protected virtual void OnClearFindNext()
     {
         ClearMatches?.Invoke(this, EventArgs.Empty);
+        _tab.OnHasFindNextQueryChanged();
     }
 
     private string CreateTabLabel()
@@ -699,7 +681,7 @@ public partial class BrowserView : ContentView
         FindNext += (_, _) =>
         {
             if (_resetFindNext) // new query
-                webViewHandler.PlatformView.FindAllAsync(FindNextQuery);
+                webViewHandler.PlatformView.FindAllAsync(_tab.FindNextQuery);
             else // existing query; continue forward
                 webViewHandler.PlatformView.FindNext(true);
         };
@@ -712,7 +694,7 @@ public partial class BrowserView : ContentView
             if (count == 0)
             {
                 _tab.ParentPage.ShowToast(Text.BrowserView_FindNext_No_instances_found, ToastDuration.Short);
-                FindNextQuery = null;
+                _tab.FindNextQuery = null;
             }
             else
             {
@@ -749,7 +731,7 @@ public partial class BrowserView : ContentView
         tab.FindNext = new Command(query => FindTextInPage((string)query));
         tab.Print = new Command(Print, () => _tab.CanPrint);
         tab.GoBack = new Command(GoBack, () => _tab.RecentHistory.TryPeek(out _));
-        tab.ClearFind = new Command(ClearFindResults, () => HasFindNextQuery);
+        tab.ClearFind = new Command(ClearFindResults, () => _tab.HasFindNextQuery);
         tab.Load = new Command(async () => await LoadPage(false, true).ConfigureAwait(false), () => !_isLoading && _tab.Selected);
         tab.Location = tab.Url.ToGeminiUri();
 

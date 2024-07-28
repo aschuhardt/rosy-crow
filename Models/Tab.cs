@@ -296,4 +296,9 @@ public partial class Tab : INotifyPropertyChanged
     {
         OnPropertyChanged(nameof(Location));
     }
+
+    public virtual void OnHasFindNextQueryChanged()
+    {
+        OnPropertyChanged(nameof(HasFindNextQuery));
+    }
 }

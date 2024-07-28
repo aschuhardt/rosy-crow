@@ -577,6 +577,12 @@ public partial class MainPage : ContentPage
                 return true;
             }
 
+            if ((CurrentTab?.HasFindNextQuery ?? false) &&
+                (CurrentTab?.ClearFind?.CanExecute(null) ?? false))
+            {
+                CurrentTab.ClearFind.Execute(null);
+            }
+
             if (CurrentTab?.GoBack.CanExecute(null) ?? false)
             {
                 CurrentTab.GoBack.Execute(null);
@@ -702,8 +708,8 @@ public partial class MainPage : ContentPage
 
             IsMenuExpanded = false;
 
-            if (CurrentTab?.FindNext.CanExecute(CurrentTab.FindNextQuery) ?? false)
-                CurrentTab.FindNext.Execute(CurrentTab.FindNextQuery);
+            if (CurrentTab?.FindNext.CanExecute(query) ?? false)
+                CurrentTab.FindNext.Execute(query);
         }
         catch (Exception e)
         {

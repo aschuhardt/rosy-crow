@@ -30,32 +30,32 @@ jobs:
     - name: Read Version
       id: read_version
       run: echo "version=$(cat version | tr -d '\r\n')" >> "$GITHUB_OUTPUT"
-  deploy_google:
-    runs-on: ubuntu-latest
-    name: Deploy to Google Play
-    needs: read_version
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v4.1.1
-      with:
-        fetch-depth: 0
-    - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2
-      with:
-        workflow: build.yml
-        branch: beta
-        allow_forks: false
-    - name: Copy Files
-      run: cp ./**/*.aab .
-    - name: Upload
-      uses: r0adkll/upload-google-play@v1.0.19
-      with:
-        serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
-        packageName: app.rosy_crow
-        releaseFiles: app.rosy_crow-Signed.aab
-        releaseName: ${{ needs.read_version.outputs.version }}
-        track: beta
-        status: completed
+  # deploy_google:
+  #   runs-on: ubuntu-latest
+  #   name: Deploy to Google Play
+  #   needs: read_version
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v4.1.1
+  #     with:
+  #       fetch-depth: 0
+  #   - name: Download workflow artifact
+  #     uses: dawidd6/action-download-artifact@v2
+  #     with:
+  #       workflow: build.yml
+  #       branch: beta
+  #       allow_forks: false
+  #   - name: Copy Files
+  #     run: cp ./**/*.aab .
+  #   - name: Upload
+  #     uses: r0adkll/upload-google-play@v1.0.19
+  #     with:
+  #       serviceAccountJsonPlainText: ${{ secrets.SERVICES_ACCOUNT_JSON }}
+  #       packageName: app.rosy_crow
+  #       releaseFiles: app.rosy_crow-Signed.aab
+  #       releaseName: ${{ needs.read_version.outputs.version }}
+  #       track: beta
+  #       status: completed
   deploy_fdroid:
     runs-on: ubuntu-latest
     name: Deploy to F-Droid

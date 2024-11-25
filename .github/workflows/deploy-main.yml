@@ -20,7 +20,7 @@ jobs:
       with:
         fetch-depth: 0
     - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: build.yml
         branch: main
@@ -40,7 +40,7 @@ jobs:
   #     with:
   #       fetch-depth: 0
   #   - name: Download workflow artifact
-  #     uses: dawidd6/action-download-artifact@v2
+  #     uses: dawidd6/action-download-artifact@v6
   #     with:
   #       workflow: build.yml
   #       branch: main
@@ -84,7 +84,7 @@ jobs:
         cd fdroid/repo
         echo "get -R repo/*.apk" | sftp -o StrictHostKeyChecking=no github@rosy-crow.app:/var/www/rosy-crow/fdroid
     - name: Download workflow artifact
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v6
       with:
         workflow: build.yml
         branch: main

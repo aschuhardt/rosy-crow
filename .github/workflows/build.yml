@@ -60,7 +60,7 @@ jobs:
           cp bin\Release\net8.0-android\app.rosy_crow-Signed.aab .
           cp bin\Release\net8.0-android\app.rosy_crow-Signed.apk .
       - name: Upload Bundle
-        uses: actions/upload-artifact@v3.1.3
+        uses: actions/upload-artifact@v4
         with:
           retention-days: 14
           name: bundle-${{ steps.gitversion.outputs.semVer }}
